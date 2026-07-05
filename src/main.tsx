@@ -6,16 +6,19 @@ import './index.css';
 import { CartProvider } from './CartContext.tsx';
 import { AuthModalProvider } from './AuthModalContext.tsx';
 import { PreloaderProvider } from './features/PreloaderContext.tsx';
+import { PageTransitionProvider } from './features/PageTransitionContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <PreloaderProvider>
-        <CartProvider>
-          <AuthModalProvider>
-            <App />
-          </AuthModalProvider>
-        </CartProvider>
+        <PageTransitionProvider>
+          <CartProvider>
+            <AuthModalProvider>
+              <App />
+            </AuthModalProvider>
+          </CartProvider>
+        </PageTransitionProvider>
       </PreloaderProvider>
     </BrowserRouter>
   </StrictMode>,

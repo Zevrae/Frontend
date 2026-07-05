@@ -12,6 +12,8 @@ import { useAuthModal } from './AuthModalContext';
 import { supabase } from './supabaseClient';
 import { Preloader } from './features/preloader';
 import { usePreloader } from './features/PreloaderContext';
+import { PageTransitionLoader } from './features/PageTransitionLoader';
+import { usePageTransition } from './features/PageTransitionContext';
 
 function CampaignSection() {
   const editorialRef = useRef(null);
@@ -73,6 +75,7 @@ export default function App() {
   const { scrollY } = useScroll();
   const { setIsCartOpen, items } = useCart();
   const { isLoading } = usePreloader();
+  const { trigger: navTransition } = usePageTransition();
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
@@ -152,6 +155,8 @@ return (
   <div className="min-h-screen bg-[#0a0a0a] text-[#EAE6E1] selection:bg-[#C5A059]/30 selection:text-[#EAE6E1] relative overflow-x-hidden font-sans">
     {/* Preloader Overlay */}
     {isLoading && <Preloader />}
+    {/* Page Transition Loader */}
+    <PageTransitionLoader />
 {/* HERO BACKGROUND VIDEO */}
 <div className="relative w-full h-screen overflow-hidden">
   <video
@@ -179,19 +184,19 @@ return (
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
-            <button onClick={() => { navigate('/'); document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' }); }} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+            <button onClick={() => navTransition(() => { navigate('/'); })} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               HOME
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
             </button>
-            <button onClick={() => { navigate('/men'); }} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+            <button onClick={() => navTransition(() => navigate('/men'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               MEN
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
             </button>
-            <button onClick={() => { navigate('/women'); }} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+            <button onClick={() => navTransition(() => navigate('/women'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               WOMEN
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
             </button>
-            <button onClick={() => { navigate('/jewellery'); }} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+            <button onClick={() => navTransition(() => navigate('/jewellery'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               JEWELLERY
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
             </button>
@@ -210,7 +215,7 @@ return (
 
           <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
             {isAdmin && (
-              <button onClick={() => navigate('/admin')} className="group relative overflow-hidden pb-1 hover:text-[#C5A059] text-[10px] font-bold transition-colors duration-700">
+              <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[#C5A059] text-[10px] font-bold transition-colors duration-700">
                 ADMIN PANEL
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
@@ -221,12 +226,12 @@ return (
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             ) : (
-              <button onClick={() => setIsLoginModalOpen(true)} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+              <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
                 LOGIN
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             )}
-            <button onClick={() => setIsCartOpen(true)} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+            <button onClick={() => navTransition(() => setIsCartOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               CART {items.length > 0 && `(${items.length})`}
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
             </button>
@@ -258,17 +263,17 @@ return (
               <X size={28} strokeWidth={1} />
             </button>
             {[
-              { name: 'Home', href: '#collection', onClick: () => { navigate('/'); setIsMenuOpen(false); document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' }); } },
-              { name: 'Men Wear', href: '#collection', onClick: () => { navigate('/men'); setIsMenuOpen(false); } },
-              { name: 'Women Wear', href: '#collection', onClick: () => { navigate('/women'); setIsMenuOpen(false); } },
-              { name: 'Jewellery', href: '#collection', onClick: () => { navigate('/jewellery'); setIsMenuOpen(false); } },
+              { name: 'Home', href: '#collection', onClick: () => { navTransition(() => { navigate('/'); }); setIsMenuOpen(false); } },
+              { name: 'Men Wear', href: '#collection', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); } },
+              { name: 'Women Wear', href: '#collection', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); } },
+              { name: 'Jewellery', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery')); setIsMenuOpen(false); } },
               ...(isAdmin 
-                ? [{ name: 'Admin Panel', href: '#', onClick: () => { navigate('/admin'); setIsMenuOpen(false); } }]
+                ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]
                 : []),
               user 
                 ? { name: `${displayName} | Logout`, href: '#', onClick: () => { supabase.auth.signOut(); setIsMenuOpen(false); } }
-                : { name: 'Login', href: '#', onClick: () => { setIsLoginModalOpen(true); setIsMenuOpen(false); } },
-              { name: `Cart (${items.length})`, href: '#', onClick: () => { setIsCartOpen(true); setIsMenuOpen(false); } }
+                : { name: 'Login', href: '#', onClick: () => { navTransition(() => setIsLoginModalOpen(true)); setIsMenuOpen(false); } },
+              { name: `Cart (${items.length})`, href: '#', onClick: () => { navTransition(() => setIsCartOpen(true)); setIsMenuOpen(false); } }
             ].map((item, i) => (
               <motion.a
                 key={item.name}
@@ -304,7 +309,7 @@ return (
                 transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
                 className="mb-12"
               >
-                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] font-serif text-[#EAE6E1]/60">
+                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] font-plex-mono text-[#EAE6E1]/60">
                   AUTUMN / WINTER 2026
                 </p>
               </motion.div>
@@ -313,8 +318,8 @@ return (
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 2, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="font-serif font-light tracking-[0.08em] leading-none text-[#EAE6E1] relative z-10 py-4"
-                style={{ fontSize: 'clamp(3rem, 7vw, 7rem)' }}
+                className="font-archivo font-bold tracking-[0.1em] leading-none text-[#EAE6E1] relative z-10 py-4"
+                style={{ fontSize: 'clamp(3rem, 7vw, 7rem)', fontStretch: '125%' }}
               >
                 ZEVRAE
               </motion.h1>
@@ -325,7 +330,7 @@ return (
                 transition={{ duration: 2, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                 className="mt-8"
               >
-                <p className="text-[11px] md:text-[13px] font-serif italic text-[#EAE6E1]/50 tracking-[0.05em]">
+                <p className="text-[11px] md:text-[13px] font-sans italic text-[#EAE6E1]/50 tracking-[0.05em]">
                   The Architecture of Elegance
                 </p>
               </motion.div>
@@ -334,7 +339,7 @@ return (
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 2, delay: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-                className="mt-20 flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-serif text-[#EAE6E1]/70"
+                className="mt-20 flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70"
               >
                 <a href="#collection" className="hover:text-[#EAE6E1] transition-colors duration-500 relative group pb-1">
                   View Collection
@@ -358,9 +363,9 @@ return (
                 transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
                 className="flex flex-col md:flex-row justify-between items-center space-y-16 md:space-y-0 text-xl md:text-2xl lg:text-3xl font-serif font-light tracking-[0.2em] text-[#EAE6E1]/80"
               >
-                <button onClick={() => navigate('/women')} className="hover:text-[#EAE6E1] transition-colors duration-700 uppercase">WOMEN</button>
-                <button onClick={() => navigate('/men')} className="hover:text-[#EAE6E1] transition-colors duration-700 uppercase">MEN</button>
-                <button onClick={() => navigate('/jewellery')} className="hover:text-[#EAE6E1] transition-colors duration-700 uppercase">JEWELLERY</button>
+                <button onClick={() => navTransition(() => navigate('/women'))} className="hover:text-[#EAE6E1] transition-colors duration-700 uppercase">WOMEN</button>
+                <button onClick={() => navTransition(() => navigate('/men'))} className="hover:text-[#EAE6E1] transition-colors duration-700 uppercase">MEN</button>
+                <button onClick={() => navTransition(() => navigate('/jewellery'))} className="hover:text-[#EAE6E1] transition-colors duration-700 uppercase">JEWELLERY</button>
                 <a href="#accessories" className="hover:text-[#EAE6E1] transition-colors duration-700">ACCESSORIES</a>
                 <a href="#footwear" className="hover:text-[#EAE6E1] transition-colors duration-700">FOOTWEAR</a>
               </motion.div>
