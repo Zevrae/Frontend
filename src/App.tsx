@@ -152,7 +152,7 @@ export default function App() {
   const displayName = getDisplayName();
 
 return (
-  <div className="min-h-screen bg-[#0a0a0a] text-[#EAE6E1] selection:bg-[#C5A059]/30 selection:text-[#EAE6E1] relative overflow-x-hidden font-sans">
+  <div data-page-content className="min-h-screen bg-[#0a0a0a] text-[#EAE6E1] selection:bg-[#C5A059]/30 selection:text-[#EAE6E1] relative overflow-x-hidden font-sans">
     {/* Preloader Overlay */}
     {isLoading && <Preloader />}
     {/* Page Transition Loader */}
@@ -202,16 +202,16 @@ return (
             </button>
           </div>
 
-          <motion.a 
-            href="#"
+          <motion.button 
+            onClick={() => navTransition(() => { navigate('/'); })}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 2, delay: 0.2 }}
-            className="text-xl md:text-3xl font-archivo font-bold tracking-[0.1em] absolute left-1/2 transform -translate-x-1/2 text-[#EAE6E1]"
+            className="text-xl md:text-3xl font-archivo font-bold tracking-[0.1em] absolute left-1/2 transform -translate-x-1/2 text-[#EAE6E1] cursor-pointer"
             style={{ fontStretch: '125%' }}
           >
             ZEVRAE
-          </motion.a>
+          </motion.button>
 
           <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
             {isAdmin && (

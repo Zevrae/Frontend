@@ -3,41 +3,52 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
+type TransitionPhase = "idle" | "entering" | "holding" | "exiting";
+
 interface PageTransitionState {
   isTransitioning: boolean;
+  phase: TransitionPhase;
   trigger: (callback?: () => void) => void;
+  /** Called by the loader when animation phases complete */
+  setPhase: (phase: TransitionPhase) => void;
 }
 
 const PageTransitionContext = createContext<PageTransitionState | null>(null);
 
 export function PageTransitionProvider({ children }: { children: ReactNode }) {
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [phase, setPhase] = useState<TransitionPhase>("idle");
+  const callbackRef = useRef<(() => void) | undefined>();
+  const busyRef = useRef(false);
 
   const trigger = useCallback((callback?: () => void) => {
-    // Guard: don't double-trigger
-    setIsTransitioning((prev) => {
-      if (prev) return prev;
-      return true;
-    });
-
-    // Fire nav callback when curtain is fully in (~500ms)
-    setTimeout(() => {
-      callback?.();
-    }, 480);
-
-    // Remove curtain (exit animation plays ~550ms)
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 950);
+    if (busyRef.current) return;
+    busyRef.current = true;
+    callbackRef.current = callback;
+    setPhase("entering");
   }, []);
 
+  const setPhaseWrapped = useCallback((p: TransitionPhase) => {
+    setPhase(p);
+    if (p === "holding") {
+      // Fire navigation callback when curtain fully covers
+      callbackRef.current?.();
+      callbackRef.current = undefined;
+    }
+    if (p === "idle") {
+      busyRef.current = false;
+    }
+  }, []);
+
+  const isTransitioning = phase !== "idle";
+
   const value = useMemo(
-    () => ({ isTransitioning, trigger }),
-    [isTransitioning, trigger]
+    () => ({ isTransitioning, phase, trigger, setPhase: setPhaseWrapped }),
+    [isTransitioning, phase, trigger, setPhaseWrapped],
   );
 
   return (
@@ -51,7 +62,7 @@ export function usePageTransition(): PageTransitionState {
   const ctx = useContext(PageTransitionContext);
   if (!ctx)
     throw new Error(
-      "usePageTransition must be used within PageTransitionProvider"
+      "usePageTransition must be used within PageTransitionProvider",
     );
   return ctx;
 }
