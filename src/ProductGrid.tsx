@@ -1,8 +1,5 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ProductModal from './ProductModal';
 const products = [
   {
     id: 'm17',
@@ -1053,10 +1050,12 @@ const jewelleryProducts = [
 
 ];
 export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter?: 'all' | 'men' | 'women' | 'jewellery' | 'rings' | 'pendants' | 'keychain' | 'bracelet' | 'toys' | 'earrings' | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' }) {
-  const [selectedProduct, setSelectedProduct] = useState<typeof products[0] | null>(null);
   const navigate = useNavigate();
   const displayWomenProducts = categoryFilter === 'all' ? womenProducts.slice(0, 3) : womenProducts;
   const displayJewelleryProducts = categoryFilter === 'all' ? jewelleryProducts.slice(0, 3) : jewelleryProducts;
+  const openProduct = (product: any) => {
+    navigate(`/product/${product.id}`, { state: { product } });
+  };
   return (
     <>
       <AnimatePresence mode="wait">
@@ -1172,7 +1171,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="group relative flex flex-col cursor-pointer"
-                    onClick={() => setSelectedProduct(item)}
+                    onClick={() => openProduct(item)}
                   >
                     <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]">
                       
@@ -1401,7 +1400,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                   className="group relative flex flex-col cursor-pointer"
-                  onClick={() => setSelectedProduct(item)}
+                  onClick={() => openProduct(item)}
                 >
                   {/* Antigravity & Glow Container */}
                   <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]">
@@ -1438,7 +1437,13 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                     )}
                     {/* Quick View Button (Appears on Hover) */}
                     <div className="absolute bottom-0 left-0 w-full p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                      <button className="w-full bg-[#EAE6E1] text-[#0a0a0a] py-3 flex items-center justify-center space-x-2 hover:bg-[#C5A059] transition-colors duration-300 rounded-sm">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openProduct(item);
+                        }}
+                        className="w-full bg-[#EAE6E1] text-[#0a0a0a] py-3 flex items-center justify-center space-x-2 hover:bg-[#C5A059] transition-colors duration-300 rounded-sm"
+                      >
                         <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Quick View</span>
                       </button>
                     </div>
@@ -1464,11 +1469,6 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
         </motion.section>
       )}
     </AnimatePresence>
-      <ProductModal 
-        product={selectedProduct} 
-        isOpen={!!selectedProduct} 
-        onClose={() => setSelectedProduct(null)} 
-      />
     </>
   );
 }

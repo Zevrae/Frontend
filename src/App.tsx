@@ -9,6 +9,7 @@ import ProductGrid from './ProductGrid';
 import CartDrawer from './CartDrawer';
 import CheckoutPage from './CheckoutPage';
 import Admin from './Admin';
+import ProductPage from './ProductPage';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { supabase } from './supabaseClient';
@@ -159,19 +160,23 @@ return (
     {isLoading && <Preloader />}
     {/* Page Transition Loader */}
     <PageTransitionLoader />
-{/* HERO BACKGROUND VIDEO */}
-<div className="relative w-full h-screen overflow-hidden">
-  <video
-    autoPlay
-    muted
-    loop
-    playsInline
-    className="w-full h-full object-cover"
-  >
-    <source src="/packaging.mp4" type="video/mp4" />
-  </video>
-</div>
-<div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
+    {isHome && (
+      <>
+        {/* HERO BACKGROUND VIDEO */}
+        <div className="relative w-full h-screen overflow-hidden">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/packaging.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
+      </>
+    )}
       {/* Global Film Grain */}
       <div 
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-50 mix-blend-difference"
@@ -375,6 +380,7 @@ return (
         <Route path="/jewellery/bracelet" element={<ProductGrid categoryFilter="bracelet" />} />
         <Route path="/jewellery/toys" element={<ProductGrid categoryFilter="toys" />} />
         <Route path="/jewellery/earrings" element={<ProductGrid categoryFilter="earrings" />} />
+        <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/orders" element={<Admin />} />
