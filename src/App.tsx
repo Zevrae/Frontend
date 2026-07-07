@@ -83,15 +83,15 @@ export default function App() {
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
 
-  // Prevent scrolling during preloader
+  // Prevent scrolling during preloader (skip on admin)
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading && !location.pathname.startsWith('/admin')) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [isLoading]);
+  }, [isLoading, location.pathname]);
   
   // Parallax effects
   const heroY = useTransform(scrollY, [0, 1000], [0, 300]);
@@ -156,8 +156,8 @@ export default function App() {
 
 return (
   <div data-page-content className="min-h-screen bg-[#0a0a0a] text-[#EAE6E1] selection:bg-[#C5A059]/30 selection:text-[#EAE6E1] relative overflow-x-hidden font-sans">
-    {/* Preloader Overlay */}
-    {isLoading && <Preloader />}
+    {/* Preloader Overlay — skip on admin */}
+    {isLoading && !location.pathname.startsWith('/admin') && <Preloader />}
     {/* Page Transition Loader */}
     <PageTransitionLoader />
     {isHome && (
@@ -183,7 +183,8 @@ return (
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
       />
 
-      {/* Navigation */}
+      {/* Navigation — hidden on /admin */}
+      {!location.pathname.startsWith('/admin') && (
       <nav 
         className={`fixed top-0 w-full z-40 transition-all duration-1000 ${
           isScrolled ? 'bg-[#0a0a0a]/95 backdrop-blur-md py-6 border-b border-[#C5A059]/10' : 'bg-transparent py-10'
@@ -252,10 +253,11 @@ return (
           </button>
         </div>
       </nav>
+      )}
 
       {/* Fullscreen Overlay Menu */}
       <AnimatePresence>
-        {isMenuOpen && (
+        {isMenuOpen && !location.pathname.startsWith('/admin') && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -384,6 +386,10 @@ return (
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/orders" element={<Admin />} />
+        <Route path="/admin/products" element={<Admin />} />
+        <Route path="/admin/collections" element={<Admin />} />
+        <Route path="/admin/categories" element={<Admin />} />
+        <Route path="/admin/discounts" element={<Admin />} />
       </Routes>
 
       {isHome && (
