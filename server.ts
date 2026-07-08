@@ -6,8 +6,32 @@ import dotenv from "dotenv";
 import Database from "better-sqlite3";
 import crypto from "crypto";
 import { Resend } from "resend";
+import mongoose from "mongoose";
 
 dotenv.config();
+
+const MONGO_URI = process.env.MONGO_URI || "";
+if (MONGO_URI) {
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log("Connected to MongoDB successfully"))
+    .catch((err) => console.error("MongoDB connection error:", err));
+} else {
+  console.warn("No MONGO_URI provided. MongoDB features will not work.");
+}
+
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: String,
+  category: { type: String, required: true },
+  subcategory: { type: String, required: true },
+  price: { type: Number, required: true },
+  compare_price: Number,
+  sizes: [String],
+  images: [String],
+  status: { type: String, default: "active" },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+
+const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 const storeOwnerEmail = process.env.STORE_OWNER_EMAIL || "admin@zevrae.com";
@@ -66,6 +90,60 @@ async function startServer() {
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to update order status" });
+    }
+  });
+
+  // --- Product Routes (MongoDB) ---
+  app.get("/api/products", async (req, res) => {
+    try {
+      const { category } = req.query;
+      const query = category ? { category } : {};
+      const products = await Product.find(query).sort({ created_at: -1 });
+      
+      const formatted = products.map(p => {
+        const obj = p.toObject();
+        obj.id = obj._id.toString();
+        return obj;
+      });
+      
+      res.json(formatted);
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
+
+  app.post("/api/products", async (req, res) => {
+    try {
+      const newProduct = new Product(req.body);
+      const saved = await newProduct.save();
+      const obj = saved.toObject();
+      obj.id = obj._id.toString();
+      res.json(obj);
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to create product" });
+    }
+  });
+
+  app.put("/api/products/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await Product.findByIdAndUpdate(id, req.body, { new: true });
+      if (!updated) return res.status(404).json({ error: "Not found" });
+      const obj = updated.toObject();
+      obj.id = obj._id.toString();
+      res.json(obj);
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to update product" });
+    }
+  });
+
+  app.delete("/api/products/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await Product.findByIdAndDelete(id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to delete product" });
     }
   });
 

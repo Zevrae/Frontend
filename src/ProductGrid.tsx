@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 const products = [
@@ -1053,6 +1054,40 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
   const navigate = useNavigate();
   const displayWomenProducts = categoryFilter === 'all' ? womenProducts.slice(0, 3) : womenProducts;
   const displayJewelleryProducts = categoryFilter === 'all' ? jewelleryProducts.slice(0, 3) : jewelleryProducts;
+
+  const [dbMenProducts, setDbMenProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (categoryFilter.startsWith('men')) {
+      const fetchDbProducts = async () => {
+        try {
+          const res = await fetch('/api/products?category=Men');
+          if (!res.ok) throw new Error('Failed to fetch products');
+          const data = await res.json();
+          
+          const formatted = (data || []).filter((p: any) => p.status === 'active').map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            originalPrice: p.compare_price,
+            label: 'Men Premium',
+            category: 'men',
+            gender: 'men',
+            type: p.subcategory?.toLowerCase() === 'lowers' ? 'lower' : 'tshirt',
+            sizes: p.sizes,
+            description: p.description,
+            frontImg: p.images?.[0] || '',
+            backImg: p.images?.[1] || p.images?.[0] || '',
+          }));
+          setDbMenProducts(formatted);
+        } catch (err) {
+          console.error('Failed to fetch DB products', err);
+        }
+      };
+      fetchDbProducts();
+    }
+  }, [categoryFilter]);
+
   const openProduct = (product: any) => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
@@ -1121,6 +1156,80 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
               ))}
             </div>
           </div>
+          {dbMenProducts.length > 0 && (
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
+                className="text-[12px] uppercase tracking-[0.4em] font-serif text-[#C5A059] mb-8 text-center md:text-left"
+              >
+                FROM OUR CATALOG
+              </motion.h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+                {dbMenProducts.map((item, i) => (
+                  <motion.div 
+                    key={item.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="group relative flex flex-col cursor-pointer"
+                    onClick={() => openProduct(item)}
+                  >
+                    <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
+                      
+                      {item.frontImg ? (
+                        <img 
+                          src={item.frontImg} 
+                          alt={item.name} 
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 w-full h-full flex items-center justify-center text-[#EAE6E1]/20 font-serif tracking-widest uppercase text-xs">
+                          Image Pending
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md border border-[#EAE6E1]/10 px-3 py-1.5 rounded-full z-10">
+                        <span className="text-[9px] uppercase tracking-[0.2em] font-serif text-[#EAE6E1]/80">
+                          {item.label}
+                        </span>
+                      </div>
+                      {item.discount && (
+                        <div className="absolute top-4 right-4 bg-[#C5A059] px-2 py-1 rounded-sm shadow-lg z-10">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-[#0a0a0a]">
+                            {item.discount}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 w-full p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                        <button className="w-full bg-[#EAE6E1] text-[#0a0a0a] py-3 flex items-center justify-center space-x-2 hover:bg-[#C5A059] transition-colors duration-300 rounded-sm">
+                          <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Quick View</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-2 px-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-serif font-medium text-[13px] tracking-[0.1em] text-[#EAE6E1] group-hover:text-[#C5A059] transition-colors duration-300 uppercase leading-tight pr-4">
+                          {item.name}
+                        </h3>
+                        <div className="flex flex-col items-end">
+                          <span className="text-[13px] font-mono tracking-wider text-[#EAE6E1]">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.price)}</span>
+                          {item.originalPrice && (
+                            <span className="text-[10px] font-mono tracking-wider text-[#EAE6E1]/50 line-through">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.originalPrice as number)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.section>
       )}
       {['men-tshirts', 'men-lowers', 'women-tshirts', 'women-lowers'].includes(categoryFilter) && (
@@ -1155,7 +1264,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
             </motion.h3>
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            {((categoryFilter.startsWith('men') ? products : womenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).length === 0 ? (
+            {((categoryFilter.startsWith('men') ? [...products, ...dbMenProducts] : womenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).length === 0 ? (
               <div className="w-full flex justify-center py-24">
                 <h3 className="text-xl md:text-2xl font-serif tracking-[0.2em] text-[#EAE6E1]/50 uppercase">
                   New Collection Coming Soon
@@ -1163,7 +1272,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-                {((categoryFilter.startsWith('men') ? products : womenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).map((item, i) => (
+                {((categoryFilter.startsWith('men') ? [...products, ...dbMenProducts] : womenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).map((item, i) => (
                   <motion.div 
                     key={item.id}
                     initial={{ opacity: 0, y: 30 }}

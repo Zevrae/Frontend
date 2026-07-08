@@ -445,136 +445,453 @@ function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
   );
 }
 
+// ─── DB Product type ──────────────────────────────────────────────────────────
+
+interface DbProduct {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  subcategory: string;
+  price: number;
+  compare_price: number | null;
+  sizes: string[];
+  images: string[];
+  status: string;
+  created_at: string;
+}
+
+const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+
+const emptyForm = (): Omit<DbProduct, 'id' | 'created_at'> => ({
+  name: '',
+  description: '',
+  category: 'Men',
+  subcategory: 'T-Shirts',
+  price: 0,
+  compare_price: null,
+  sizes: [],
+  images: [],
+  status: 'active',
+});
+
 // ─── Products Section ─────────────────────────────────────────────────────────
 
 function ProductsSection() {
-  const [products, setProducts] = useState(mockProducts);
-  const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<typeof mockProducts[0] | null>(null);
-  const [form, setForm] = useState({ name: '', category: 'Men', price: '', stock: '', status: 'active', image: '' });
+  // ── Live Men's products from Supabase ──────────────────────────────────────
+  const [dbProducts, setDbProducts] = useState<DbProduct[]>([]);
+  const [dbLoading, setDbLoading] = useState(true);
+  const [dbError, setDbError] = useState('');
 
-  const filtered = products.filter(p =>
-    !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase())
+  // ── Modal state ────────────────────────────────────────────────────────────
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm());
+  const [saving, setSaving] = useState(false);
+  const [imageInput, setImageInput] = useState('');
+
+  // ── Search ─────────────────────────────────────────────────────────────────
+  const [search, setSearch] = useState('');
+
+  // ── Fetch Men's products from MongoDB ─────────────────────────────────────
+  const fetchDbProducts = async () => {
+    setDbLoading(true);
+    setDbError('');
+    try {
+      const res = await fetch('/api/products?category=Men');
+      if (!res.ok) throw new Error('Failed to fetch products');
+      const data = await res.json();
+      setDbProducts((data as DbProduct[]) || []);
+    } catch (err: any) {
+      setDbError('Could not load Men\'s products. Make sure the database is connected.');
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchDbProducts(); }, []);
+
+  // ── Open Add modal ─────────────────────────────────────────────────────────
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm());
+    setImageInput('');
+    setShowModal(true);
+  };
+
+  // ── Open Edit modal ────────────────────────────────────────────────────────
+  const openEdit = (p: DbProduct) => {
+    setEditingId(p.id);
+    setForm({
+      name: p.name,
+      description: p.description || '',
+      category: p.category,
+      subcategory: p.subcategory,
+      price: p.price,
+      compare_price: p.compare_price,
+      sizes: p.sizes || [],
+      images: p.images || [],
+      status: p.status,
+    });
+    setImageInput((p.images || []).join(', '));
+    setShowModal(true);
+  };
+
+  // ── Toggle size chip ───────────────────────────────────────────────────────
+  const toggleSize = (s: string) => {
+    setForm(f => ({
+      ...f,
+      sizes: f.sizes.includes(s) ? f.sizes.filter(x => x !== s) : [...f.sizes, s],
+    }));
+  };
+
+  // ── Save (create or update) ────────────────────────────────────────────────
+  const handleSave = async () => {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    const parsedImages = imageInput
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+    const payload = { ...form, images: parsedImages };
+
+    try {
+      if (editingId) {
+        const res = await fetch(`/api/products/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Update failed');
+      } else {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Create failed');
+      }
+      setShowModal(false);
+      fetchDbProducts();
+    } catch (err: any) {
+      alert('Save failed: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
+  const handleDelete = async (id: string) => {
+    if (!confirm('Permanently delete this product? This will remove it from the storefront immediately.')) return;
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      fetchDbProducts();
+    } catch (error: any) {
+      alert('Delete failed: ' + error.message);
+    }
+  };
+
+  // ── Filtered DB products ───────────────────────────────────────────────────
+  const filteredDb = dbProducts.filter(p =>
+    !search ||
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.subcategory.toLowerCase().includes(search.toLowerCase())
   );
 
-  const openAdd = () => { setEditingProduct(null); setForm({ name: '', category: 'Men', price: '', stock: '', status: 'active', image: '' }); setShowModal(true); };
-  const openEdit = (p: typeof mockProducts[0]) => { setEditingProduct(p); setForm({ name: p.name, category: p.category, price: String(p.price), stock: String(p.stock), status: p.status, image: p.image }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.name) return;
-    if (editingProduct) {
-      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...form, price: Number(form.price), stock: Number(form.stock) } : p));
-    } else {
-      setProducts(prev => [...prev, { id: `p${Date.now()}`, ...form, price: Number(form.price), stock: Number(form.stock) }]);
-    }
-    setShowModal(false);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this product?')) setProducts(prev => prev.filter(p => p.id !== id));
-  };
+  // ── Filtered mock products (unchanged) ────────────────────────────────────
+  const filteredMock = mockProducts.filter(p =>
+    !search ||
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.category.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div>
-      <SectionHeader title="Products" action="Add Product" onAction={openAdd} />
+      <SectionHeader title="Products" action="Add Men's Product" onAction={openAdd} />
 
+      {/* Search */}
       <div className="relative mb-5">
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#EAE6E1]/30" />
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..." className="w-full bg-[#111] border border-[#EAE6E1]/10 rounded-sm pl-9 pr-4 py-2.5 text-[12px] text-[#EAE6E1] font-mono placeholder:text-[#EAE6E1]/20 focus:outline-none focus:border-[#C5A059]/30 transition-colors" />
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search products..."
+          className="w-full bg-[#111] border border-[#EAE6E1]/10 rounded-sm pl-9 pr-4 py-2.5 text-[12px] text-[#EAE6E1] font-mono placeholder:text-[#EAE6E1]/20 focus:outline-none focus:border-[#C5A059]/30 transition-colors"
+        />
       </div>
 
-      <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] bg-[#0a0a0a]/50">
-                <th className="p-4 font-normal">Product</th>
-                <th className="p-4 font-normal">Category</th>
-                <th className="p-4 font-normal">Price</th>
-                <th className="p-4 font-normal">Stock</th>
-                <th className="p-4 font-normal">Status</th>
-                <th className="p-4 font-normal text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(p => (
-                <tr key={p.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#0a0a0a]/40 transition-colors">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#0a0a0a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
-                        <img src={p.image} alt={p.name} className="w-full h-full object-cover opacity-70" />
-                      </div>
-                      <span className="text-[11px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em]">{p.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{p.category}</td>
-                  <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">{formatVal(p.price)}</td>
-                  <td className="p-4">
-                    <span className={`text-[11px] font-mono ${p.stock === 0 ? 'text-red-400' : 'text-[#EAE6E1]'}`}>{p.stock === 0 ? 'Out of stock' : p.stock}</span>
-                  </td>
-                  <td className="p-4">
-                    <Badge label={p.status} variant={p.status as any} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button onClick={() => openEdit(p)} className="p-1.5 text-[#EAE6E1]/40 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
-                        <Edit2 size={12} />
-                      </button>
-                      <button onClick={() => handleDelete(p.id)} className="p-1.5 text-[#EAE6E1]/40 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/50">
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </td>
+      {/* ── Live Men's Products from Database ─────────────────────────────── */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Men's — Database</span>
+          <span className="text-[9px] font-sans text-[#EAE6E1]/30">Live · MongoDB</span>
+          <button
+            onClick={() => fetchDbProducts()}
+            className="ml-auto p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30"
+            title="Refresh"
+          >
+            <RefreshCw size={11} />
+          </button>
+        </div>
+
+        {dbError && (
+          <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+            <AlertCircle size={14} /> {dbError}
+          </div>
+        )}
+
+        <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden mb-2">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] bg-[#0a0a0a]/50">
+                  <th className="p-4 font-normal">Product</th>
+                  <th className="p-4 font-normal">Subcategory</th>
+                  <th className="p-4 font-normal">Price</th>
+                  <th className="p-4 font-normal">Compare</th>
+                  <th className="p-4 font-normal">Sizes</th>
+                  <th className="p-4 font-normal">Status</th>
+                  <th className="p-4 font-normal text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {dbLoading ? (
+                  <tr>
+                    <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : filteredDb.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[#EAE6E1]/30">
+                      {dbError ? 'Table not found.' : 'No Men\'s products yet. Click "Add Men\'s Product" to create one.'}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredDb.map(p => (
+                    <tr key={p.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#0a0a0a]/40 transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#0a0a0a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                            {p.images?.[0] ? (
+                              <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover opacity-80" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Image size={12} className="text-[#EAE6E1]/20" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em] block">{p.name}</span>
+                            {p.description && (
+                              <span className="text-[9px] font-sans text-[#EAE6E1]/30 block truncate max-w-[180px]">{p.description}</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{p.subcategory}</td>
+                      <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">{formatVal(p.price)}</td>
+                      <td className="p-4 text-[10px] font-mono text-[#EAE6E1]/40 line-through">
+                        {p.compare_price ? formatVal(p.compare_price) : '—'}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-wrap gap-1">
+                          {(p.sizes || []).map(s => (
+                            <span key={s} className="px-1.5 py-0.5 text-[8px] font-sans uppercase border border-[#EAE6E1]/15 text-[#EAE6E1]/50 rounded-sm">{s}</span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <Badge label={p.status} variant={p.status as any} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2 justify-end">
+                          <button onClick={() => openEdit(p)} className="p-1.5 text-[#EAE6E1]/40 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
+                            <Edit2 size={12} />
+                          </button>
+                          <button onClick={() => handleDelete(p.id)} className="p-1.5 text-[#EAE6E1]/40 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/50">
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
+      {/* ── Static / Sample Products (unchanged) ──────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/40">Sample Data — Static</span>
+          <span className="text-[9px] font-sans text-[#EAE6E1]/20">Read-only · Do not delete</span>
+        </div>
+        <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden opacity-60">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/30 bg-[#0a0a0a]/50">
+                  <th className="p-4 font-normal">Product</th>
+                  <th className="p-4 font-normal">Category</th>
+                  <th className="p-4 font-normal">Price</th>
+                  <th className="p-4 font-normal">Stock</th>
+                  <th className="p-4 font-normal">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredMock.map(p => (
+                  <tr key={p.id} className="border-b border-[#EAE6E1]/5">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#0a0a0a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                          <img src={p.image} alt={p.name} className="w-full h-full object-cover opacity-50" />
+                        </div>
+                        <span className="text-[11px] font-sans text-[#EAE6E1]/50 uppercase tracking-[0.05em]">{p.name}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/30">{p.category}</td>
+                    <td className="p-4 text-[11px] font-mono text-[#EAE6E1]/40">{formatVal(p.price)}</td>
+                    <td className="p-4 text-[11px] font-mono text-[#EAE6E1]/40">{p.stock}</td>
+                    <td className="p-4"><Badge label={p.status} variant={p.status as any} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Add / Edit Modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
         {showModal && (
-          <Modal title={editingProduct ? 'Edit Product' : 'Add Product'} onClose={() => setShowModal(false)}>
+          <Modal title={editingId ? 'Edit Men\'s Product' : 'Add Men\'s Product'} onClose={() => setShowModal(false)}>
             <FormField label="Product Name">
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Oversized Wool Coat" className={inputCls} />
+              <input
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Oversized Graphic Tee"
+                className={inputCls}
+              />
             </FormField>
+
+            <FormField label="Description">
+              <textarea
+                value={form.description}
+                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="A brief description of this product..."
+                rows={3}
+                className={`${inputCls} resize-none`}
+              />
+            </FormField>
+
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Category">
-                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={selectCls}>
-                  <option>Men</option>
-                  <option>Women</option>
-                  <option>Jewellery</option>
-                </select>
+                <input value="Men" readOnly className={`${inputCls} opacity-50 cursor-not-allowed`} />
               </FormField>
-              <FormField label="Status">
-                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
-                  <option value="active">Active</option>
-                  <option value="draft">Draft</option>
+              <FormField label="Subcategory">
+                <select
+                  value={form.subcategory}
+                  onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))}
+                  className={selectCls}
+                >
+                  <option>T-Shirts</option>
+                  <option>Lowers</option>
                 </select>
               </FormField>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Price (INR)">
-                <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="12500" className={inputCls} />
+                <input
+                  type="number"
+                  value={form.price || ''}
+                  onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
+                  placeholder="799"
+                  className={inputCls}
+                />
               </FormField>
-              <FormField label="Stock">
-                <input type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} placeholder="10" className={inputCls} />
+              <FormField label="Compare Price (INR)">
+                <input
+                  type="number"
+                  value={form.compare_price ?? ''}
+                  onChange={e => setForm(f => ({ ...f, compare_price: e.target.value ? Number(e.target.value) : null }))}
+                  placeholder="1599 (crossed out)"
+                  className={inputCls}
+                />
               </FormField>
             </div>
-            <FormField label="Image URL">
-              <input value={form.image} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} placeholder="https://..." className={inputCls} />
+
+            <FormField label="Available Sizes">
+              <div className="flex flex-wrap gap-2 mt-1">
+                {ALL_SIZES.map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleSize(s)}
+                    className={`px-3 py-1.5 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
+                      form.sizes.includes(s)
+                        ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10'
+                        : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              {form.sizes.length === 0 && (
+                <p className="text-[9px] text-[#C5A059]/70 font-sans mt-2">Select at least one size</p>
+              )}
             </FormField>
-            {form.image && (
-              <div className="mb-4 w-24 h-24 rounded-sm overflow-hidden border border-[#EAE6E1]/10 bg-[#0a0a0a]">
-                <img src={form.image} alt="preview" className="w-full h-full object-cover opacity-80" />
+
+            <FormField label="Product Images (URLs, comma-separated)">
+              <textarea
+                value={imageInput}
+                onChange={e => setImageInput(e.target.value)}
+                placeholder="https://example.com/front.jpg, https://example.com/back.jpg"
+                rows={2}
+                className={`${inputCls} resize-none`}
+              />
+              <p className="text-[9px] text-[#EAE6E1]/25 font-sans mt-1.5">First URL = front image, second = back image (for product page)</p>
+            </FormField>
+
+            {/* Image previews */}
+            {imageInput.split(',').map(s => s.trim()).filter(Boolean).length > 0 && (
+              <div className="flex gap-2 mb-4">
+                {imageInput.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3).map((url, i) => (
+                  <div key={i} className="w-20 h-20 rounded-sm overflow-hidden border border-[#EAE6E1]/10 bg-[#0a0a0a] flex-shrink-0">
+                    <img src={url} alt={`preview ${i + 1}`} className="w-full h-full object-cover opacity-80" />
+                  </div>
+                ))}
               </div>
             )}
+
+            <FormField label="Status">
+              <select
+                value={form.status}
+                onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                className={selectCls}
+              >
+                <option value="active">Active — Visible on storefront</option>
+                <option value="draft">Draft — Hidden from storefront</option>
+              </select>
+            </FormField>
+
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingProduct ? 'Save Changes' : 'Add Product'}
+              <button
+                onClick={handleSave}
+                disabled={saving || !form.name.trim()}
+                className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save size={12} /> {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Product'}
               </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors"
+              >
                 Cancel
               </button>
             </div>
