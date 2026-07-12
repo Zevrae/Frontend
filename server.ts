@@ -137,11 +137,20 @@ async function startServer() {
   
   const upload = multer({ storage: storage });
 
-  app.post("/api/upload", upload.array("images", 5), (req: any, res: any) => {
+  app.post("/api/upload", (req, res, next) => {
+    upload.array("images", 5)(req, res, (err) => {
+      if (err) {
+        console.error("Multer upload error:", err);
+        return res.status(500).json({ error: err.message || "Upload failed" });
+      }
+      next();
+    });
+  }, (req: any, res: any) => {
     try {
       const urls = req.files.map((file: any) => file.path);
       res.json({ urls });
     } catch (error) {
+      console.error("Route handler error:", error);
       res.status(500).json({ error: "Image upload failed" });
     }
   });
