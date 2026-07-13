@@ -478,7 +478,7 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at'> => ({
 // ─── Products Section ─────────────────────────────────────────────────────────
 
 function ProductsSection() {
-  // ── Live Men's products from Supabase ──────────────────────────────────────
+  // ── Live products from DB ──────────────────────────────────────
   const [dbProducts, setDbProducts] = useState<DbProduct[]>([]);
   const [dbLoading, setDbLoading] = useState(true);
   const [dbError, setDbError] = useState('');
@@ -493,17 +493,17 @@ function ProductsSection() {
   // ── Search ─────────────────────────────────────────────────────────────────
   const [search, setSearch] = useState('');
 
-  // ── Fetch Men's products from MongoDB ─────────────────────────────────────
+  // ── Fetch products from MongoDB ─────────────────────────────────────
   const fetchDbProducts = async () => {
     setDbLoading(true);
     setDbError('');
     try {
-      const res = await fetch('/api/products?category=Men');
+      const res = await fetch('/api/products');
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = await res.json();
       setDbProducts((data as DbProduct[]) || []);
     } catch (err: any) {
-      setDbError('Could not load Men\'s products. Make sure the database is connected.');
+      setDbError('Could not load products. Make sure the database is connected.');
     } finally {
       setDbLoading(false);
     }
@@ -625,7 +625,7 @@ function ProductsSection() {
 
   return (
     <div>
-      <SectionHeader title="Products" action="Add Men's Product" onAction={openAdd} />
+      <SectionHeader title="Products" action="Add Product" onAction={openAdd} />
 
       {/* Search */}
       <div className="relative mb-5">
@@ -638,10 +638,10 @@ function ProductsSection() {
         />
       </div>
 
-      {/* ── Live Men's Products from Database ─────────────────────────────── */}
+      {/* ── Live Database Products ─────────────────────────────── */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Men's — Database</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Database Products</span>
           <span className="text-[9px] font-sans text-[#EAE6E1]/30">Live · MongoDB</span>
           <button
             onClick={() => fetchDbProducts()}
@@ -682,7 +682,7 @@ function ProductsSection() {
                 ) : filteredDb.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[#EAE6E1]/30">
-                      {dbError ? 'Table not found.' : 'No Men\'s products yet. Click "Add Men\'s Product" to create one.'}
+                      {dbError ? 'Table not found.' : 'No products yet. Click "Add Product" to create one.'}
                     </td>
                   </tr>
                 ) : (
