@@ -19,6 +19,7 @@ import { usePreloader } from './features/PreloaderContext';
 import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
+import heroImage from './assets/hero section.png';
 
 
 export default function App() {
@@ -341,7 +342,7 @@ return (
           >
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
-              src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=2074&auto=format&fit=crop"
+              src={heroImage}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
