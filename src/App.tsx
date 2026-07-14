@@ -359,7 +359,7 @@ return (
 
             {/* Season label */}
             <p className="text-[10px] uppercase tracking-[0.4em] text-[#EAE6E1]/60 font-plex-mono mb-8">
-              SUMMER / SPRING 2026
+              AUTUMN / WINTER 2026
             </p>
 
             {/* ZEVRAE block: text + white line (line = same width as text) */}
@@ -409,24 +409,7 @@ return (
               </p>
 
               {/* Bottom row: links left + gold dot right */}
-              <div
-                className="hero-info-row"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.8rem', paddingBottom: '0.5rem' }}
-              >
-                <div className="flex gap-10 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/60">
-                  <button
-                    onClick={() => navTransition(() => navigate('/men'))}
-                    className="hover:text-[#EAE6E1] transition-colors duration-500"
-                  >
-                    View Collection
-                  </button>
-                </div>
-                {/* Gold dot */}
-                <span
-                  className="block rounded-full flex-shrink-0"
-                  style={{ width: '7px', height: '7px', background: '#C5A059' }}
-                />
-              </div>
+              
 
             </div>
 
