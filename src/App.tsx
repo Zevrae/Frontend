@@ -448,6 +448,7 @@ return (
 
 
       {/* Footer */}
+      {!location.pathname.startsWith('/admin') && (
       <footer className="bg-[#12100C] pt-[160px] pb-16 px-6 md:px-12 border-t border-[#C5A059]/10">
         <div className="max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8 mb-32">
@@ -491,6 +492,7 @@ return (
           </div>
         </div>
       </footer>
+      )}
 
       <CartDrawer />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />

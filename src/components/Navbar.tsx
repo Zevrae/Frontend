@@ -28,9 +28,6 @@ export const Navbar: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-6">
-          <button className="hover:text-gray-400 transition-colors">
-            <Search className="w-5 h-5" />
-          </button>
           <button 
             className="hover:text-gray-400 transition-colors relative"
             onClick={() => setIsCartOpen(true)}
