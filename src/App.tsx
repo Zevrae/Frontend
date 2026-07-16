@@ -482,17 +482,17 @@ return (
             
             <div className="col-span-1 md:col-span-2 md:col-start-7">
               <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Customer Care</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Shipping</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Returns</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Size Guide</a></li>
+                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">CUSTOMER CARE</a></li>
+                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">SHIPPING</a></li>
+                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">RETURNS</a></li>
+                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">SIZE GUIDE</a></li>
               </ul>
             </div>
 
             <div className="col-span-1 md:col-span-2">
               <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Legal</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Privacy</a></li>
+                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">LEGAL</a></li>
+                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">PRIVACY</a></li>
               </ul>
             </div>
           </div>
