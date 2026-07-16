@@ -800,9 +800,9 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+              <div className="pinterest-grid">
                 {((categoryFilter.startsWith('men') ? [...products, ...dbMenProducts] : allWomenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).map((item, i) => (
-                  <ProductCardSober key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
                 ))}
               </div>
             )}
@@ -1036,9 +1036,9 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
             </motion.h3>
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+            <div className="pinterest-grid">
               {allJewelleryProducts.filter(p => p.category === categoryFilter).map((item, i) => (
-                <ProductCardSober key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
               ))}
             </div>
           </div>
@@ -1075,9 +1075,9 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
             </motion.h3>
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+            <div className="pinterest-grid">
               {allJewelleryProducts.filter(p => p.category === categoryFilter).map((item, i) => (
-                <ProductCardSober key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
               ))}
             </div>
           </div>
