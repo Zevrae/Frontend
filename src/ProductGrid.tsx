@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import ProductCardSober from './components/ProductCardSober';
+import PinterestCard from './components/PinterestCard';
+import './components/PinterestCard.css';
 const products = [];
 const mensCategories = [
   {
@@ -744,9 +746,9 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
               >
                 FROM OUR CATALOG
               </motion.h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+              <div className="pinterest-grid">
                 {dbMenProducts.map((item, i) => (
-                  <ProductCardSober key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
                 ))}
               </div>
             </div>
@@ -790,6 +792,12 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                 <h3 className="text-xl md:text-2xl font-serif tracking-[0.2em] text-[#EAE6E1]/50 uppercase">
                   New Collection Coming Soon
                 </h3>
+              </div>
+            ) : categoryFilter.startsWith('men') ? (
+              <div className="pinterest-grid">
+                {((categoryFilter.startsWith('men') ? [...products, ...dbMenProducts] : allWomenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).map((item, i) => (
+                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
