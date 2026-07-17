@@ -1,5 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400&family=Inter+Tight:wght@900&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'Neue Haas Grotesk Text Pro';
+  src: url('./assets/Neue Haas Grotesk Text Pro Medium/Web Fonts/c27709ebd59dd06263af9ab951316c7d.woff2') format('woff2'),
+       url('./assets/Neue Haas Grotesk Text Pro Medium/Web Fonts/c27709ebd59dd06263af9ab951316c7d.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;

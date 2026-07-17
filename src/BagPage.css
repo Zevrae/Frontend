@@ -1,0 +1,382 @@
+/* ═══════════════════════════════════════════════════════════════
+   ZEVRAE — EDITORIAL BAG PAGE
+   Black background · Warm white #F2ECE6 · Archivo Expanded Bold
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Page container ── */
+.bag-page {
+  min-height: 100vh;
+  background: #000;
+  color: #F2ECE6;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  padding-top: clamp(7rem, 12vh, 10rem);
+  padding-bottom: clamp(4rem, 10vh, 8rem);
+  will-change: opacity, transform;
+}
+
+/* ── Hero heading ── */
+.bag-header {
+  margin-bottom: 0;
+}
+
+.bag-heading {
+  font-family: 'Neue Haas Grotesk Text Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-size: clamp(3.5rem, 11.5vw, 14rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #F2ECE6;
+  text-transform: uppercase;
+  margin: 0 0 clamp(1rem, 2vw, 1.8rem) 0;
+  padding: 0;
+  display: flex;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Outer clip — overflow:hidden hides letter until GSAP slides it up */
+.bag-heading-clip {
+  display: inline-block;
+  overflow: hidden;
+  /* Extra bottom padding so descenders / caps don't get shaved */
+  padding-bottom: 0.12em;
+  line-height: 1;
+  vertical-align: top;
+}
+
+/* Inner span — GSAP animates yPercent on this */
+.bag-heading-letter {
+  display: inline-block;
+  will-change: transform;
+  line-height: 1;
+}
+
+/* Heading divider — animated via JS */
+.bag-heading-divider {
+  width: 100%;
+  height: 2px;
+  background: rgba(242, 236, 230, 0.55);
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* ── Empty state ── */
+.bag-empty {
+  padding: clamp(3rem, 8vh, 7rem) 0;
+}
+
+.bag-empty-headline {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-stretch: 125%;
+  /* Scale down until it fits on one line */
+  font-size: clamp(1.4rem, 4.5vw, 5rem);
+  color: #F2ECE6;
+  line-height: 1;
+  margin: 0 0 0.3em 0;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.bag-empty-sub {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: clamp(1.2rem, 4vw, 4.5rem);
+  color: rgba(242, 236, 230, 0.35);
+  line-height: 1;
+  margin: 0 0 clamp(2rem, 5vw, 4rem) 0;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.bag-empty-cta {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 230, 0.5);
+  transition: color 0.5s ease;
+}
+
+.bag-empty-cta:hover {
+  color: #F2ECE6;
+}
+
+/* ── Item list ── */
+.bag-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each cart row */
+.bag-item {
+  position: relative;
+  display: grid;
+  /* name+price | image | controls */
+  grid-template-columns: 1fr auto auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0 clamp(2rem, 4vw, 5rem);
+  padding: clamp(2rem, 4vw, 3.5rem) 0;
+}
+
+.bag-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.bag-item-name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: clamp(1.1rem, 2.5vw, 2rem);
+  color: #F2ECE6;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.bag-item-size {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 230, 0.4);
+}
+
+.bag-item-price {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  color: #F2ECE6;
+  letter-spacing: -0.01em;
+  margin-top: 0.2rem;
+}
+
+/* Product image */
+.bag-item-image-wrap {
+  width: clamp(100px, 14vw, 200px);
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #111;
+}
+
+.bag-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1);
+  transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.bag-item-image-wrap:hover .bag-item-image {
+  transform: scale(1.03);
+}
+
+.bag-item-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #1a1a1a;
+}
+
+/* Controls — remove + quantity */
+.bag-item-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  flex-shrink: 0;
+  min-width: clamp(70px, 10vw, 120px);
+}
+
+/* Delete / Remove link */
+.bag-item-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.65rem, 1vw, 0.8rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 230, 0.6);
+  transition: color 0.4s ease, opacity 0.4s ease;
+  opacity: 0.6;
+  text-align: right;
+  line-height: 1;
+}
+
+.bag-item-remove:hover {
+  color: #F2ECE6;
+  opacity: 1;
+}
+
+/* Quantity selector */
+.bag-qty {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.8rem, 1.5vw, 1.4rem);
+}
+
+.bag-qty-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+  color: rgba(242, 236, 230, 0.6);
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.35s ease;
+  line-height: 1;
+}
+
+.bag-qty-btn:hover {
+  color: #F2ECE6;
+}
+
+.bag-qty-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  color: #F2ECE6;
+  min-width: 1.2em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin divider below each item */
+.bag-item-divider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(242, 236, 230, 0.12);
+  /* span full grid width */
+  grid-column: 1 / -1;
+}
+
+/* ── Checkout Footer ── */
+.bag-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-top: clamp(3rem, 6vw, 5rem);
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.bag-subtotal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bag-subtotal-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.65rem, 1vw, 0.8rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 230, 0.5);
+}
+
+.bag-subtotal-amount {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: clamp(1.5rem, 4vw, 3.5rem);
+  color: #F2ECE6;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.bag-subtotal-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+  letter-spacing: 0.04em;
+  color: rgba(242, 236, 230, 0.35);
+  margin: 0.3rem 0 0 0;
+  max-width: 340px;
+  line-height: 1.5;
+}
+
+/* Oversized CHECKOUT ↗ editorial CTA */
+.bag-checkout-cta {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: clamp(2.8rem, 7vw, 7rem);
+  color: #F2ECE6;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.1em;
+  transition: color 0.4s ease;
+  text-align: right;
+}
+
+.bag-checkout-cta:hover {
+  color: rgba(242, 236, 230, 0.85);
+}
+
+.bag-checkout-arrow {
+  display: inline-block;
+  transition: transform 0.45s cubic-bezier(0.25, 0.1, 0.25, 1);
+  font-style: normal;
+}
+
+.bag-checkout-cta:hover .bag-checkout-arrow {
+  transform: translateX(8px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .bag-item {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 1.2rem;
+  }
+
+  .bag-item-image-wrap {
+    grid-column: 1 / -1;
+    width: clamp(80px, 30vw, 140px);
+    margin: 0 auto;
+  }
+
+  .bag-item-controls {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .bag-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2.5rem;
+  }
+
+  .bag-checkout-cta {
+    font-size: clamp(2.2rem, 12vw, 5rem);
+  }
+}
