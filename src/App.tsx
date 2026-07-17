@@ -21,6 +21,7 @@ import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.png';
+import ComingSoon from './pages/comingsoon/ComingSoon';
 
 
 export default function App() {
@@ -449,7 +450,7 @@ return (
         <Route path="/jewellery/earrings" element={<ProductGrid categoryFilter="earrings" />} />
         <Route path="/accessories" element={<ProductGrid categoryFilter="accessories" />} />
         <Route path="/accessories/keychain" element={<ProductGrid categoryFilter="keychain" />} />
-        <Route path="/accessories/toys" element={<ProductGrid categoryFilter="toys" />} />
+        <Route path="/accessories/toys" element={<ComingSoon />} />
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/admin" element={<Admin />} />
@@ -458,6 +459,7 @@ return (
         <Route path="/admin/collections" element={<Admin />} />
         <Route path="/admin/categories" element={<Admin />} />
         <Route path="/admin/discounts" element={<Admin />} />
+        
       </Routes>
 
 

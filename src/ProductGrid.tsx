@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ProductCardSober from './components/ProductCardSober';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
+import ComingSoon from './pages/comingsoon/ComingSoon';
 const products = [];
 const mensCategories = [
   {
@@ -447,17 +448,7 @@ const jewelleryProducts = [
     sizes: ["Universal"],
     frontImg: "https://i.ibb.co/pv2rXCBc/Star-Gold-Platted-Bracelte.png",
   },
-  { 
-    id: 't1', 
-    name: 'Cute Sun Moon Plush Doll', 
-    price: 899,
-    originalPrice: 1665,
-    discount: "46% OFF",
-    label: 'Toys Premium', 
-    category: 'toys',
-    sizes: ['Universal'],
-    frontImg: 'https://i.ibb.co/SDxn1n3c/Cute-Sun-Moon-Plush-Doll.png', 
-  },
+
   {
     id: 'p1',
     name: "Bohemian Love Metal Waist Chain",
@@ -917,16 +908,22 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                 >
                   <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
                     
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className={`absolute inset-0 w-full h-full ${'fit' in item && item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
-                      referrerPolicy="no-referrer"
-                    />
+                    {item.id === 'toys' ? (
+                      <div className="absolute inset-0 scale-[0.55] origin-center pointer-events-none">
+                        <ComingSoon />
+                      </div>
+                    ) : (
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className={`absolute inset-0 w-full h-full ${'fit' in item && item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
                     
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">
+                    {item.id !== 'toys' && <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />}
+                    <div className="absolute inset-0 flex items-end justify-center pb-4">
+                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase ${item.id === 'toys' ? 'text-[#FFE55A]' : 'text-[#EAE6E1]'}`}>
                         {item.name}
                       </h3>
                     </div>
