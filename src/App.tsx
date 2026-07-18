@@ -23,6 +23,7 @@ import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.png';
 import ComingSoon from './pages/comingsoon/ComingSoon';
+import VerifyEmail from './pages/VerifyEmail';
 
 
 export default function App() {
@@ -461,6 +462,7 @@ return (
         <Route path="/admin/collections" element={<Admin />} />
         <Route path="/admin/categories" element={<Admin />} />
         <Route path="/admin/discounts" element={<Admin />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
         
       </Routes>
 
