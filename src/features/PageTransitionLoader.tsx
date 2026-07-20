@@ -140,6 +140,12 @@ export function PageTransitionLoader() {
             onStart: () => {
               // Signal hero to animate in if navigating to home
               window.dispatchEvent(new CustomEvent("hero-reveal"));
+              // Generic signal: the curtain is now peeling away and the page
+              // beneath is becoming visible. Any page can listen for this to
+              // time its own entrance animation off actual visibility instead
+              // of its own mount time (which happens earlier, while still
+              // fully hidden behind the curtain).
+              window.dispatchEvent(new CustomEvent("zevrae:page-reveal"));
             },
           },
           0.45,

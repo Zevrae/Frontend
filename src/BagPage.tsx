@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { supabase } from './supabaseClient';
+import { usePageTransition } from './features/PageTransitionContext';
 import './BagPage.css';
 
 // "YOUR BAG" — only the 7 letter chars (space rendered separately)
@@ -15,18 +16,45 @@ const BAG_CHAR_ORDER = [3, 0, 6, 1, 4, 2, 5]; // R,Y,G,O,B,U,A
 export default function BagPage() {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
+  const { phase } = usePageTransition();
   const navigate = useNavigate();
   const headerRef = useRef<HTMLElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<HTMLUListElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
+  const emptyWrapRef = useRef<HTMLDivElement>(null);
+  const emptyHeadlineRef = useRef<HTMLParagraphElement>(null);
+  const emptySubRef = useRef<HTMLParagraphElement>(null);
   const [mounted, setMounted] = useState(false);
+  const isEmpty = items.length === 0;
 
-  // Page fade-up entrance — short delay so React has painted the frame
+  // Page fade-up entrance.
+  // If phase is "idle" there's no curtain covering us — this is a cold load
+  // or a browser back/forward nav (which skips the curtain entirely) — so we
+  // reveal almost immediately, same as before.
+  // If a transition IS active, we mounted while still fully hidden behind the
+  // gold curtain (navigation fires at the "holding" phase, before the curtain
+  // has peeled back at all). Starting our timers right then means they burn
+  // away unseen and we only catch the tail once the curtain clears. Instead,
+  // wait for the curtain to actually broadcast that it's revealing the page.
+  const revealStarted = useRef(false);
   useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 80);
-    return () => clearTimeout(timer);
-  }, []);
+    if (revealStarted.current) return;
+
+    if (phase === 'idle') {
+      revealStarted.current = true;
+      const timer = setTimeout(() => setMounted(true), 80);
+      return () => clearTimeout(timer);
+    }
+
+    const handleReveal = () => {
+      if (revealStarted.current) return;
+      revealStarted.current = true;
+      setMounted(true);
+    };
+    window.addEventListener('zevrae:page-reveal', handleReveal);
+    return () => window.removeEventListener('zevrae:page-reveal', handleReveal);
+  }, [phase]);
 
   // GSAP letter animation — only starts AFTER page fade-in has begun
   useEffect(() => {
@@ -127,6 +155,59 @@ export default function BagPage() {
   // whole cascade every time someone adds/removes an item, which fights the
   // "load only" behavior we want
 
+  // Empty-state text fit-to-width — the heading naturally fills most of the
+  // line because its clamp() ceiling is huge (16rem). The quote lines below
+  // it were capped much lower (5rem / 4.5rem), so they stall out well short
+  // of the line instead of actually filling it. A fixed clamp() can't fix
+  // this properly since the right font-size depends on the exact sentence
+  // length — so instead we measure the rendered width and scale font-size to
+  // hit a target fill ratio directly, the same way the reference design does.
+  useEffect(() => {
+    if (!isEmpty) return;
+
+    const fitLine = (
+      el: HTMLElement | null,
+      containerWidth: number,
+      fillRatio: number,
+      min: number,
+      max: number,
+    ) => {
+      if (!el) return;
+      el.style.fontSize = ''; // reset to CSS default before measuring
+      const naturalWidth = el.getBoundingClientRect().width;
+      const currentSize = parseFloat(getComputedStyle(el).fontSize);
+      if (!naturalWidth || !currentSize) return;
+      const target = containerWidth * fillRatio;
+      const next = Math.min(max, Math.max(min, currentSize * (target / naturalWidth)));
+      el.style.fontSize = `${next}px`;
+    };
+
+    const runFit = () => {
+      const containerWidth = emptyWrapRef.current?.clientWidth ?? window.innerWidth;
+      fitLine(emptyHeadlineRef.current, containerWidth, 0.85, 22, 160);
+      fitLine(emptySubRef.current, containerWidth, 0.85, 20, 150);
+    };
+
+    // Measure only once the real font has actually loaded — measuring against
+    // a fallback font's metrics would throw the fit off, sometimes badly.
+    if ('fonts' in document) {
+      document.fonts.ready.then(runFit);
+    } else {
+      runFit();
+    }
+
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(runFit, 100);
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [isEmpty]);
+
   const handleCheckout = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -142,8 +223,6 @@ export default function BagPage() {
       currency: 'INR',
       maximumFractionDigits: 0,
     }).format(price);
-
-  const isEmpty = items.length === 0;
 
   return (
     <div
@@ -173,9 +252,9 @@ export default function BagPage() {
 
       {/* ── Empty State ── */}
       {isEmpty ? (
-        <div className="bag-empty">
-          <p className="bag-empty-headline">Some choices disappoint</p>
-          <p className="bag-empty-sub">Your's doesn't have to.</p>
+        <div className="bag-empty" ref={emptyWrapRef}>
+          <p className="bag-empty-headline" ref={emptyHeadlineRef}>Some choices leaves</p>
+          <p className="bag-empty-sub" ref={emptySubRef}>The right one stays.</p>
           <button className="bag-empty-cta" onClick={() => navigate('/')}>
             Continue Shopping ↗
           </button>

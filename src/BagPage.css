@@ -81,8 +81,10 @@
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
   font-stretch: 125%;
-  /* Scale down until it fits on one line */
-  font-size: clamp(1.4rem, 4.5vw, 5rem);
+  /* This is just the pre-JS fallback — BagPage.tsx measures the rendered
+     width and overrides font-size via inline style to actually fill the
+     line, since the right size depends on the exact sentence length. */
+  font-size: clamp(1.4rem, 8vw, 9rem);
   color: #F2ECE6;
   line-height: 1;
   margin: 0 0 0.3em 0;
@@ -94,7 +96,7 @@
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
   font-stretch: 125%;
-  font-size: clamp(1.2rem, 4vw, 4.5rem);
+  font-size: clamp(1.2rem, 7vw, 8rem);
   color: rgba(242, 236, 230, 0.35);
   line-height: 1;
   margin: 0 0 clamp(2rem, 5vw, 4rem) 0;
