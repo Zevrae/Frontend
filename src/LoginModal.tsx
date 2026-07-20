@@ -26,7 +26,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     if (!isOpen) {
       setErrorMessage('');
       setSuccessMessage('');
-      setFormData({ name: '', mobile: '', email: '', password: '' });
+      setFormData({ name: '', phone: '', email: '', password: '' });
       setMode('signIn');
     }
   }, [isOpen]);
@@ -65,7 +65,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         setSuccessMessage(
           'Registration successful. Please check your email to verify your account before logging in.'
         );
-        setFormData({ name: '', mobile: '', email: '', password: '' });
+        setFormData({ name: '', phone: '', email: '', password: '' });
         setTimeout(() => {
           setSuccessMessage('');
           setMode('signIn');

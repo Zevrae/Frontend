@@ -545,7 +545,7 @@ function ProductsSection() {
     setSaving(true);
 
     try {
-      const payload = { ...form, images: form.images };
+      const payload = { ...form, images: form.images } as any;
 
       let productId = editingId;
       if (editingId) {

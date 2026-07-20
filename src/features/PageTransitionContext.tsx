@@ -22,7 +22,7 @@ const PageTransitionContext = createContext<PageTransitionState | null>(null);
 
 export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<TransitionPhase>("idle");
-  const callbackRef = useRef<(() => void) | undefined>();
+  const callbackRef = useRef<(() => void) | undefined>(undefined);
   const busyRef = useRef(false);
 
   const trigger = useCallback((callback?: () => void) => {
