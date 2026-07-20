@@ -5,6 +5,7 @@ import ProductCardSober from './components/ProductCardSober';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import ComingSoon from './pages/comingsoon/ComingSoon';
+import stuffedAnimalImg from './assets/stuffed animal.jpg';
 import { productsApi } from './api/products';
 const products = [];
 const mensCategories = [
@@ -79,8 +80,8 @@ const accessoriesCategories = [
   {
     id: 'toys',
     name: 'TOYS',
-    image: 'https://i.ibb.co/SDxn1n3c/Cute-Sun-Moon-Plush-Doll.png',
-    fit: 'contain',
+    image: stuffedAnimalImg,
+    fit: 'cover',
     path: '/accessories/toys'
   }
 ];
@@ -894,7 +895,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
             </motion.h3>
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 lg:gap-x-8 gap-y-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 max-w-2xl mx-auto">
               {accessoriesCategories.map((item, i) => (
                 <motion.div 
                   key={item.id}
@@ -906,23 +907,14 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    
-                    {item.id === 'toys' ? (
-                      <div className="absolute inset-0 scale-[0.55] origin-center pointer-events-none">
-                        <ComingSoon />
-                      </div>
-                    ) : (
-                      <img 
-                        src={item.image} 
-                        alt={item.name} 
-                        className={`absolute inset-0 w-full h-full ${'fit' in item && item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                    
-                    {item.id !== 'toys' && <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />}
-                    <div className="absolute inset-0 flex items-end justify-center pb-4">
-                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase ${item.id === 'toys' ? 'text-[#FFE55A]' : 'text-[#EAE6E1]'}`}>
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                    />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[#FFE55A]' : 'text-[#EAE6E1]'}`}>
                         {item.name}
                       </h3>
                     </div>
@@ -964,7 +956,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
             </motion.h3>
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 lg:gap-x-8 gap-y-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {jewelleryCategories.map((item, i) => (
                 <motion.div 
                   key={item.id}
@@ -990,7 +982,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     {/* Centered Text */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">
+                      <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase text-center w-full px-2">
                         {item.name}
                       </h3>
                     </div>
