@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -27,7 +27,14 @@ export default function BagPage() {
   const emptyHeadlineRef = useRef<HTMLParagraphElement>(null);
   const emptySubRef = useRef<HTMLParagraphElement>(null);
   const [mounted, setMounted] = useState(false);
+  const location = useLocation();
   const isEmpty = items.length === 0;
+
+  // Reset animations if we navigate to the bag page again while already on it
+  useEffect(() => {
+    setMounted(false);
+    revealStarted.current = false;
+  }, [location.key]);
 
   // Page fade-up entrance.
   // If phase is "idle" there's no curtain covering us — this is a cold load
@@ -44,8 +51,12 @@ export default function BagPage() {
 
     if (phase === 'idle') {
       revealStarted.current = true;
-      const timer = setTimeout(() => setMounted(true), 80);
-      return () => clearTimeout(timer);
+      // Increased from 80ms to 150ms to ensure GSAP has the DOM ready on hard reload
+      const timer = setTimeout(() => setMounted(true), 150);
+      return () => {
+        clearTimeout(timer);
+        revealStarted.current = false;
+      };
     }
 
     const handleReveal = () => {
@@ -54,7 +65,10 @@ export default function BagPage() {
       setMounted(true);
     };
     window.addEventListener('zevrae:page-reveal', handleReveal);
-    return () => window.removeEventListener('zevrae:page-reveal', handleReveal);
+    return () => {
+      window.removeEventListener('zevrae:page-reveal', handleReveal);
+      revealStarted.current = false;
+    };
   }, [phase]);
 
   // GSAP letter animation — only starts AFTER page fade-in has begun
@@ -152,9 +166,30 @@ export default function BagPage() {
     }
 
     return () => { tl.kill(); };
-  }, [mounted]); // intentionally NOT depending on items.length — that would replay the
-  // whole cascade every time someone adds/removes an item, which fights the
-  // "load only" behavior we want
+  }, [mounted]); // intentionally NOT depending on items.length
+
+  // GSAP animation for Empty State quote and button
+  useEffect(() => {
+    if (!mounted || !isEmpty || !emptyWrapRef.current) return;
+
+    const headline = emptyHeadlineRef.current;
+    const sub = emptySubRef.current;
+    const cta = emptyWrapRef.current.querySelector('.bag-empty-cta');
+
+    if (!headline || !sub || !cta) return;
+
+    // Start them hidden below their clipping containers
+    gsap.set([headline, sub, cta], { yPercent: 120 });
+
+    // Timeline starts after the 'YOUR BAG' header animation finishes (which takes ~1.5s total)
+    const tl = gsap.timeline({ delay: 1.2 });
+
+    tl.to(headline, { yPercent: 0, duration: 0.9, ease: 'power4.out' })
+      .to(sub, { yPercent: 0, duration: 0.9, ease: 'power4.out' }, '-=0.7')
+      .to(cta, { yPercent: 0, duration: 0.9, ease: 'power4.out' }, '-=0.7');
+
+    return () => { tl.kill(); };
+  }, [mounted, isEmpty]);
 
   // Empty-state text fit-to-width — the heading naturally fills most of the
   // line because its clamp() ceiling is huge (16rem). The quote lines below
@@ -253,11 +288,17 @@ export default function BagPage() {
       {/* ── Empty State ── */}
       {isEmpty ? (
         <div className="bag-empty" ref={emptyWrapRef}>
-          <p className="bag-empty-headline" ref={emptyHeadlineRef}>Some choices leaves</p>
-          <p className="bag-empty-sub" ref={emptySubRef}>The right one stays.</p>
-          <button className="bag-empty-cta" onClick={() => navigate('/')}>
-            Continue Shopping ↗
-          </button>
+          <div style={{ overflow: 'hidden' }}>
+            <p className="bag-empty-headline" ref={emptyHeadlineRef} style={{ willChange: 'transform' }}>Some choices leaves</p>
+          </div>
+          <div style={{ overflow: 'hidden' }}>
+            <p className="bag-empty-sub" ref={emptySubRef} style={{ willChange: 'transform' }}>The right one stays.</p>
+          </div>
+          <div style={{ overflow: 'hidden', marginTop: 'clamp(2rem, 5vh, 4rem)' }}>
+            <button className="bag-empty-cta" onClick={() => navigate('/')} style={{ willChange: 'transform' }}>
+              Continue Shopping ↗
+            </button>
+          </div>
         </div>
       ) : (
         <>

@@ -21,7 +21,7 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api': {
-          target: 'http://localhost:5000',
+          target: 'https://backend-rdn6.onrender.com',
           changeOrigin: true,
           secure: false,
           timeout: 120000,

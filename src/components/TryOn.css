@@ -1,0 +1,19 @@
+/* Override SpecularButton defaults for the TryOn premium text action */
+.specular-button.tryon-specular {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px !important;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  /* Remove filled-button visual weight */
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 6px 4px !important;
+  border-radius: 4px !important;
+  /* Keep transition smooth */
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.specular-button.tryon-specular:hover {
+  opacity: 0.8;
+}

@@ -46,8 +46,22 @@ const mergeDisplayFields = (backendItems: Cart['items'], previous: CartItem[]): 
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('zevrae_guest_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Persist guest cart to local storage whenever it changes
+  useEffect(() => {
+    if (!token) {
+      localStorage.setItem('zevrae_guest_cart', JSON.stringify(items));
+    }
+  }, [items, token]);
 
   // Hydrate from the backend whenever the user logs in. Guests keep a
   // purely local, in-memory cart (there's nothing to hydrate from, and

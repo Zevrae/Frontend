@@ -6,6 +6,8 @@ import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { productsApi } from './api/products';
+import TryOn from './components/TryOn';
+import TryOnModal from './components/TryOnModal';
 
 type ProductDetail = {
   id: string;
@@ -111,6 +113,7 @@ export default function ProductPage() {
   const [imgLoaded, setImgLoaded] = useState(true);
   const [added, setAdded] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>([]);
+  const [tryOnOpen, setTryOnOpen] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
 
   const product = (location.state as { product?: ProductDetail } | null)?.product;
@@ -350,10 +353,13 @@ export default function ProductPage() {
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 className="space-y-5"
               >
-                {/* Category label */}
-                <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[#C8A96A]">
-                  {product.label || "Men's Collection"}
-                </p>
+                {/* Category label + TryOn row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0' }}>
+                  <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[#C8A96A]" style={{ margin: 0 }}>
+                    {product.label || "Men's Collection"}
+                  </p>
+                  <TryOn onClick={() => setTryOnOpen(true)} />
+                </div>
 
                 <h1
                   className="font-archivo font-extrabold uppercase text-[#EAE6E1] leading-[0.9] tracking-[-0.01em]"
@@ -656,6 +662,9 @@ export default function ProductPage() {
         {/* Footer spacer */}
         <div className="h-32" />
       </main>
+
+      {/* Try On Modal */}
+      <TryOnModal isOpen={tryOnOpen} onClose={() => setTryOnOpen(false)} />
     </div>
   );
 }
