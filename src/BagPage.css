@@ -36,8 +36,8 @@
   color: #F2ECE6;
   text-transform: uppercase;
   text-align: center;
-  margin: 0 0 clamp(1rem, 2vw, 1.8rem) 0;
-  padding: 0.4em 0;
+  margin: 0;
+  padding: 0;
   white-space: nowrap;
 }
 
@@ -52,8 +52,8 @@
   display: inline-block;
   overflow: hidden;
   line-height: 1;
-  /* Generous vertical padding so tall Archivo caps don't get shaved */
-  padding-bottom: 0.18em;
+  /* Reduced so line sits tight against the caps */
+  padding-bottom: 0.02em;
   vertical-align: top;
 }
 
@@ -69,12 +69,12 @@
   width: 100%;
   height: 2px;
   background: rgba(242, 236, 230, 0.55);
-  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
 }
 
 /* ── Empty state ── */
 .bag-empty {
-  padding: clamp(3rem, 8vh, 7rem) 0;
+  padding: clamp(0.5rem, 2vh, 1.5rem) 0;
 }
 
 .bag-empty-headline {
