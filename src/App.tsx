@@ -26,6 +26,7 @@ import ComingSoon from './pages/comingsoon/ComingSoon';
 import VerifyEmail from './pages/VerifyEmail';
 import CustomerCare from './pages/customerCare';
 import SizeGuide from './pages/sizeGuide';
+import ShippingReturns from './pages/shippingReturns';
 
 
 export default function App() {
@@ -431,6 +432,7 @@ return (
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
+        <Route path="/shipping-returns" element={<ShippingReturns />} />
         
       </Routes>
 
@@ -457,8 +459,8 @@ return (
             <div className="col-span-1 md:col-span-2 md:col-start-7">
               <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
                 <li><a href="/customer-care" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/customer-care')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">CUSTOMER CARE</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">SHIPPING</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">RETURNS</a></li>
+                <li><a href="/shipping-returns" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/shipping-returns')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">SHIPPING</a></li>
+                <li><a href="/shipping-returns" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/shipping-returns')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">RETURNS</a></li>
                 <li><a href="/size-guide" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/size-guide')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">SIZE GUIDE</a></li>
               </ul>
             </div>
