@@ -150,10 +150,10 @@
   color: rgba(234, 230, 225, 0.45);
 }
 
-/* ── Discount Badge (subtle, bottom-right of image) ── */
+/* ── Discount Badge (subtle, top-right of image) ── */
 .product-card-sober__discount {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   right: 10px;
   z-index: 4;
   background: rgba(197, 160, 89, 0.9);

@@ -278,8 +278,8 @@ export default function ProductPage() {
               >
                 {/* Discount badge */}
                 {product.discount && (
-                  <div className="absolute top-5 left-5 z-10 px-3 py-1.5 bg-[#C8A96A] text-[#12100C] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
-                    {product.discount}
+                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[#C8A96A] text-[#12100C] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
+                    {product.discount}% OFF
                   </div>
                 )}
 

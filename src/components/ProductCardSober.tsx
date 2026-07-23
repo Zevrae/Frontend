@@ -171,7 +171,7 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
         {/* Subtle discount badge */}
         {product.discount && (
           <div className="product-card-sober__discount">
-            <span className="product-card-sober__discount-text">{product.discount}</span>
+            <span className="product-card-sober__discount-text">{product.discount}% OFF</span>
           </div>
         )}
       </div>
