@@ -84,8 +84,8 @@ export default function CheckoutPage() {
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   const subtotal = cartTotal;
-  const shipping = subtotal > 1000 ? 0 : 99; // Standard 99 INR shipping, free over 1000
-  const total = subtotal + shipping;
+  const shipping = subtotal > 1000 ? 0 : 19; // 19 INR shipping, free over 1000
+  const grandTotal = subtotal + shipping;
 
   const buildShippingAddress = () => ({
     line1: shippingData.address,
@@ -246,9 +246,6 @@ export default function CheckoutPage() {
           <ChevronLeft size={16} className="mr-2" />
           {step === 4 ? "Back to Home" : "Back"}
         </button>
-        <h1 className="text-2xl md:text-3xl font-archivo font-bold tracking-[0.3em] uppercase text-center flex-1">
-          ZEVRAE
-        </h1>
         <div className="w-20" /> {/* Spacer */}
       </div>
 
@@ -488,7 +485,7 @@ export default function CheckoutPage() {
 
                                 {method.id === 'COD' && (
                                   <p className="text-[12px] font-mono text-[#EAE6E1]/70">
-                                    Pay {formatVal(total)} with cash or UPI at the time of delivery.
+                                    Pay {formatVal(grandTotal)} with cash or UPI at the time of delivery.
                                   </p>
                                 )}
                               </div>
@@ -591,7 +588,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between items-center text-[14px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] pt-4 border-t border-[#C5A059]/20 mt-4">
                   <span>Total</span>
-                  <span className="font-mono">{formatVal(total)}</span>
+                  <span className="font-mono">{formatVal(grandTotal)}</span>
                 </div>
               </div>
             </div>
@@ -601,4 +598,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

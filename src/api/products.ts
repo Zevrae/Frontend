@@ -6,14 +6,16 @@ export interface Product {
   description: string;
   category: string;
   subcategory: string;
-  price: number;
-  compare_price: number;
+  price: number; // stored as smallest currency unit (integer)
+  compare_price: number; // stored as smallest currency unit (integer)
   images: string[];
   sizes: string[];
   status: 'active' | 'inactive' | 'draft' | 'archived';
-  collections: string[];
+  collections: string[]; // multiple collection IDs
   created_at: string;
   updated_at: string;
+  is_deleted?: boolean; // optional, since excluded by default queries
+  deleted_at?: string | null;
 }
 
 export interface ProductListParams {
@@ -21,7 +23,7 @@ export interface ProductListParams {
   limit?: number;
   category?: string;
   subcategory?: string;
-  collection?: string;
+  collection?: string; // single collection filter
   status?: string;
   search?: string;
   sort?: string;
