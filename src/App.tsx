@@ -26,12 +26,15 @@ import ComingSoon from './pages/comingsoon/ComingSoon';
 import VerifyEmail from './pages/VerifyEmail';
 import CustomerCare from './pages/customerCare';
 import SizeGuide from './pages/sizeGuide';
+import ShippingReturns from './pages/shippingReturns';
 
 
 export default function App() {
   const { isLoginModalOpen, setIsLoginModalOpen } = useAuthModal();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isClothingOpen, setIsClothingOpen] = useState(false);
+  const clothingDropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { scrollY } = useScroll();
@@ -68,6 +71,16 @@ export default function App() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (clothingDropdownRef.current && !clothingDropdownRef.current.contains(event.target as Node)) {
+        setIsClothingOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // ── Hero GSAP: hide letters immediately, animate when preloader reveals ──
@@ -188,10 +201,46 @@ return (
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
-            <button onClick={() => navTransition(() => navigate('/men'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-              CLOTHING
-              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-            </button>
+            <div className="relative" ref={clothingDropdownRef}>
+              <button 
+                onClick={() => setIsClothingOpen(!isClothingOpen)} 
+                className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700"
+              >
+                CLOTHING
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+              </button>
+
+              <AnimatePresence>
+                {isClothingOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                  >
+                    <button 
+                      onClick={() => {
+                        setIsClothingOpen(false);
+                        navTransition(() => navigate('/men'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                    >
+                      MEN
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setIsClothingOpen(false);
+                        navTransition(() => navigate('/women'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                    >
+                      WOMEN
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <button onClick={() => navTransition(() => navigate('/jewellery'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               JEWELLERY
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
@@ -230,7 +279,7 @@ return (
                 <button
                   type="button"
                   className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[#EAE6E1]"
-                  onClick={() => {}}
+                  onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
                 >
                   <ShinyText
                     text="AI WARDROBE"
@@ -431,7 +480,10 @@ return (
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
+        <Route path="/shipping-returns" element={<ShippingReturns />} />
         
+        <Route path="/ai-wardrobe" element={<ComingSoon />} />
+
       </Routes>
 
 
@@ -457,8 +509,8 @@ return (
             <div className="col-span-1 md:col-span-2 md:col-start-7">
               <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
                 <li><a href="/customer-care" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/customer-care')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">CUSTOMER CARE</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">SHIPPING</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">RETURNS</a></li>
+                <li><a href="/shipping-returns" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/shipping-returns')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">SHIPPING</a></li>
+                <li><a href="/shipping-returns" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/shipping-returns')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">RETURNS</a></li>
                 <li><a href="/size-guide" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/size-guide')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">SIZE GUIDE</a></li>
               </ul>
             </div>

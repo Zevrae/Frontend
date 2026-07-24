@@ -104,6 +104,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
             gender: p.category?.toLowerCase() || '',
             type: p.subcategory?.toLowerCase() === 'lowers' ? 'lower' : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')),
             sizes: p.sizes,
+            discount: p.discount,
             description: p.description,
             frontImg: p.images?.[0] || '',
             backImg: p.images?.[1] || p.images?.[0] || '',

@@ -108,6 +108,7 @@ export default function ProductPage() {
   const { setIsLoginModalOpen } = useAuthModal();
   const { token } = useAuth();
   const [selectedSize, setSelectedSize] = useState('');
+  const [sizeError, setSizeError] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(true);
@@ -133,6 +134,7 @@ export default function ProductPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setSelectedSize('');
+    setSizeError(false);
     setQuantity(1);
     setActiveImg(0);
     setAdded(false);
@@ -232,7 +234,7 @@ export default function ProductPage() {
   }
 
   const productDescription = buildDescription(product);
-  const sizes = product.sizes?.length ? product.sizes : DEFAULT_SIZES;
+  const availableSizes = product.sizes?.length ? product.sizes : [];
 
   return (
     <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans selection:bg-[#C8A96A]/30 selection:text-[#EAE6E1]">
@@ -276,8 +278,8 @@ export default function ProductPage() {
               >
                 {/* Discount badge */}
                 {product.discount && (
-                  <div className="absolute top-5 left-5 z-10 px-3 py-1.5 bg-[#C8A96A] text-[#12100C] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
-                    {product.discount}
+                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[#C8A96A] text-[#12100C] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
+                    {product.discount}% OFF
                   </div>
                 )}
 
@@ -405,23 +407,46 @@ export default function ProductPage() {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
-                  {sizes.map((size) => (
+                  {DEFAULT_SIZES.map((size) => {
+                    const isAvailable = availableSizes.includes(size);
+                    return (
                     <button
                       key={size}
                       id={`size-${size}`}
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() => {
+                        if (isAvailable) {
+                          setSelectedSize(size);
+                          setSizeError(false);
+                        } else {
+                          setSizeError(true);
+                        }
+                      }}
                       className={`min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
                         selectedSize === size
                           ? 'border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/8'
-                          : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
+                          : !isAvailable 
+                            ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/20 cursor-not-allowed opacity-50'
+                            : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
                       }`}
                     >
                       {size}
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
                 <AnimatePresence>
-                  {!selectedSize && (
+                  {sizeError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-[10px] tracking-[0.2em] font-plex-mono text-red-500"
+                    >
+                      Size not available
+                    </motion.p>
+                  )}
+                  {!selectedSize && !sizeError && (
                     <motion.p
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}

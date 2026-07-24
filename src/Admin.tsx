@@ -17,6 +17,35 @@ import { ordersApi, Order } from './api/orders';
 
 type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts';
 
+<<<<<<< HEAD
+=======
+// ─── Mock / Seed Data ─────────────────────────────────────────────────────────
+
+const mockProducts = [
+  { id: 'mp1', name: 'Oversized Graphic Tee', category: 'Men', image: '', price: 799, stock: 42, status: 'active' },
+  { id: 'mp2', name: 'Relaxed Linen Shirt', category: 'Men', image: '', price: 1299, stock: 18, status: 'active' },
+  { id: 'mp3', name: 'Drop-Shoulder Hoodie', category: 'Men', image: '', price: 1799, stock: 9, status: 'draft' },
+];
+
+const mockCollections = [
+  { id: 'col1', name: 'Summer Drop 2026', slug: 'summer-2026', status: 'active', featured: true, products: 8 },
+  { id: 'col2', name: 'Autumn / Winter Edit', slug: 'aw26', status: 'draft', featured: false, products: 3 },
+  { id: 'col3', name: 'Essentials', slug: 'essentials', status: 'active', featured: false, products: 12 },
+];
+
+const mockCategories = [
+  { id: 'cat1', name: 'Men', slug: 'men', subcategories: ['T-Shirts', 'Lowers', 'Outerwear', 'Accessories'], products: 24, status: 'active' },
+  { id: 'cat2', name: 'Women', slug: 'women', subcategories: ['Tops', 'Bottoms', 'Dresses', 'Accessories'], products: 18, status: 'active' },
+  { id: 'cat3', name: 'Unisex', slug: 'unisex', subcategories: ['Hoodies', 'Tees', 'Caps'], products: 6, status: 'active' },
+];
+
+const mockDiscounts = [
+  { id: 'd1', code: 'ZEVRAE10', type: 'Percentage', value: 10, limit: 500, uses: 34, expiry: '2026-12-31', status: 'active' },
+  { id: 'd2', code: 'FLAT200', type: 'Fixed Amount', value: 200, limit: 100, uses: 100, expiry: '2026-06-30', status: 'expired' },
+  { id: 'd3', code: 'WELCOME15', type: 'Percentage', value: 15, limit: 1000, uses: 12, expiry: '2026-12-31', status: 'active' },
+];
+
+>>>>>>> db684a89dbe83dc233d7059cf18d115c17f3e26c
 const formatVal = (val: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
@@ -341,8 +370,15 @@ interface DbProduct {
   subcategory: string;
   price: number;
   compare_price: number | null;
+<<<<<<< HEAD
   stock_quantity: StockItem[]; 
   in_stock: boolean;
+=======
+  discount: number | null;
+  in_stock: boolean;
+  sizes: string[];
+  size_stock: Record<string, number>;
+>>>>>>> db684a89dbe83dc233d7059cf18d115c17f3e26c
   images: string[];
   status: string;
   is_deleted?: boolean;
@@ -583,6 +619,22 @@ function ProductsSection() {
                       </td>
                       <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{p.subcategory}</td>
                       <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">{formatVal(p.price)}</td>
+                      <td className="p-4">
+                        {p.discount ? (
+                          <span className="px-2 py-0.5 text-[9px] font-mono font-semibold rounded-sm bg-emerald-900/20 text-emerald-400 border border-emerald-900/40">
+                            -{p.discount}%
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-[#EAE6E1]/20 font-sans">—</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        {p.in_stock !== false ? (
+                          <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border bg-emerald-900/25 text-emerald-400 border-emerald-900/40">In Stock</span>
+                        ) : (
+                          <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border bg-red-900/20 text-red-400 border-red-900/30">Out of Stock</span>
+                        )}
+                      </td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
                           {(p.stock_quantity || []).map(sq => (
@@ -1274,6 +1326,12 @@ export default function Admin() {
               className="md:hidden text-[#EAE6E1]/50 hover:text-[#EAE6E1] transition-colors"
             >
               <Package2 size={20} />
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.15em] font-sans bg-[#12100C] border border-[#EAE6E1]/15 text-[#EAE6E1]/70 hover:text-[#C5A059] hover:border-[#C5A059]/40 transition-colors rounded-sm"
+            >
+              Back to Site
             </button>
             <div>
               <h1 className="text-[13px] uppercase tracking-[0.25em] font-sans text-[#EAE6E1]">
