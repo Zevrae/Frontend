@@ -279,7 +279,7 @@ return (
                 <button
                   type="button"
                   className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[#EAE6E1]"
-                  onClick={() => {}}
+                  onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
                 >
                   <ShinyText
                     text="AI WARDROBE"
@@ -482,6 +482,8 @@ return (
         <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/shipping-returns" element={<ShippingReturns />} />
         
+        <Route path="/ai-wardrobe" element={<ComingSoon />} />
+
       </Routes>
 
 
