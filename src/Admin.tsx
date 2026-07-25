@@ -17,8 +17,6 @@ import { ordersApi, Order } from './api/orders';
 
 type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts';
 
-<<<<<<< HEAD
-=======
 // ─── Mock / Seed Data ─────────────────────────────────────────────────────────
 
 const mockProducts = [
@@ -45,7 +43,6 @@ const mockDiscounts = [
   { id: 'd3', code: 'WELCOME15', type: 'Percentage', value: 15, limit: 1000, uses: 12, expiry: '2026-12-31', status: 'active' },
 ];
 
->>>>>>> db684a89dbe83dc233d7059cf18d115c17f3e26c
 const formatVal = (val: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
