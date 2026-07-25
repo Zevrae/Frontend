@@ -12,13 +12,17 @@ import keychainImg from "./assets/static/KEYCHAIN.png";
 import earringsImg from "./assets/static/EARRINGS.png";
 import pendantImg from "./assets/static/PENDANT.png";
 import braceletImg from "./assets/static/BRACELET.png";
+import menTshirts from "./assets/static/menTshirts.png";
+import womenTops from "./assets/static/womenTops.png";
 const mensCategories = [
-  {
+  
+    {
     id: 'tshirts',
     name: 'TSHIRTS',
-    image: 'https://i.ibb.co/PZvccJ85/THE-WHITE-MONSTER-FRONT.png',
+    image: menTshirts,
     path: '/men/tshirts'
-  },
+}
+  ,
   {
     id: 'lowers',
     name: 'LOWERS',
@@ -30,9 +34,9 @@ const womensCategories = [
   {
     id: 'tshirts',
     name: 'TSHIRTS',
-    image: 'https://i.ibb.co/21qqDjDv/LIGHTNING-MCQUEEN-BLACK.png',
+    image: womenTops,
     path: '/women/tshirts'
-  },
+},
   {
     id: 'lowers',
     name: 'LOWERS',
