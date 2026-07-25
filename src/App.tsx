@@ -10,7 +10,7 @@ import ProductGrid from './ProductGrid';
 import CartDrawer from './CartDrawer';
 import CheckoutPage from './CheckoutPage';
 import BagPage from './BagPage';
-import Admin from './Admin';
+import AdminGate from './admin/AdminGate';
 import ProductPage from './ProductPage';
 import ShinyText from './components';
 import { useCart } from './CartContext';
@@ -471,12 +471,12 @@ return (
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/bag" element={<BagPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/admin/orders" element={<Admin />} />
-        <Route path="/admin/products" element={<Admin />} />
-        <Route path="/admin/collections" element={<Admin />} />
-        <Route path="/admin/categories" element={<Admin />} />
-        <Route path="/admin/discounts" element={<Admin />} />
+        <Route path="/admin" element={<AdminGate />} />
+        <Route path="/admin/orders" element={<AdminGate />} />
+        <Route path="/admin/products" element={<AdminGate />} />
+        <Route path="/admin/collections" element={<AdminGate />} />
+        <Route path="/admin/categories" element={<AdminGate />} />
+        <Route path="/admin/discounts" element={<AdminGate />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
