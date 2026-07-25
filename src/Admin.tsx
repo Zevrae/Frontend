@@ -367,15 +367,9 @@ interface DbProduct {
   subcategory: string;
   price: number;
   compare_price: number | null;
-<<<<<<< HEAD
-  stock_quantity: StockItem[]; 
-  in_stock: boolean;
-=======
+  stock_quantity: StockItem[];
   discount: number | null;
   in_stock: boolean;
-  sizes: string[];
-  size_stock: Record<string, number>;
->>>>>>> db684a89dbe83dc233d7059cf18d115c17f3e26c
   images: string[];
   status: string;
   is_deleted?: boolean;
@@ -392,6 +386,7 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
   subcategory: 'T-Shirts',
   price: 0,
   compare_price: null,
+  discount: null,
   stock_quantity: [],
   in_stock: true,
   images: [],
@@ -417,7 +412,7 @@ function ProductsSection() {
     setDbError('');
     try {
       const { data } = await productsApi.list({ limit: 100 });
-      setDbProducts((data as DbProduct[]) || []);
+      setDbProducts((data as unknown as DbProduct[]) || []);
     } catch (err: any) {
       setDbError('Could not load products. Make sure the database is connected.');
     } finally {
@@ -444,6 +439,7 @@ function ProductsSection() {
       subcategory: p.subcategory,
       price: p.price,
       compare_price: p.compare_price,
+      discount: p.discount ?? null,
       stock_quantity: p.stock_quantity || [],
       in_stock: p.in_stock ?? true,
       images: p.images || [],
@@ -675,7 +671,7 @@ function ProductsSection() {
             </FormField>
             <FormField label="Collections">
               <div className="flex flex-wrap gap-2 mt-1">
-                {collections.map(col => (
+                {mockCollections.map(col => (
                   <button
                     key={col.id}
                     type="button"
@@ -706,6 +702,21 @@ function ProductsSection() {
                 <input type="number" value={form.compare_price ?? ''} onChange={e => setForm(f => ({ ...f, compare_price: e.target.value ? Number(e.target.value) : null }))} className={inputCls} />
               </FormField>
             </div>
+
+            <FormField label="Discount (%)">
+              <input
+                type="number"
+                min="0"
+                max="99"
+                value={form.discount ?? ''}
+                onChange={e => setForm(f => ({ ...f, discount: e.target.value ? Number(e.target.value) : null }))}
+                placeholder="e.g. 10 for 10% off"
+                className={inputCls}
+              />
+              {form.discount && form.discount > 0 && (
+                <p className="text-[9px] text-emerald-400 font-sans mt-1.5">-{form.discount}% discount applied</p>
+              )}
+            </FormField>
 
             <FormField label="Inventory (Sizes & Quantity)">
               <div className="flex flex-col gap-2 mt-1">

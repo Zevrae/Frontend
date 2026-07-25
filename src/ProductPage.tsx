@@ -163,6 +163,7 @@ export default function ProductPage() {
             category: p.category?.toLowerCase(),
             type: p.subcategory?.toLowerCase(),
             sizes: p.sizes,
+            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
             frontImg: p.images?.[0] || '',
             backImg: p.images?.[1] || p.images?.[0] || '',
           }));
