@@ -34,6 +34,7 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClothingOpen, setIsClothingOpen] = useState(false);
+  const [isMobileClothingOpen, setIsMobileClothingOpen] = useState(false);
   const clothingDropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -327,10 +328,13 @@ return (
               <X size={28} strokeWidth={1} />
             </button>
             {[
-              { name: 'Home', href: '#collection', onClick: () => { navTransition(() => { navigate('/'); }); setIsMenuOpen(false); } },
-              { name: 'Men Wear', href: '#collection', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); } },
-              { name: 'Women Wear', href: '#collection', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); } },
+              { name: 'Clothing', href: '#', onClick: () => setIsMobileClothingOpen(!isMobileClothingOpen) },
+              ...(isMobileClothingOpen ? [
+                { name: '- Men', href: '#collection', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
+                { name: '- Women', href: '#collection', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
+              ] : []),
               { name: 'Jewellery', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery')); setIsMenuOpen(false); } },
+              { name: 'Accessories', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories')); setIsMenuOpen(false); } },
               { name: 'AI Wardrobe', href: '#', onClick: () => { navTransition(() => navigate('/ai-wardrobe')); setIsMenuOpen(false); } },
               ...(isAdmin 
                 ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]
@@ -338,7 +342,7 @@ return (
               user 
                 ? { name: `${displayName} | Logout`, href: '#', onClick: () => { logout(); setIsMenuOpen(false); } }
                 : { name: 'Login', href: '#', onClick: () => { navTransition(() => setIsLoginModalOpen(true)); setIsMenuOpen(false); } },
-              { name: `Cart (${items.length})`, href: '#', onClick: () => { navTransition(() => navigate('/bag')); setIsMenuOpen(false); } }
+              { name: `Bag(${items.reduce((total, item) => total + item.quantity, 0)})`, href: '#', onClick: () => { navTransition(() => navigate('/bag')); setIsMenuOpen(false); } }
             ].map((item, i) => (
               <motion.a
                 key={item.name}
@@ -347,13 +351,14 @@ return (
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: i * 0.05, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                className="text-3xl md:text-5xl font-plex-mono tracking-[0.2em] text-[#EAE6E1] hover:text-[#C5A059] transition-colors duration-300 uppercase"
+                className={`text-3xl md:text-5xl font-plex-mono tracking-[0.2em] text-[#EAE6E1] hover:text-[#C5A059] transition-colors duration-300 uppercase ${item.isSubItem ? 'text-xl md:text-3xl my-2' : ''}`}
                 onClick={(e) => {
                   if (item.onClick) {
                     e.preventDefault();
                     item.onClick();
+                  } else {
+                    setIsMenuOpen(false);
                   }
-                  setIsMenuOpen(false);
                 }}
               >
                 {item.name}

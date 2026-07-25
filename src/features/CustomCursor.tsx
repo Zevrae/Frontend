@@ -189,10 +189,10 @@ export function CustomCursor() {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Suppress native cursor site-wide
+    // Suppress native cursor site-wide on non-touch devices
     const style = document.createElement('style');
     style.id = 'zevrae-cursor-none';
-    style.textContent = '*, *::before, *::after { cursor: none !important; }';
+    style.textContent = '@media (hover: hover) and (pointer: fine) { *, *::before, *::after { cursor: none !important; } }';
     document.head.appendChild(style);
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -220,6 +220,7 @@ export function CustomCursor() {
     <div
       ref={dotRef}
       aria-hidden="true"
+      className="hidden md:block"
       style={{
         position: 'fixed',
         top: 0,
