@@ -269,32 +269,30 @@ return (
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             )}
+            <button
+              type="button"
+              className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[#EAE6E1]"
+              onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
+            >
+              <ShinyText
+                text="AI WARDROBE"
+                speed={2.2}
+                className="text-[10px] uppercase tracking-[0.3em] font-plex-mono"
+                color="#C5A059"
+                shineColor="#FFFFFF"
+              />
+              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+            </button>
             {user ? (
               <button onClick={() => logout()} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
                 {displayName} | LOGOUT
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             ) : (
-              <>
-                <button
-                  type="button"
-                  className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[#EAE6E1]"
-                  onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
-                >
-                  <ShinyText
-                    text="AI WARDROBE"
-                    speed={2.2}
-                    className="text-[10px] uppercase tracking-[0.3em] font-plex-mono"
-                    color="#C5A059"
-                    shineColor="#FFFFFF"
-                  />
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-                </button>
-                <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-                  LOGIN
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-                </button>
-              </>
+              <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+                LOGIN
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+              </button>
             )}
             <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               BAG({items.reduce((total, item) => total + item.quantity, 0)})
@@ -333,6 +331,7 @@ return (
               { name: 'Men Wear', href: '#collection', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); } },
               { name: 'Women Wear', href: '#collection', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); } },
               { name: 'Jewellery', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery')); setIsMenuOpen(false); } },
+              { name: 'AI Wardrobe', href: '#', onClick: () => { navTransition(() => navigate('/ai-wardrobe')); setIsMenuOpen(false); } },
               ...(isAdmin 
                 ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]
                 : []),
