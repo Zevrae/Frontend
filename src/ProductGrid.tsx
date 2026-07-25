@@ -7,6 +7,11 @@ import './components/PinterestCard.css';
 import ComingSoon from './pages/comingsoon/ComingSoon';
 import stuffedAnimalImg from './assets/stuffed animal.jpg';
 import { productsApi } from './api/products';
+import ringImg from "./assets/static/RING.png";
+import keychainImg from "./assets/static/KEYCHAIN.png";
+import earringsImg from "./assets/static/EARRINGS.png";
+import pendantImg from "./assets/static/PENDANT.png";
+import braceletImg from "./assets/static/BRACELET.png";
 const mensCategories = [
   {
     id: 'tshirts',
@@ -39,38 +44,41 @@ const jewelleryCategories = [
   {
     id: 'rings',
     name: 'RINGS',
-    image: 'https://i.ibb.co/hJ98rRh6/White-K-Year-of-Snake-Ring.png',
+    image: ringImg,
     fit: 'contain',
-    path: '/jewellery/rings'
+    path: '/jewellery/'
   },
+  
+    {
+  id: 'pendants',
+  name: 'PENDANTS',
+  image: pendantImg,
+  fit: 'contain',
+  path: '/jewellery/pendants'
+},
   {
-    id: 'pendants',
-    name: 'PENDANTS',
-    image: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
-    fit: 'contain',
-    path: '/jewellery/pendants'
-  },
-  {
-    id: 'bracelet',
-    name: 'BRACELET',
-    image: 'https://i.ibb.co/4ZR90MKP/Gold-Year-of-Snake-Bracelet.png',
-    fit: 'contain',
-    path: '/jewellery/bracelet'
-  },
-  {
-    id: 'earrings',
-    name: 'EARRINGS',
-    image: 'https://i.ibb.co/y72Tgjg/Earing-set.png',
-    fit: 'contain',
-    path: '/jewellery/earrings'
-  }
+  id: 'bracelet',
+  name: 'BRACELET',
+  image: braceletImg,
+  fit: 'contain',
+  path: '/jewellery/bracelet'
+},
+  
+    {
+  id: 'ear',
+  name: 'EAR',
+  image: earringsImg,
+  fit: 'contain',
+  path: '/jewellery/ear'
+}
+  
 ];
 
 const accessoriesCategories = [
   {
     id: 'keychain',
     name: 'KEYCHAIN',
-    image: 'https://i.ibb.co/fdt5NJjf/Bright-Red-Metallic-Cherry-Keychain.png',
+    image: keychainImg,
     fit: 'contain',
     path: '/accessories/keychain'
   },
@@ -82,7 +90,7 @@ const accessoriesCategories = [
     path: '/accessories/toys'
   }
 ];
-export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter?: 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | 'rings' | 'pendants' | 'keychain' | 'bracelet' | 'toys' | 'earrings' | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' }) {
+export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter?: 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'pendants' | 'keychain' | 'bracelet' | 'toys' | 'ear' | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' }) {
   const navigate = useNavigate();
 
   const [dbProducts, setDbProducts] = useState<any[]>([]);
@@ -462,7 +470,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           </div>
         </motion.section>
       )}
-      {['rings', 'pendants', 'bracelet', 'earrings'].includes(categoryFilter) && (
+      {['', 'pendants', 'bracelet', 'ear'].includes(categoryFilter) && (
         <motion.section 
           key="jewellery-category"
           initial={{ opacity: 0, height: 0 }}
