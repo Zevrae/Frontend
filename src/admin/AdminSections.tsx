@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { productsApi, Product } from '../api/products';
 import { collectionsApi, Collection } from '../api/collections';
+import { categoriesApi, Category } from '../api/categories';
+import { discountsApi, Discount } from '../api/discounts';
 import { ordersApi, Order } from '../api/orders';
 import RichTextEditor from './RichTextEditor';
 
@@ -18,27 +20,6 @@ import RichTextEditor from './RichTextEditor';
 
 export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts';
 export type { Order };
-
-// ─── Mock / Seed Data (Collections, Categories, Discounts sections still run on
-// local seed data pending their own API integration — see integration notes) ──
-
-const mockCollections = [
-  { id: 'col1', name: 'Summer Drop 2026', slug: 'summer-2026', status: 'active', featured: true, products: 8 },
-  { id: 'col2', name: 'Autumn / Winter Edit', slug: 'aw26', status: 'draft', featured: false, products: 3 },
-  { id: 'col3', name: 'Essentials', slug: 'essentials', status: 'active', featured: false, products: 12 },
-];
-
-const mockCategories = [
-  { id: 'cat1', name: 'Men', slug: 'men', subcategories: ['T-Shirts', 'Lowers', 'Outerwear', 'Accessories'], products: 24, status: 'active' },
-  { id: 'cat2', name: 'Women', slug: 'women', subcategories: ['Tops', 'Bottoms', 'Dresses', 'Accessories'], products: 18, status: 'active' },
-  { id: 'cat3', name: 'Unisex', slug: 'unisex', subcategories: ['Hoodies', 'Tees', 'Caps'], products: 6, status: 'active' },
-];
-
-const mockDiscounts = [
-  { id: 'd1', code: 'ZEVRAE10', type: 'Percentage', value: 10, limit: 500, uses: 34, expiry: '2026-12-31', status: 'active' },
-  { id: 'd2', code: 'FLAT200', type: 'Fixed Amount', value: 200, limit: 100, uses: 100, expiry: '2026-06-30', status: 'expired' },
-  { id: 'd3', code: 'WELCOME15', type: 'Percentage', value: 15, limit: 1000, uses: 12, expiry: '2026-12-31', status: 'active' },
-];
 
 const formatVal = (val: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
@@ -78,11 +59,14 @@ function SectionHeader({ title, action, onAction }: { title: string; action?: st
   );
 }
 
-function Badge({ label, variant }: { label: string; variant: 'active' | 'draft' | 'expired' | 'pending' | 'paid' | 'cod' | 'placed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'failed' | 'refunded' | 'online' }) {
+function Badge({ label, variant }: { label: string; variant: 'active' | 'inactive' | 'draft' | 'expired' | 'pending' | 'paid' | 'cod' | 'placed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'failed' | 'refunded' | 'online' | 'Active' | 'Expired' }) {
   const styles = {
     active: 'bg-emerald-900/25 text-emerald-400 border-emerald-900/40',
+    Active: 'bg-emerald-900/25 text-emerald-400 border-emerald-900/40',
+    inactive: 'bg-[#1a1a1a] text-[#EAE6E1]/40 border-[#EAE6E1]/10',
     draft: 'bg-[#1a1a1a] text-[#EAE6E1]/40 border-[#EAE6E1]/10',
     expired: 'bg-red-900/20 text-red-400 border-red-900/30',
+    Expired: 'bg-red-900/20 text-red-400 border-red-900/30',
     pending: 'bg-amber-900/20 text-amber-400 border-amber-900/30',
     paid: 'bg-emerald-900/25 text-emerald-400 border-emerald-900/40',
     cod: 'bg-blue-900/20 text-blue-400 border-blue-900/30',
@@ -416,12 +400,12 @@ function productToDbProduct(p: Product): DbProduct {
 }
 
 // Adapts the UI form's StockItem[] back into a payload the productsApi /
-// backend can accept: `sizes` (backend has this field) and a total
-// `stock_quantity` (backend's only real inventory field today).
+// backend can accept: `sizes` and `size_stock` are both real backend fields;
+// `stock_quantity` is derived server-side from size_stock and shouldn't be
+// sent directly.
 function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'>): Partial<Product> {
   const sizes = form.stock_quantity.filter(s => s.quantity > 0).map(s => s.size);
   const size_stock = Object.fromEntries(form.stock_quantity.map(s => [s.size, s.quantity]));
-  const totalStock = form.stock_quantity.reduce((sum, s) => sum + (s.quantity || 0), 0);
   return {
     name: form.name,
     description: form.description,
@@ -434,10 +418,6 @@ function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_delete
     status: form.status as Product['status'],
     sizes,
     size_stock,
-    // @ts-expect-error stock_quantity isn't on the api/products.ts Product
-    // type (it uses sizes/size_stock instead) but IS the real backend field —
-    // sent as a stopgap total until the schema mismatch above is resolved.
-    stock_quantity: totalStock,
   };
 }
 
@@ -468,6 +448,7 @@ export function ProductsSection() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [search, setSearch] = useState('');
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -497,6 +478,7 @@ export function ProductsSection() {
     setEditingId(null);
     setForm(emptyForm());
     setImageFiles([]);
+    setFormError('');
     setShowModal(true);
   };
 
@@ -516,6 +498,7 @@ export function ProductsSection() {
       status: p.status,
     });
     setImageFiles([]);
+    setFormError('');
     setShowModal(true);
   };
 
@@ -545,8 +528,27 @@ export function ProductsSection() {
     }));
   };
 
+  // Tiptap emits either '' (never touched) or something like '<p></p>' /
+  // '<p><br></p>' for a "visually empty" description — none of which is
+  // meaningful content, so strip tags before checking.
+  const isDescriptionEmpty = (html: string) => !html.replace(/<[^>]*>/g, '').trim();
+
+  const validateForm = (): string | null => {
+    if (!form.name.trim()) return 'Product name is required.';
+    if (isDescriptionEmpty(form.description)) return 'Description is required.';
+    if (!form.category.trim()) return 'Category is required.';
+    if (!form.subcategory.trim()) return 'Subcategory is required.';
+    if (!form.price || form.price <= 0) return 'Price must be greater than 0.';
+    return null;
+  };
+
   const handleSave = async () => {
-    if (!form.name.trim()) return;
+    const validationError = validateForm();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+    setFormError('');
     setSaving(true);
 
     try {
@@ -567,7 +569,7 @@ export function ProductsSection() {
       setShowModal(false);
       fetchDbProducts();
     } catch (err: any) {
-      alert('Save failed: ' + (err?.response?.data?.message || err.message));
+      setFormError(err?.response?.data?.message || err.message || 'Save failed.');
     } finally {
       setSaving(false);
     }
@@ -732,11 +734,16 @@ export function ProductsSection() {
       <AnimatePresence>
         {showModal && (
           <Modal title={editingId ? 'Edit Product' : 'Add Product'} onClose={() => setShowModal(false)}>
-            <FormField label="Product Name">
+            {formError && (
+              <div className="mb-4 p-3 text-red-400 bg-red-900/10 border border-red-900/30 text-[11px] font-sans rounded-sm flex items-center gap-2">
+                <AlertCircle size={14} /> {formError}
+              </div>
+            )}
+            <FormField label="Product Name *">
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Oversized Graphic Tee" className={inputCls} />
             </FormField>
 
-            <FormField label="Description">
+            <FormField label="Description *">
               <RichTextEditor
                 value={form.description}
                 onChange={html => setForm(f => ({ ...f, description: html }))}
@@ -760,19 +767,19 @@ export function ProductsSection() {
               </div>
             </FormField>
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Category">
+              <FormField label="Category *">
                 <input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={inputCls} />
               </FormField>
-              <FormField label="Subcategory">
+              <FormField label="Subcategory *">
                 <input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} className={inputCls} />
               </FormField>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Price (INR)">
+              <FormField label="Price (INR) *">
                 <input type="number" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} className={inputCls} />
               </FormField>
-              <FormField label="Compare Price (INR)">
+              <FormField label="Compare Price (INR) — optional">
                 <input type="number" value={form.compare_price ?? ''} onChange={e => setForm(f => ({ ...f, compare_price: e.target.value ? Number(e.target.value) : null }))} className={inputCls} />
               </FormField>
             </div>
@@ -889,30 +896,84 @@ export function ProductsSection() {
 // ─── Collections Section ──────────────────────────────────────────────────────
 
 export function CollectionsSection() {
-  const [collections, setCollections] = useState(mockCollections);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [showModal, setShowModal] = useState(false);
-  const [editingCol, setEditingCol] = useState<typeof mockCollections[0] | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', status: 'active', featured: false });
+  const [editingCol, setEditingCol] = useState<Collection | null>(null);
+  const [form, setForm] = useState({ name: '', description: '', status: 'active', featured: false });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  const openAdd = () => { setEditingCol(null); setForm({ name: '', slug: '', status: 'active', featured: false }); setShowModal(true); };
-  const openEdit = (c: typeof mockCollections[0]) => { setEditingCol(c); setForm({ name: c.name, slug: c.slug, status: c.status, featured: c.featured }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.name) return;
-    if (editingCol) {
-      setCollections(prev => prev.map(c => c.id === editingCol.id ? { ...c, ...form } : c));
-    } else {
-      setCollections(prev => [...prev, { id: `c${Date.now()}`, ...form, products: 0 }]);
+  const fetchCollections = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await collectionsApi.list();
+      setCollections(data || []);
+      // Product counts aren't returned by /collections directly — one
+      // lightweight lookup per collection via the products list filter.
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        (data || []).map(async (c) => {
+          try {
+            const res = await productsApi.list({ collection: c.id, limit: 1 });
+            counts[c.id] = res.pagination.total;
+          } catch {
+            counts[c.id] = 0;
+          }
+        })
+      );
+      setProductCounts(counts);
+    } catch (err: any) {
+      setError('Could not load collections. Make sure the backend is reachable.');
+    } finally {
+      setLoading(false);
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this collection?')) setCollections(prev => prev.filter(c => c.id !== id));
+  useEffect(() => { fetchCollections(); }, []);
+
+  const openAdd = () => { setEditingCol(null); setForm({ name: '', description: '', status: 'active', featured: false }); setFormError(''); setShowModal(true); };
+  const openEdit = (c: Collection) => { setEditingCol(c); setForm({ name: c.name, description: c.description || '', status: c.status, featured: c.featured }); setFormError(''); setShowModal(true); };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) { setFormError('Collection name is required.'); return; }
+    setSaving(true);
+    setFormError('');
+    try {
+      if (editingCol) {
+        await collectionsApi.update(editingCol.id, form);
+      } else {
+        await collectionsApi.create(form);
+      }
+      setShowModal(false);
+      fetchCollections();
+    } catch (err: any) {
+      setFormError(err?.response?.data?.message || err.message || 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const toggleFeatured = (id: string) => {
-    setCollections(prev => prev.map(c => c.id === id ? { ...c, featured: !c.featured } : c));
+  const handleDelete = async (id: string) => {
+    if (!confirm('Remove this collection?')) return;
+    try {
+      await collectionsApi.remove(id);
+      fetchCollections();
+    } catch (err: any) {
+      alert('Delete failed: ' + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  const toggleFeatured = async (c: Collection) => {
+    try {
+      await collectionsApi.update(c.id, { featured: !c.featured });
+      fetchCollections();
+    } catch (err: any) {
+      alert('Update failed: ' + (err?.response?.data?.message || err.message));
+    }
   };
 
   return (
@@ -920,54 +981,71 @@ export function CollectionsSection() {
       <SectionHeader title="Collections" action="New Collection" onAction={openAdd} />
       <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Group products into curated collections for seasonal drops and editorial features.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {collections.map(col => (
-          <div key={col.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-[12px] font-sans text-[#EAE6E1] mb-1">{col.name}</p>
-                <p className="text-[10px] font-mono text-[#EAE6E1]/30">/{col.slug}</p>
+      {error && (
+        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+          <AlertCircle size={14} /> {error}
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse text-center p-10">Loading...</p>
+      ) : collections.length === 0 ? (
+        <p className="text-[11px] font-sans text-[#EAE6E1]/30 text-center p-10">No collections yet. Click "New Collection" to create one.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {collections.map(col => (
+            <div key={col.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="text-[12px] font-sans text-[#EAE6E1] mb-1">{col.name}</p>
+                  <p className="text-[10px] font-mono text-[#EAE6E1]/30">/{col.slug}</p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={() => openEdit(col)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors">
+                    <Edit2 size={11} />
+                  </button>
+                  <button onClick={() => handleDelete(col.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors">
+                    <Trash2 size={11} />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <button onClick={() => openEdit(col)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors">
-                  <Edit2 size={11} />
-                </button>
-                <button onClick={() => handleDelete(col.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors">
-                  <Trash2 size={11} />
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-2">
+                  <Badge label={col.status} variant={col.status as any} />
+                  <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{productCounts[col.id] ?? 0} products</span>
+                </div>
+                <button
+                  onClick={() => toggleFeatured(col)}
+                  className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${col.featured ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}
+                >
+                  <Star size={11} fill={col.featured ? 'currentColor' : 'none'} />
+                  {col.featured ? 'Featured' : 'Feature'}
                 </button>
               </div>
             </div>
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <Badge label={col.status} variant={col.status as any} />
-                <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{col.products} products</span>
-              </div>
-              <button
-                onClick={() => toggleFeatured(col.id)}
-                className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${col.featured ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}
-              >
-                <Star size={11} fill={col.featured ? 'currentColor' : 'none'} />
-                {col.featured ? 'Featured' : 'Feature'}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <AnimatePresence>
         {showModal && (
           <Modal title={editingCol ? 'Edit Collection' : 'New Collection'} onClose={() => setShowModal(false)}>
-            <FormField label="Collection Name">
+            {formError && (
+              <div className="mb-4 p-3 text-red-400 bg-red-900/10 border border-red-900/30 text-[11px] font-sans rounded-sm flex items-center gap-2">
+                <AlertCircle size={14} /> {formError}
+              </div>
+            )}
+            <FormField label="Collection Name *">
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Autumn / Winter 2026" className={inputCls} />
             </FormField>
-            <FormField label="URL Slug">
-              <input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="e.g. aw26" className={inputCls} />
+            <FormField label="Description">
+              <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="A short description of this collection..." rows={3} className={`${inputCls} resize-none`} />
             </FormField>
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Status">
                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
                   <option value="active">Active</option>
-                  <option value="draft">Draft</option>
+                  <option value="inactive">Inactive</option>
                 </select>
               </FormField>
               <FormField label="Featured">
@@ -982,8 +1060,8 @@ export function CollectionsSection() {
               </FormField>
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingCol ? 'Save Changes' : 'Create Collection'}
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                <Save size={12} /> {saving ? 'Saving...' : editingCol ? 'Save Changes' : 'Create Collection'}
               </button>
               <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
                 Cancel
@@ -999,87 +1077,182 @@ export function CollectionsSection() {
 // ─── Categories Section ───────────────────────────────────────────────────────
 
 export function CategoriesSection() {
-  const [categories, setCategories] = useState(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [showModal, setShowModal] = useState(false);
-  const [editingCat, setEditingCat] = useState<typeof mockCategories[0] | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', subcategories: '', status: 'active' });
+  const [editingCat, setEditingCat] = useState<Category | null>(null);
+  const [form, setForm] = useState({ name: '', description: '', parent: '', status: 'active' });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  const openAdd = () => { setEditingCat(null); setForm({ name: '', slug: '', subcategories: '', status: 'active' }); setShowModal(true); };
-  const openEdit = (c: typeof mockCategories[0]) => { setEditingCat(c); setForm({ name: c.name, slug: c.slug, subcategories: c.subcategories.join(', '), status: c.status }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.name) return;
-    const subcategories = form.subcategories.split(',').map(s => s.trim()).filter(Boolean);
-    if (editingCat) {
-      setCategories(prev => prev.map(c => c.id === editingCat.id ? { ...c, ...form, subcategories } : c));
-    } else {
-      setCategories(prev => [...prev, { id: `cat${Date.now()}`, name: form.name, slug: form.slug, subcategories, products: 0, status: form.status }]);
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await categoriesApi.list();
+      setCategories(data || []);
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        (data || []).map(async (c) => {
+          try {
+            const res = await productsApi.list({ category: c.name, limit: 1 });
+            counts[c.id] = res.pagination.total;
+          } catch {
+            counts[c.id] = 0;
+          }
+        })
+      );
+      setProductCounts(counts);
+    } catch (err: any) {
+      setError('Could not load categories. Make sure the backend is reachable.');
+    } finally {
+      setLoading(false);
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this category?')) setCategories(prev => prev.filter(c => c.id !== id));
+  useEffect(() => { fetchCategories(); }, []);
+
+  const topLevel = categories.filter(c => !c.parent);
+  const childrenOf = (parentId: string) => categories.filter(c => {
+    const p = c.parent;
+    const pid = typeof p === 'string' ? p : p?.id;
+    return pid === parentId;
+  });
+
+  const openAdd = (parentId?: string) => {
+    setEditingCat(null);
+    setForm({ name: '', description: '', parent: parentId || '', status: 'active' });
+    setFormError('');
+    setShowModal(true);
+  };
+  const openEdit = (c: Category) => {
+    setEditingCat(c);
+    const parentId = typeof c.parent === 'string' ? c.parent : c.parent?.id || '';
+    setForm({ name: c.name, description: c.description || '', parent: parentId, status: c.status });
+    setFormError('');
+    setShowModal(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) { setFormError('Category name is required.'); return; }
+    setSaving(true);
+    setFormError('');
+    try {
+      const payload = { name: form.name, description: form.description, parent: form.parent || null, status: form.status };
+      if (editingCat) {
+        await categoriesApi.update(editingCat.id, payload);
+      } else {
+        await categoriesApi.create(payload);
+      }
+      setShowModal(false);
+      fetchCategories();
+    } catch (err: any) {
+      setFormError(err?.response?.data?.message || err.message || 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Remove this category? Any subcategories under it will need to be reassigned separately.')) return;
+    try {
+      await categoriesApi.remove(id);
+      fetchCategories();
+    } catch (err: any) {
+      alert('Delete failed: ' + (err?.response?.data?.message || err.message));
+    }
   };
 
   return (
     <div>
-      <SectionHeader title="Categories" action="New Category" onAction={openAdd} />
+      <SectionHeader title="Categories" action="New Category" onAction={() => openAdd()} />
       <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Manage top-level categories and their subcategories that appear in navigation.</p>
 
-      <div className="space-y-3">
-        {categories.map(cat => (
-          <div key={cat.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <p className="text-[12px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em]">{cat.name}</p>
-                  <Badge label={cat.status} variant={cat.status as any} />
-                  <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{cat.products} products</span>
+      {error && (
+        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+          <AlertCircle size={14} /> {error}
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse text-center p-10">Loading...</p>
+      ) : topLevel.length === 0 ? (
+        <p className="text-[11px] font-sans text-[#EAE6E1]/30 text-center p-10">No categories yet. Click "New Category" to create one.</p>
+      ) : (
+        <div className="space-y-3">
+          {topLevel.map(cat => (
+            <div key={cat.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <p className="text-[12px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em]">{cat.name}</p>
+                    <Badge label={cat.status} variant={cat.status as any} />
+                    <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{productCounts[cat.id] ?? 0} products</span>
+                  </div>
+                  <p className="text-[10px] font-mono text-[#EAE6E1]/30 mb-3">/{cat.slug}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {childrenOf(cat.id).map(sub => (
+                      <span key={sub.id} className="group flex items-center gap-1 px-2 py-0.5 bg-[#12100C] border border-[#EAE6E1]/10 text-[9px] font-sans text-[#EAE6E1]/50 rounded-sm uppercase tracking-wider">
+                        {sub.name}
+                        <button onClick={() => openEdit(sub)} className="text-[#EAE6E1]/20 hover:text-[#C5A059]"><Edit2 size={9} /></button>
+                        <button onClick={() => handleDelete(sub.id)} className="text-[#EAE6E1]/20 hover:text-red-400"><Trash2 size={9} /></button>
+                      </span>
+                    ))}
+                    <button
+                      onClick={() => openAdd(cat.id)}
+                      className="flex items-center gap-1 px-2 py-0.5 border border-dashed border-[#EAE6E1]/15 text-[9px] font-sans text-[#EAE6E1]/30 rounded-sm uppercase tracking-wider hover:border-[#C5A059]/40 hover:text-[#C5A059] transition-colors"
+                    >
+                      <Plus size={9} /> Add Subcategory
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[10px] font-mono text-[#EAE6E1]/30 mb-3">/{cat.slug}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {cat.subcategories.map(sub => (
-                    <span key={sub} className="px-2 py-0.5 bg-[#12100C] border border-[#EAE6E1]/10 text-[9px] font-sans text-[#EAE6E1]/50 rounded-sm uppercase tracking-wider">
-                      {sub}
-                    </span>
-                  ))}
+                <div className="flex items-center gap-1.5 ml-4">
+                  <button onClick={() => openEdit(cat)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
+                    <Edit2 size={11} />
+                  </button>
+                  <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
+                    <Trash2 size={11} />
+                  </button>
                 </div>
-              </div>
-              <div className="flex items-center gap-1.5 ml-4">
-                <button onClick={() => openEdit(cat)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
-                  <Edit2 size={11} />
-                </button>
-                <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
-                  <Trash2 size={11} />
-                </button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <AnimatePresence>
         {showModal && (
           <Modal title={editingCat ? 'Edit Category' : 'New Category'} onClose={() => setShowModal(false)}>
-            <FormField label="Category Name">
+            {formError && (
+              <div className="mb-4 p-3 text-red-400 bg-red-900/10 border border-red-900/30 text-[11px] font-sans rounded-sm flex items-center gap-2">
+                <AlertCircle size={14} /> {formError}
+              </div>
+            )}
+            <FormField label="Category Name *">
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Men" className={inputCls} />
             </FormField>
-            <FormField label="URL Slug">
-              <input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="e.g. men" className={inputCls} />
+            <FormField label="Description">
+              <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className={`${inputCls} resize-none`} />
             </FormField>
-            <FormField label="Subcategories (comma-separated)">
-              <input value={form.subcategories} onChange={e => setForm(f => ({ ...f, subcategories: e.target.value }))} placeholder="e.g. T-Shirts, Lowers, Outerwear" className={inputCls} />
+            <FormField label="Parent Category">
+              <select value={form.parent} onChange={e => setForm(f => ({ ...f, parent: e.target.value }))} className={selectCls}>
+                <option value="">None — top-level category</option>
+                {topLevel.filter(c => c.id !== editingCat?.id).map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </FormField>
             <FormField label="Status">
               <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
                 <option value="active">Active</option>
-                <option value="draft">Draft</option>
+                <option value="inactive">Inactive</option>
               </select>
             </FormField>
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingCat ? 'Save Changes' : 'Create Category'}
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                <Save size={12} /> {saving ? 'Saving...' : editingCat ? 'Save Changes' : 'Create Category'}
               </button>
               <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
                 Cancel
@@ -1095,36 +1268,115 @@ export function CategoriesSection() {
 // ─── Discounts Section ────────────────────────────────────────────────────────
 
 export function DiscountsSection() {
-  const [discounts, setDiscounts] = useState(mockDiscounts);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState<typeof mockDiscounts[0] | null>(null);
-  const [form, setForm] = useState({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'active' });
+  const [editingDiscount, setEditingDiscount] = useState<Discount | null>(null);
+  const [form, setForm] = useState({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'Active' });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  const openAdd = () => { setEditingDiscount(null); setForm({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'active' }); setShowModal(true); };
-  const openEdit = (d: typeof mockDiscounts[0]) => { setEditingDiscount(d); setForm({ code: d.code, type: d.type, value: String(d.value), limit: String(d.limit), expiry: d.expiry, status: d.status }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.code) return;
-    if (editingDiscount) {
-      setDiscounts(prev => prev.map(d => d.id === editingDiscount.id ? { ...d, ...form, value: Number(form.value), limit: Number(form.limit) } : d));
-    } else {
-      setDiscounts(prev => [...prev, { id: `d${Date.now()}`, ...form, value: Number(form.value), limit: Number(form.limit), uses: 0 }]);
+  const fetchDiscounts = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await discountsApi.list();
+      setDiscounts(data || []);
+    } catch (err: any) {
+      setError('Could not load discounts. Make sure the backend is reachable.');
+    } finally {
+      setLoading(false);
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this discount?')) setDiscounts(prev => prev.filter(d => d.id !== id));
+  useEffect(() => { fetchDiscounts(); }, []);
+
+  const openAdd = () => {
+    setEditingDiscount(null);
+    setForm({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'Active' });
+    setFormError('');
+    setShowModal(true);
+  };
+  const openEdit = (d: Discount) => {
+    setEditingDiscount(d);
+    setForm({
+      code: d.code,
+      type: d.type,
+      value: String(d.value),
+      limit: String(d.usage.limit),
+      expiry: d.expiry ? d.expiry.slice(0, 10) : '',
+      status: d.status,
+    });
+    setFormError('');
+    setShowModal(true);
   };
 
-  const toggleStatus = (id: string) => {
-    setDiscounts(prev => prev.map(d => d.id === id ? { ...d, status: d.status === 'active' ? 'expired' : 'active' } : d));
+  const handleSave = async () => {
+    if (!form.code.trim()) { setFormError('Coupon code is required.'); return; }
+    if (!form.value || Number(form.value) <= 0) { setFormError('Value must be greater than 0.'); return; }
+    if (!form.limit || Number(form.limit) <= 0) { setFormError('Usage limit must be greater than 0.'); return; }
+    if (!form.expiry) { setFormError('Expiry date is required.'); return; }
+
+    setSaving(true);
+    setFormError('');
+    try {
+      if (editingDiscount) {
+        await discountsApi.update(editingDiscount.id, {
+          type: form.type as Discount['type'],
+          value: Number(form.value),
+          usage: { limit: Number(form.limit) },
+          expiry: form.expiry,
+          status: form.status as Discount['status'],
+        });
+      } else {
+        await discountsApi.create({
+          code: form.code,
+          type: form.type as Discount['type'],
+          value: Number(form.value),
+          usage: { limit: Number(form.limit) },
+          expiry: form.expiry,
+          status: form.status as Discount['status'],
+        });
+      }
+      setShowModal(false);
+      fetchDiscounts();
+    } catch (err: any) {
+      setFormError(err?.response?.data?.message || err.message || 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Remove this discount?')) return;
+    try {
+      await discountsApi.remove(id);
+      fetchDiscounts();
+    } catch (err: any) {
+      alert('Delete failed: ' + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  const toggleStatus = async (d: Discount) => {
+    try {
+      await discountsApi.update(d.id, { status: d.status === 'Active' ? 'Expired' : 'Active' });
+      fetchDiscounts();
+    } catch (err: any) {
+      alert('Update failed: ' + (err?.response?.data?.message || err.message));
+    }
   };
 
   return (
     <div>
       <SectionHeader title="Discounts & Coupons" action="New Coupon" onAction={openAdd} />
       <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Create coupon codes for promotions and customer loyalty programs.</p>
+
+      {error && (
+        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+          <AlertCircle size={14} /> {error}
+        </div>
+      )}
 
       <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -1141,49 +1393,55 @@ export function DiscountsSection() {
               </tr>
             </thead>
             <tbody>
-              {discounts.map(d => (
-                <tr key={d.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#12100C]/40 transition-colors">
-                  <td className="p-4">
-                    <span className="text-[12px] font-mono text-[#C5A059] bg-[#C5A059]/10 px-2 py-1 rounded-sm">{d.code}</span>
-                  </td>
-                  <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.type}</td>
-                  <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">
-                    {d.type === 'Percentage' ? `${d.value}%` : formatVal(d.value)}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 max-w-[80px] bg-[#12100C] rounded-full h-1.5">
-                        <div
-                          className="bg-[#C5A059] h-full rounded-full transition-all"
-                          style={{ width: `${Math.min(100, (d.uses / d.limit) * 100)}%` }}
-                        />
+              {loading ? (
+                <tr><td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse">Loading...</td></tr>
+              ) : discounts.length === 0 ? (
+                <tr><td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[#EAE6E1]/30">No coupons yet. Click "New Coupon" to create one.</td></tr>
+              ) : (
+                discounts.map(d => (
+                  <tr key={d.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#12100C]/40 transition-colors">
+                    <td className="p-4">
+                      <span className="text-[12px] font-mono text-[#C5A059] bg-[#C5A059]/10 px-2 py-1 rounded-sm">{d.code}</span>
+                    </td>
+                    <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.type}</td>
+                    <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">
+                      {d.type === 'Percentage' ? `${d.value}%` : formatVal(d.value)}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 max-w-[80px] bg-[#12100C] rounded-full h-1.5">
+                          <div
+                            className="bg-[#C5A059] h-full rounded-full transition-all"
+                            style={{ width: `${Math.min(100, (d.usage.used / d.usage.limit) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-mono text-[#EAE6E1]/40">{d.usage.used}/{d.usage.limit}</span>
                       </div>
-                      <span className="text-[9px] font-mono text-[#EAE6E1]/40">{d.uses}/{d.limit}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.expiry}</td>
-                  <td className="p-4">
-                    <Badge label={d.status} variant={d.status as any} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button
-                        onClick={() => toggleStatus(d.id)}
-                        className={`p-1.5 transition-colors border rounded-sm ${d.status === 'active' ? 'text-[#C5A059] border-[#C5A059]/20 hover:border-[#C5A059]/40' : 'text-[#EAE6E1]/30 border-[#EAE6E1]/10 hover:border-[#EAE6E1]/20'}`}
-                        title={d.status === 'active' ? 'Deactivate' : 'Activate'}
-                      >
-                        {d.status === 'active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
-                      </button>
-                      <button onClick={() => openEdit(d)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
-                        <Edit2 size={12} />
-                      </button>
-                      <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.expiry ? new Date(d.expiry).toLocaleDateString('en-IN') : '—'}</td>
+                    <td className="p-4">
+                      <Badge label={d.status} variant={d.status} />
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => toggleStatus(d)}
+                          className={`p-1.5 transition-colors border rounded-sm ${d.status === 'Active' ? 'text-[#C5A059] border-[#C5A059]/20 hover:border-[#C5A059]/40' : 'text-[#EAE6E1]/30 border-[#EAE6E1]/10 hover:border-[#EAE6E1]/20'}`}
+                          title={d.status === 'Active' ? 'Deactivate' : 'Activate'}
+                        >
+                          {d.status === 'Active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
+                        </button>
+                        <button onClick={() => openEdit(d)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
+                          <Edit2 size={12} />
+                        </button>
+                        <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -1192,12 +1450,18 @@ export function DiscountsSection() {
       <AnimatePresence>
         {showModal && (
           <Modal title={editingDiscount ? 'Edit Coupon' : 'New Coupon'} onClose={() => setShowModal(false)}>
-            <FormField label="Coupon Code">
+            {formError && (
+              <div className="mb-4 p-3 text-red-400 bg-red-900/10 border border-red-900/30 text-[11px] font-sans rounded-sm flex items-center gap-2">
+                <AlertCircle size={14} /> {formError}
+              </div>
+            )}
+            <FormField label="Coupon Code *">
               <input
                 value={form.code}
+                disabled={!!editingDiscount}
                 onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                 placeholder="e.g. ZEVRAE10"
-                className={inputCls}
+                className={`${inputCls} disabled:opacity-50 disabled:cursor-not-allowed`}
               />
             </FormField>
             <div className="grid grid-cols-2 gap-3">
@@ -1207,27 +1471,27 @@ export function DiscountsSection() {
                   <option>Fixed Amount</option>
                 </select>
               </FormField>
-              <FormField label={form.type === 'Percentage' ? 'Value (%)' : 'Value (INR)'}>
+              <FormField label={form.type === 'Percentage' ? 'Value (%) *' : 'Value (INR) *'}>
                 <input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} placeholder={form.type === 'Percentage' ? '10' : '500'} className={inputCls} />
               </FormField>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Usage Limit">
+              <FormField label="Usage Limit *">
                 <input type="number" value={form.limit} onChange={e => setForm(f => ({ ...f, limit: e.target.value }))} placeholder="500" className={inputCls} />
               </FormField>
-              <FormField label="Expiry Date">
+              <FormField label="Expiry Date *">
                 <input type="date" value={form.expiry} onChange={e => setForm(f => ({ ...f, expiry: e.target.value }))} className={inputCls} />
               </FormField>
             </div>
             <FormField label="Status">
               <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
-                <option value="active">Active</option>
-                <option value="expired">Inactive</option>
+                <option value="Active">Active</option>
+                <option value="Expired">Inactive</option>
               </select>
             </FormField>
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingDiscount ? 'Save Changes' : 'Create Coupon'}
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                <Save size={12} /> {saving ? 'Saving...' : editingDiscount ? 'Save Changes' : 'Create Coupon'}
               </button>
               <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
                 Cancel

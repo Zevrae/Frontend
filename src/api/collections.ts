@@ -15,4 +15,18 @@ export const collectionsApi = {
     const response = await api.get('/collections', { params });
     return response.data as { success: boolean; data: Collection[] };
   },
+
+  create: async (payload: { name: string; description?: string; status?: string; featured?: boolean }): Promise<Collection> => {
+    const response = await api.post('/collections', payload);
+    return response.data.data;
+  },
+
+  update: async (id: string, payload: Partial<{ name: string; description: string; status: string; featured: boolean }>): Promise<Collection> => {
+    const response = await api.put(`/collections/${id}`, payload);
+    return response.data.data;
+  },
+
+  remove: async (id: string): Promise<void> => {
+    await api.delete(`/collections/${id}`);
+  },
 };

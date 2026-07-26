@@ -2,12 +2,26 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { authApi, LoginData, RegisterData } from '../api/auth';
 import { tokenUtils } from '../utils/token';
 
+interface Address {
+  id?: string;
+  label?: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state?: string;
+  postal_code: string;
+  country: string;
+  is_default?: boolean;
+}
+
 interface User {
   _id: string;
+  id?: string;
   name: string;
   email: string;
   role: string;
   phone?: string;
+  addresses?: Address[];
   is_active: boolean;
   is_email_verified: boolean;
 }
@@ -19,6 +33,7 @@ interface AuthContextType {
   login: (data: LoginData) => Promise<void>;
   register: (data: RegisterData) => Promise<any>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -94,8 +109,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const userData = await authApi.getCurrentUser();
+      setUser(userData.data || userData);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

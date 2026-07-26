@@ -10,6 +10,7 @@ import ProductGrid from './ProductGrid';
 import CartDrawer from './CartDrawer';
 import CheckoutPage from './CheckoutPage';
 import BagPage from './BagPage';
+import ProfilePage from './ProfilePage';
 import AdminGate from './admin/AdminGate';
 import ProductPage from './ProductPage';
 import ShinyText from './components';
@@ -287,10 +288,16 @@ return (
               </button>
             )}
             {user ? (
-              <button onClick={() => logout()} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-                {displayName} | LOGOUT
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-              </button>
+              <>
+                <button onClick={() => navTransition(() => navigate('/profile'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+                  MY ACCOUNT
+                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                </button>
+                <button onClick={() => logout()} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+                  {displayName} | LOGOUT
+                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                </button>
+              </>
             ) : (
               <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
                 LOGIN
@@ -341,6 +348,7 @@ return (
               ...(isAdmin 
                 ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]
                 : []),
+              ...(user ? [{ name: 'My Account', href: '#', onClick: () => { navTransition(() => navigate('/profile')); setIsMenuOpen(false); } }] : []),
               user 
                 ? { name: `${displayName} | Logout`, href: '#', onClick: () => { logout(); setIsMenuOpen(false); } }
                 : { name: 'Login', href: '#', onClick: () => { navTransition(() => setIsLoginModalOpen(true)); setIsMenuOpen(false); } },
@@ -477,6 +485,7 @@ return (
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/bag" element={<BagPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/admin" element={<AdminGate />} />
         <Route path="/admin/orders" element={<AdminGate />} />
         <Route path="/admin/products" element={<AdminGate />} />

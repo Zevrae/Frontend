@@ -7,10 +7,11 @@ export interface Product {
   category: string;
   subcategory: string;
   price: number; // stored as smallest currency unit (integer)
-  compare_price: number; // stored as smallest currency unit (integer)
+  compare_price?: number | null; // optional — stored as smallest currency unit (integer)
   images: string[];
   sizes: string[];
   size_stock: Record<string, number>;
+  stock_quantity: number; // server-derived total across size_stock — read only, don't send this on create/update
   status: 'active' | 'inactive' | 'draft' | 'archived';
   collections: string[]; // multiple collection IDs
   created_at: string;

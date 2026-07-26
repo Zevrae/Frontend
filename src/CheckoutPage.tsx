@@ -7,7 +7,8 @@ import { useAuth } from './hooks/UseAuth';
 import { cartApi } from './api/cart';
 import { ordersApi } from './api/orders';
 import { paymentsApi } from './api/payments';
-import { ChevronLeft, ShieldCheck, Lock, Truck, CreditCard, Wallet, ArrowRight, CheckCircle2, Smartphone } from 'lucide-react';
+import { discountsApi, Discount } from './api/discounts';
+import { ChevronLeft, ShieldCheck, Lock, Truck, CreditCard, Wallet, ArrowRight, CheckCircle2, Smartphone, Tag, X as XIcon } from 'lucide-react';
 
 const loadScript = (src: string) => {
   return new Promise((resolve) => {
@@ -85,7 +86,38 @@ export default function CheckoutPage() {
 
   const subtotal = cartTotal;
   const shipping = subtotal > 1000 ? 0 : 19; // 19 INR shipping, free over 1000
-  const grandTotal = subtotal + shipping;
+
+  const [couponInput, setCouponInput] = useState('');
+  const [couponStatus, setCouponStatus] = useState<'idle' | 'checking' | 'applied' | 'error'>('idle');
+  const [couponError, setCouponError] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setCouponStatus('checking');
+    setCouponError('');
+    try {
+      // Preview only — doesn't consume a use. The code is only actually
+      // redeemed once, when the order is placed below.
+      const { discountAmount } = await discountsApi.preview(couponInput.trim().toUpperCase(), subtotal);
+      setAppliedDiscount({ code: couponInput.trim().toUpperCase(), amount: discountAmount });
+      setCouponStatus('applied');
+    } catch (err: any) {
+      setAppliedDiscount(null);
+      setCouponStatus('error');
+      setCouponError(err?.response?.data?.message || err.message || 'Invalid coupon code.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedDiscount(null);
+    setCouponInput('');
+    setCouponStatus('idle');
+    setCouponError('');
+  };
+
+  const discountAmount = appliedDiscount?.amount || 0;
+  const grandTotal = Math.max(0, subtotal + shipping - discountAmount);
 
   const buildShippingAddress = () => ({
     line1: shippingData.address,
@@ -132,6 +164,7 @@ export default function CheckoutPage() {
         const orderRes = await ordersApi.create({
           shipping_address: buildShippingAddress(),
           payment_method: 'online',
+          discount_code: appliedDiscount?.code,
         });
 
         if (!orderRes.payment) {
@@ -191,6 +224,7 @@ export default function CheckoutPage() {
         await ordersApi.create({
           shipping_address: buildShippingAddress(),
           payment_method: 'cod',
+          discount_code: appliedDiscount?.code,
         });
 
         clearCart();
@@ -577,6 +611,44 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon Code */}
+              <div className="mb-6">
+                {appliedDiscount ? (
+                  <div className="flex items-center justify-between bg-[#C5A059]/10 border border-[#C5A059]/30 rounded-sm px-4 py-3">
+                    <div className="flex items-center gap-2 text-[11px] font-plex-mono text-[#C5A059]">
+                      <Tag size={13} />
+                      <span className="tracking-wider">{appliedDiscount.code} applied</span>
+                    </div>
+                    <button onClick={handleRemoveCoupon} className="text-[#EAE6E1]/40 hover:text-[#EAE6E1] transition-colors">
+                      <XIcon size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={e => { setCouponInput(e.target.value.toUpperCase()); if (couponStatus === 'error') setCouponStatus('idle'); }}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
+                        placeholder="Coupon code"
+                        className="flex-1 bg-[#12100C] border border-[#EAE6E1]/15 px-4 py-2.5 text-[11px] font-plex-mono tracking-wider text-[#EAE6E1] placeholder:text-[#EAE6E1]/30 focus:border-[#C5A059]/50 focus:outline-none rounded-sm"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={!couponInput.trim() || couponStatus === 'checking'}
+                        className="px-5 py-2.5 border border-[#C5A059]/40 text-[#C5A059] text-[10px] uppercase tracking-[0.15em] font-plex-mono rounded-sm hover:bg-[#C5A059]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                      >
+                        {couponStatus === 'checking' ? 'Checking...' : 'Apply'}
+                      </button>
+                    </div>
+                    {couponStatus === 'error' && (
+                      <p className="text-[10px] text-red-400 font-sans mt-2">{couponError}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-4 border-t border-[#EAE6E1]/10 pt-6">
                 <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[#EAE6E1]/70">
                   <span>Subtotal</span>
@@ -586,6 +658,12 @@ export default function CheckoutPage() {
                   <span>Shipping</span>
                   <span className="font-mono text-[#EAE6E1]">{shipping === 0 ? 'Free' : formatVal(shipping)}</span>
                 </div>
+                {appliedDiscount && (
+                  <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[#C5A059]">
+                    <span>Discount ({appliedDiscount.code})</span>
+                    <span className="font-mono">−{formatVal(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-[14px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] pt-4 border-t border-[#C5A059]/20 mt-4">
                   <span>Total</span>
                   <span className="font-mono">{formatVal(grandTotal)}</span>

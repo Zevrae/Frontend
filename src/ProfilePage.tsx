@@ -1,0 +1,348 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon,
+} from 'lucide-react';
+import { useAuth } from './hooks/UseAuth';
+import { usersApi, Address } from './api/users';
+import { ordersApi, Order } from './api/orders';
+
+const formatVal = (val: number) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
+const formatDate = (d: string) =>
+  new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+const emptyAddress: Address = { label: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India', is_default: false };
+
+// The order lifecycle a tracking card visualizes. "cancelled" is handled
+// separately since it isn't a step along this line.
+const TRACK_STEPS: { key: Order['order_status']; label: string; icon: React.ReactNode }[] = [
+  { key: 'placed', label: 'Placed', icon: <Clock size={14} /> },
+  { key: 'processing', label: 'Processing', icon: <Package size={14} /> },
+  { key: 'shipped', label: 'Shipped', icon: <Truck size={14} /> },
+  { key: 'delivered', label: 'Delivered', icon: <CheckCircle2 size={14} /> },
+];
+
+function OrderTrackingCard({ order }: { order: Order }) {
+  const [expanded, setExpanded] = useState(false);
+  const isCancelled = order.order_status === 'cancelled';
+  const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
+
+  return (
+    <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
+      <button onClick={() => setExpanded(e => !e)} className="w-full p-5 flex items-center justify-between text-left hover:bg-[#12100C]/40 transition-colors">
+        <div>
+          <p className="text-[11px] font-mono text-[#EAE6E1]">Order #{order.id.slice(-8).toUpperCase()}</p>
+          <p className="text-[10px] font-sans text-[#EAE6E1]/40 mt-1">{formatDate(order.created_at)} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[12px] font-mono text-[#C5A059]">{formatVal(order.total)}</p>
+          <p className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mt-1">{expanded ? 'Hide details' : 'View details'}</p>
+        </div>
+      </button>
+
+      {/* Tracking progress */}
+      <div className="px-5 pb-5">
+        {isCancelled ? (
+          <div className="flex items-center gap-2 text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm px-3 py-2">
+            <XCircle size={14} /> This order was cancelled.
+          </div>
+        ) : (
+          <div className="flex items-center">
+            {TRACK_STEPS.map((step, i) => (
+              <React.Fragment key={step.key}>
+                <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${i <= currentIndex ? 'bg-[#C5A059] border-[#C5A059] text-black' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/25'}`}>
+                    {step.icon}
+                  </div>
+                  <span className={`text-[8px] uppercase tracking-wider font-sans ${i <= currentIndex ? 'text-[#C5A059]' : 'text-[#EAE6E1]/25'}`}>{step.label}</span>
+                </div>
+                {i < TRACK_STEPS.length - 1 && (
+                  <div className={`flex-1 h-[1px] mx-1 mb-4 ${i < currentIndex ? 'bg-[#C5A059]' : 'bg-[#EAE6E1]/10'}`} />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden border-t border-[#EAE6E1]/10"
+          >
+            <div className="p-5 space-y-4">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-2">Items</p>
+                <div className="space-y-2">
+                  {order.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-[11px] font-sans text-[#EAE6E1]/70">
+                      <span>{item.name} {item.size ? `(${item.size})` : ''} × {item.quantity}</span>
+                      <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-2">Shipping Address</p>
+                <p className="text-[11px] font-sans text-[#EAE6E1]/70">
+                  {[order.shipping_address.line1, order.shipping_address.line2, order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code, order.shipping_address.country].filter(Boolean).join(', ')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] font-sans text-[#EAE6E1]/40 pt-2 border-t border-[#EAE6E1]/5">
+                <span>Payment: {order.payment_method === 'cod' ? 'Cash on Delivery' : 'Paid Online'}</span>
+                <span>·</span>
+                <span className="capitalize">{order.payment_status}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export default function ProfilePage() {
+  const { user, loading: authLoading, refreshUser } = useAuth();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<'profile' | 'orders'>('profile');
+
+  useEffect(() => {
+    if (!authLoading && user === null) navigate('/');
+  }, [user, authLoading, navigate]);
+
+  // ── Profile form ──────────────────────────────────────────────────────────
+  const [name, setName] = useState(user?.name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [addresses, setAddresses] = useState<Address[]>(user?.addresses || []);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [addrModalOpen, setAddrModalOpen] = useState(false);
+  const [editingAddrIdx, setEditingAddrIdx] = useState<number | null>(null);
+  const [addrForm, setAddrForm] = useState<Address>(emptyAddress);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setPhone(user.phone || '');
+      setAddresses(user.addresses || []);
+    }
+  }, [user]);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      await usersApi.updateMe({ name, phone, addresses });
+      await refreshUser();
+      setSaveMsg('Profile updated.');
+      setTimeout(() => setSaveMsg(''), 3000);
+    } catch (err: any) {
+      setSaveMsg(err?.response?.data?.message || err.message || 'Update failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openAddAddress = () => { setEditingAddrIdx(null); setAddrForm(emptyAddress); setAddrModalOpen(true); };
+  const openEditAddress = (idx: number) => { setEditingAddrIdx(idx); setAddrForm(addresses[idx]); setAddrModalOpen(true); };
+
+  const saveAddress = () => {
+    if (!addrForm.line1.trim() || !addrForm.city.trim() || !addrForm.postal_code.trim()) return;
+    setAddresses(prev => {
+      const next = [...prev];
+      if (editingAddrIdx !== null) next[editingAddrIdx] = addrForm;
+      else next.push(addrForm);
+      return next;
+    });
+    setAddrModalOpen(false);
+  };
+
+  const removeAddress = (idx: number) => {
+    setAddresses(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [ordersError, setOrdersError] = useState('');
+
+  useEffect(() => {
+    if (tab !== 'orders' || !user) return;
+    setOrdersLoading(true);
+    setOrdersError('');
+    ordersApi.list({ limit: 50 })
+      .then(({ data }) => setOrders(data))
+      .catch(() => setOrdersError('Could not load your orders. Please try again.'))
+      .finally(() => setOrdersLoading(false));
+  }, [tab, user]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#12100C] flex items-center justify-center">
+        <div className="text-[#C5A059] animate-pulse text-[11px] uppercase tracking-[0.2em] font-plex-mono">Loading...</div>
+      </div>
+    );
+  }
+
+  const inputCls = "w-full bg-[#12100C] border border-[#EAE6E1]/10 px-4 py-2.5 text-[12px] font-sans text-[#EAE6E1] placeholder:text-[#EAE6E1]/25 focus:border-[#C5A059]/50 focus:outline-none rounded-sm";
+
+  return (
+    <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans pt-[100px] pb-24 px-6">
+      <div className="max-w-[900px] mx-auto">
+        <button onClick={() => navigate('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[#EAE6E1]/50 hover:text-[#C5A059] transition-colors mb-10">
+          <ChevronLeft size={16} className="mr-2" /> Back to Home
+        </button>
+
+        <h1 className="text-[13px] uppercase tracking-[0.3em] font-plex-mono text-[#C5A059] mb-2">My Account</h1>
+        <p className="text-[12px] font-sans text-[#EAE6E1]/40 mb-8">{user.name} · {user.email}</p>
+
+        {/* Tabs */}
+        <div className="flex gap-6 border-b border-[#EAE6E1]/10 mb-8">
+          <button
+            onClick={() => setTab('profile')}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'profile' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
+          >
+            <UserIcon size={13} /> Profile
+          </button>
+          <button
+            onClick={() => setTab('orders')}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'orders' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
+          >
+            <Package size={13} /> Orders
+          </button>
+        </div>
+
+        {tab === 'profile' ? (
+          <div className="space-y-8">
+            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-6">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] mb-5">Personal Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mb-1.5 block">Name</label>
+                  <input value={name} onChange={e => setName(e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mb-1.5 block">Phone</label>
+                  <input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls} placeholder="10-digit mobile number" />
+                </div>
+              </div>
+              <div className="mb-2">
+                <label className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mb-1.5 block">Email</label>
+                <input value={user.email} disabled className={`${inputCls} opacity-50 cursor-not-allowed`} />
+              </div>
+              {saveMsg && <p className="text-[10px] font-sans text-[#C5A059] mt-3">{saveMsg}</p>}
+              <button onClick={handleSaveProfile} disabled={saving} className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors disabled:opacity-50">
+                <Save size={12} /> {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+
+            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-6">
+              <div className="flex items-center justify-between mb-5">
+                <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] flex items-center gap-2"><MapPin size={13} /> Saved Addresses</p>
+                <button onClick={openAddAddress} className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-sans text-[#C5A059] hover:text-[#D4AE68] transition-colors">
+                  <Plus size={12} /> Add Address
+                </button>
+              </div>
+              {addresses.length === 0 ? (
+                <p className="text-[11px] font-sans text-[#EAE6E1]/30">No saved addresses yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {addresses.map((addr, idx) => (
+                    <div key={idx} className="border border-[#EAE6E1]/10 rounded-sm p-4 relative">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-wider font-sans text-[#C5A059]">{addr.label || 'Address'} {addr.is_default && '· Default'}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => openEditAddress(idx)} className="text-[#EAE6E1]/30 hover:text-[#C5A059]"><Edit2 size={11} /></button>
+                          <button onClick={() => removeAddress(idx)} className="text-[#EAE6E1]/30 hover:text-red-400"><Trash2 size={11} /></button>
+                        </div>
+                      </div>
+                      <p className="text-[11px] font-sans text-[#EAE6E1]/60 leading-relaxed">
+                        {[addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country].filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-[9px] font-sans text-[#EAE6E1]/25 mt-4">Address changes are saved together with "Save Changes" above.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {ordersError && (
+              <p className="text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm px-4 py-3">{ordersError}</p>
+            )}
+            {ordersLoading ? (
+              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] animate-pulse text-center py-16">Loading orders...</p>
+            ) : orders.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-[12px] font-sans text-[#EAE6E1]/40 mb-4">You haven't placed any orders yet.</p>
+                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] hover:text-[#D4AE68] transition-colors">Start Shopping</button>
+              </div>
+            ) : (
+              orders.map(order => <OrderTrackingCard key={order.id} order={order} />)
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Address Modal */}
+      <AnimatePresence>
+        {addrModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-6"
+            onClick={() => setAddrModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-6 w-full max-w-md"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059]">{editingAddrIdx !== null ? 'Edit Address' : 'Add Address'}</p>
+                <button onClick={() => setAddrModalOpen(false)} className="text-[#EAE6E1]/40 hover:text-[#EAE6E1]"><XIcon size={16} /></button>
+              </div>
+              <div className="space-y-3">
+                <input value={addrForm.label || ''} onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))} placeholder="Label (e.g. Home, Work)" className={inputCls} />
+                <input value={addrForm.line1} onChange={e => setAddrForm(f => ({ ...f, line1: e.target.value }))} placeholder="Address line 1 *" className={inputCls} />
+                <input value={addrForm.line2 || ''} onChange={e => setAddrForm(f => ({ ...f, line2: e.target.value }))} placeholder="Address line 2" className={inputCls} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input value={addrForm.city} onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))} placeholder="City *" className={inputCls} />
+                  <input value={addrForm.state || ''} onChange={e => setAddrForm(f => ({ ...f, state: e.target.value }))} placeholder="State" className={inputCls} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <input value={addrForm.postal_code} onChange={e => setAddrForm(f => ({ ...f, postal_code: e.target.value }))} placeholder="Postal code *" className={inputCls} />
+                  <input value={addrForm.country} onChange={e => setAddrForm(f => ({ ...f, country: e.target.value }))} placeholder="Country" className={inputCls} />
+                </div>
+                <label className="flex items-center gap-2 text-[10px] font-sans text-[#EAE6E1]/50 pt-1">
+                  <input type="checkbox" checked={!!addrForm.is_default} onChange={e => setAddrForm(f => ({ ...f, is_default: e.target.checked }))} />
+                  Set as default address
+                </label>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={saveAddress} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors">
+                  {editingAddrIdx !== null ? 'Save Address' : 'Add Address'}
+                </button>
+                <button onClick={() => setAddrModalOpen(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
