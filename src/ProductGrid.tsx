@@ -14,15 +14,14 @@ import pendantImg from "./assets/static/PENDANT.png";
 import braceletImg from "./assets/static/BRACELET.png";
 import menTshirts from "./assets/static/menTshirts.png";
 import womenTops from "./assets/static/womenTops.png";
+
 const mensCategories = [
-  
-    {
+  {
     id: 'tshirts',
     name: 'TSHIRTS',
     image: menTshirts,
     path: '/men/tshirts'
-}
-  ,
+  },
   {
     id: 'lowers',
     name: 'LOWERS',
@@ -30,13 +29,14 @@ const mensCategories = [
     path: '/men/lowers'
   }
 ];
+
 const womensCategories = [
   {
     id: 'tshirts',
     name: 'TSHIRTS',
     image: womenTops,
     path: '/women/tshirts'
-},
+  },
   {
     id: 'lowers',
     name: 'LOWERS',
@@ -44,6 +44,7 @@ const womensCategories = [
     path: '/women/lowers'
   }
 ];
+
 const jewelleryCategories = [
   {
     id: 'rings',
@@ -52,30 +53,27 @@ const jewelleryCategories = [
     fit: 'contain',
     path: '/jewellery/'
   },
-  
-    {
-  id: 'pendants',
-  name: 'PENDANTS',
-  image: pendantImg,
-  fit: 'contain',
-  path: '/jewellery/pendants'
-},
   {
-  id: 'bracelet',
-  name: 'BRACELET',
-  image: braceletImg,
-  fit: 'contain',
-  path: '/jewellery/bracelet'
-},
-  
-    {
-  id: 'ear',
-  name: 'EAR',
-  image: earringsImg,
-  fit: 'contain',
-  path: '/jewellery/ear'
-}
-  
+    id: 'pendants',
+    name: 'PENDANTS',
+    image: pendantImg,
+    fit: 'contain',
+    path: '/jewellery/pendants'
+  },
+  {
+    id: 'bracelet',
+    name: 'BRACELET',
+    image: braceletImg,
+    fit: 'contain',
+    path: '/jewellery/bracelet'
+  },
+  {
+    id: 'ear',
+    name: 'EAR',
+    image: earringsImg,
+    fit: 'contain',
+    path: '/jewellery/ear'
+  }
 ];
 
 const accessoriesCategories = [
@@ -94,9 +92,13 @@ const accessoriesCategories = [
     path: '/accessories/toys'
   }
 ];
-export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter?: 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'pendants' | 'keychain' | 'bracelet' | 'toys' | 'ear' | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' }) {
-  const navigate = useNavigate();
 
+export default function ProductGrid({ 
+  categoryFilter = 'all' 
+}: { 
+  categoryFilter?: 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'pendants' | 'keychain' | 'bracelet' | 'toys' | 'ear' | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' 
+}) {
+  const navigate = useNavigate();
   const [dbProducts, setDbProducts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -130,8 +132,9 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
     fetchDbProducts();
   }, [categoryFilter]);
 
-  const dbMenProducts = dbProducts.filter((p: any) => p.gender === 'men');
-  const dbWomenProducts = dbProducts.filter((p: any) => p.gender === 'women');
+  // ─── ADDED UNISEX TO BOTH MEN'S AND WOMEN'S FILTERS ───
+  const dbMenProducts = dbProducts.filter((p: any) => p.gender === 'men' || p.gender === 'unisex');
+  const dbWomenProducts = dbProducts.filter((p: any) => p.gender === 'women' || p.gender === 'unisex');
   const dbJewelleryProducts = dbProducts.filter((p: any) => p.gender === 'jewellery');
 
   const allWomenProducts = dbWomenProducts;
@@ -139,12 +142,25 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
   const allJewelleryProducts = dbJewelleryProducts;
   const displayJewelleryProducts = categoryFilter === 'all' ? allJewelleryProducts.slice(0, 3) : allJewelleryProducts;
 
+  // ─── CLEANED UP SUBCATEGORY FILTERING ───
+  const isMenFilter = categoryFilter.startsWith('men');
+  const isTshirtFilter = categoryFilter.includes('tshirts');
+  
+  // This smoothly grabs Men/Women + Unisex based on the active tab
+  const activeSubcategoryProducts = dbProducts.filter(p => 
+    (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') && 
+    p.type === (isTshirtFilter ? 'tshirt' : 'lower')
+  );
+
   const openProduct = (product: any) => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
+
   return (
     <>
       <AnimatePresence mode="wait">
+      
+      {/* ── MEN'S SECTION ── */}
       {categoryFilter === 'men' && (
         <motion.section 
           key="men"
@@ -188,14 +204,12 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    
                     <img 
                       src={item.image} 
                       alt={item.name} 
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                       referrerPolicy="no-referrer"
                     />
-                    
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">
@@ -227,6 +241,8 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           )}
         </motion.section>
       )}
+
+      {/* ── GENDERED SUBCATEGORIES (MEN/WOMEN TSHIRTS & LOWERS) ── */}
       {['men-tshirts', 'men-lowers', 'women-tshirts', 'women-lowers'].includes(categoryFilter) && (
         <motion.section 
           key="gendered-category"
@@ -245,7 +261,7 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
               transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
               className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
             >
-              {categoryFilter.startsWith('men') ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
+              {isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
             </motion.h2>
             <motion.h3
               initial={{ opacity: 0, y: 20 }}
@@ -254,26 +270,20 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
               transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
               className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
             >
-              {categoryFilter.startsWith('men') ? "MEN'S " : "WOMEN'S "}
-              {categoryFilter.includes('tshirts') ? 'TSHIRTS' : 'LOWERS'}
+              {isMenFilter ? "MEN'S " : "WOMEN'S "}
+              {isTshirtFilter ? 'TSHIRTS' : 'LOWERS'}
             </motion.h3>
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            {((categoryFilter.startsWith('men') ? dbMenProducts : allWomenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).length === 0 ? (
+            {activeSubcategoryProducts.length === 0 ? (
               <div className="w-full flex justify-center py-24">
                 <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">
                   New Collection Coming Soon
                 </h3>
               </div>
-            ) : categoryFilter.startsWith('men') ? (
-              <div className="pinterest-grid">
-                {((categoryFilter.startsWith('men') ? dbMenProducts : allWomenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).map((item, i) => (
-                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
-                ))}
-              </div>
             ) : (
               <div className="pinterest-grid">
-                {((categoryFilter.startsWith('men') ? dbMenProducts : allWomenProducts)).filter(p => p.gender === (categoryFilter.startsWith('men') ? 'men' : 'women') && p.type === (categoryFilter.includes('tshirts') ? 'tshirt' : 'lower')).map((item, i) => (
+                {activeSubcategoryProducts.map((item, i) => (
                   <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
                 ))}
               </div>
@@ -281,6 +291,8 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           </div>
         </motion.section>
       )}
+
+      {/* ── WOMEN'S SECTION ── */}
       {categoryFilter === 'women' && (
         <motion.section 
           key="women"
@@ -324,14 +336,12 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    
                     <img 
                       src={item.image} 
                       alt={item.name} 
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                       referrerPolicy="no-referrer"
                     />
-                    
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">
@@ -343,8 +353,28 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
               ))}
             </div>
           </div>
+          {allWomenProducts.length > 0 && (
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
+                className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left"
+              >
+                FROM OUR CATALOG
+              </motion.h2>
+              <div className="pinterest-grid">
+                {allWomenProducts.map((item, i) => (
+                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                ))}
+              </div>
+            </div>
+          )}
         </motion.section>
       )}
+
+      {/* ── ACCESSORIES ── */}
       {categoryFilter === 'accessories' && (
         <motion.section 
           key="accessories"
@@ -406,6 +436,8 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           </div>
         </motion.section>
       )}
+
+      {/* ── JEWELLERY ── */}
       {categoryFilter === 'jewellery' && (
         <motion.section 
           key="jewellery"
@@ -448,20 +480,14 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
                   className="group relative flex flex-col cursor-pointer"
                   onClick={() => navigate(item.path)}
                 >
-                  {/* Antigravity & Glow Container */}
                   <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    
-                    {/* Image with Zoom */}
                     <img 
                       src={item.image} 
                       alt={item.name} 
                       className={`absolute inset-0 w-full h-full ${'fit' in item && item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
                       referrerPolicy="no-referrer"
                     />
-                    
-                    {/* Overlay Gradient */}
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
-                    {/* Centered Text */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase text-center w-full px-2">
                         {item.name}
@@ -474,6 +500,8 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           </div>
         </motion.section>
       )}
+
+      {/* ── JEWELLERY SUBCATEGORIES ── */}
       {['', 'pendants', 'bracelet', 'ear'].includes(categoryFilter) && (
         <motion.section 
           key="jewellery-category"
@@ -513,6 +541,8 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           </div>
         </motion.section>
       )}
+
+      {/* ── ACCESSORIES SUBCATEGORIES ── */}
       {['keychain', 'toys'].includes(categoryFilter) && (
         <motion.section 
           key="accessories-category"
@@ -545,14 +575,15 @@ export default function ProductGrid({ categoryFilter = 'all' }: { categoryFilter
           </div>
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             <div className="pinterest-grid">
-              {allJewelleryProducts.filter(p => p.category === categoryFilter).map((item, i) => (
+              {dbProducts.filter(p => p.category === categoryFilter).map((item, i) => (
                 <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
               ))}
             </div>
           </div>
         </motion.section>
       )}
-    </AnimatePresence>
+
+      </AnimatePresence>
     </>
   );
 }

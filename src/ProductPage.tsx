@@ -99,6 +99,11 @@ export default function ProductPage() {
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token } = useAuth();
+  
+  const [product, setProduct] = useState<ProductDetail | null>(
+    (location.state as { product?: ProductDetail } | null)?.product || null
+  );
+
   const [selectedSize, setSelectedSize] = useState('');
   const [sizeError, setSizeError] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -109,25 +114,66 @@ export default function ProductPage() {
   const [tryOnOpen, setTryOnOpen] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
 
-  const product = (location.state as { product?: ProductDetail } | null)?.product;
+  // ─── HYDRATE PRODUCT IF DATA IS INCOMPLETE ───
+  useEffect(() => {
+    const hydrateProduct = async () => {
+      if (!params.id) return;
+      try {
+        const { data } = await productsApi.list({ status: 'active', limit: 100 });
+        const p = data.find((item: any) => item.id === params.id);
+        if (p) {
+          setProduct({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            originalPrice: p.compare_price,
+            label: `${p.category} Premium`,
+            category: p.category?.toLowerCase(),
+            type: p.subcategory?.toLowerCase(),
+            sizes: p.sizes,
+            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
+            frontImg: p.images?.[0] || '',
+            backImg: p.images?.[1] || p.images?.[0] || '',
+            images: p.images || [],
+            description: p.description
+          });
+        }
+      } catch (e) {
+        console.error("Failed to hydrate product", e);
+      }
+    };
 
+    const routeProduct = (location.state as any)?.product;
+    // If the route didn't provide a product, OR if it provided one but it's missing the images array, fetch the full details.
+    if (!routeProduct || !routeProduct.images || routeProduct.images.length === 0) {
+      hydrateProduct();
+    } else {
+      setProduct(routeProduct);
+    }
+  }, [params.id, location.state]);
+
+  // ─── AGGRESSIVE IMAGE DEDUPLICATION ───
   const images = useMemo(() => {
     if (!product) return [];
-    const imgs = [product.frontImg];
-    if (product.backImg && product.backImg !== product.frontImg) imgs.push(product.backImg);
-    if (product.images) {
-      product.images.forEach((img) => {
-        if (!imgs.includes(img)) imgs.push(img);
-      });
+    const imgs: string[] = [];
+    
+    // Always start with front and back images if they exist
+    if (product.frontImg) imgs.push(product.frontImg);
+    if (product.backImg) imgs.push(product.backImg);
+    
+    // Push the full array from backend
+    if (product.images && Array.isArray(product.images)) {
+      imgs.push(...product.images);
     }
-    return imgs;
+    
+    // Convert to Set to remove duplicates, and filter out empty strings
+    return Array.from(new Set(imgs)).filter(Boolean);
   }, [product]);
 
   // ─── PARSE RICH TEXT INTO ACCORDIONS ───
   const parsedDescriptionSections = useMemo(() => {
     if (!product?.description) return null;
     
-    // If the description doesn't use the template (no <h2> tags), wrap it in a default "Details" accordion
     if (!product.description.includes('<h2>')) {
       return [{ title: 'Details', content: product.description }];
     }
@@ -135,7 +181,6 @@ export default function ProductPage() {
     const parts = product.description.split('<h2>');
     const sections: { title: string; content: string }[] = [];
 
-    // If there is text before the first <h2>, add it as a "Details" section
     if (parts[0].trim()) {
       sections.push({ title: 'Details', content: parts[0].trim() });
     }
@@ -143,7 +188,6 @@ export default function ProductPage() {
     for (let i = 1; i < parts.length; i++) {
       const closeIdx = parts[i].indexOf('</h2>');
       if (closeIdx !== -1) {
-        // Strip HTML tags and decode &amp; HTML entities back to '&'
         const rawTitle = parts[i]
           .substring(0, closeIdx)
           .replace(/<[^>]*>?/gm, '')
@@ -167,7 +211,7 @@ export default function ProductPage() {
     setQuantity(1);
     setActiveImg(0);
     setAdded(false);
-  }, [product?.id]);
+  }, [params.id]);
 
   // Fetch related products
   useEffect(() => {
@@ -195,12 +239,14 @@ export default function ProductPage() {
             discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
             frontImg: p.images?.[0] || '',
             backImg: p.images?.[1] || p.images?.[0] || '',
+            images: p.images || [], // Included to pass all images to the next view
+            description: p.description
           }));
         setRelatedProducts(related);
       } catch {}
     };
     fetchRelated();
-  }, [product?.id]);
+  }, [product]);
 
   const switchImage = (index: number) => {
     if (index === activeImg) return;
@@ -247,17 +293,7 @@ export default function ProductPage() {
     return (
       <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] flex items-center justify-center px-6">
         <div className="max-w-lg text-center space-y-6">
-          <p className="text-[10px] uppercase tracking-[0.4em] text-[#C8A96A]">Product not found</p>
-          <h1 className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] uppercase">
-            {params.id}
-          </h1>
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 border border-[#EAE6E1]/20 px-5 py-3 text-[10px] uppercase tracking-[0.2em] text-[#EAE6E1]/70 hover:text-[#EAE6E1] hover:border-[#C8A96A]/40 transition-colors duration-300"
-          >
-            <ChevronLeft size={14} />
-            Go Back
-          </button>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[#C8A96A]">Loading product...</p>
         </div>
       </div>
     );

@@ -333,22 +333,6 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
 }
 
 // ─── DB Product type ──────────────────────────────────────────────────────────
-//
-// INTEGRATION NOTE (flagging, not guessing): three different shapes exist for
-// per-size inventory across this stack right now:
-//   • models/Product.js (backend)   -> stock_quantity: Number (single total, no sizes)
-//   • src/api/products.ts (`Product`) -> sizes: string[] + size_stock: Record<string, number>
-//   • this file's admin UI (`DbProduct`, below) -> stock_quantity: StockItem[]
-// None of these agree, and the backend schema has no field that can actually
-// persist a per-size breakdown today. `productToDbProduct` / `dbProductPayload`
-// below adapt between the UI shape and the `api/products.ts` shape so the app
-// compiles and behaves consistently on the frontend, and — as a stopgap — the
-// payload also writes a total `stock_quantity` (sum across sizes) into the one
-// field the backend schema actually has. The per-size breakdown itself will
-// NOT round-trip through the real API until the Product model gets a proper
-// field for it (e.g. an embedded `[{ size, quantity }]` array, or a
-// `size_stock` Map). That's a schema decision for the backend owner to make,
-// not something to silently invent here.
 
 interface StockItem {
   size: string;
@@ -460,8 +444,8 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
   name: '',
   description: PRODUCT_TEMPLATE, // Set the default description to the template
   collections: [],
-  category: 'Men',
-  subcategory: 'T-Shirts',
+  category: '',
+  subcategory: '',
   price: 0,
   compare_price: null,
   discount: null,
@@ -485,12 +469,18 @@ export function ProductsSection() {
   const [formError, setFormError] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [search, setSearch] = useState('');
+  
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     collectionsApi.list({ status: 'active' })
       .then(({ data }) => setCollections(data || []))
       .catch(() => setCollections([]));
+
+    categoriesApi.list()
+      .then(({ data }) => setAvailableCategories(data || []))
+      .catch(() => setAvailableCategories([]));
   }, []);
 
   const fetchDbProducts = async () => {
@@ -802,7 +792,16 @@ export function ProductsSection() {
             </FormField>
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Category *">
-                <input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={inputCls} />
+                <select 
+                  value={form.category} 
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))} 
+                  className={selectCls}
+                >
+                  <option value="" disabled>Select a category</option>
+                  {availableCategories.filter(c => !c.parent).map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
               </FormField>
               <FormField label="Subcategory *">
                 <input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} className={inputCls} />
