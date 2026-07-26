@@ -364,6 +364,7 @@ interface DbProduct {
   subcategory: string;
   price: number;
   compare_price: number | null;
+  discount: number | null;
   stock_quantity: StockItem[];
   in_stock: boolean;
   images: string[];
@@ -390,6 +391,7 @@ function productToDbProduct(p: Product): DbProduct {
     subcategory: p.subcategory,
     price: p.price,
     compare_price: p.compare_price ?? null,
+    discount: p.discount ?? null,
     stock_quantity,
     in_stock: stock_quantity.some(s => s.quantity > 0) || stock_quantity.length === 0,
     images: p.images || [],
@@ -414,6 +416,7 @@ function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_delete
     subcategory: form.subcategory,
     price: form.price,
     compare_price: form.compare_price ?? undefined,
+    discount: form.discount ?? undefined,
     images: form.images,
     status: form.status as Product['status'],
     sizes,
@@ -431,6 +434,7 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
   subcategory: 'T-Shirts',
   price: 0,
   compare_price: null,
+  discount: null,
   stock_quantity: [],
   in_stock: true,
   images: [],
@@ -783,6 +787,21 @@ export function ProductsSection() {
                 <input type="number" value={form.compare_price ?? ''} onChange={e => setForm(f => ({ ...f, compare_price: e.target.value ? Number(e.target.value) : null }))} className={inputCls} />
               </FormField>
             </div>
+
+            <FormField label="Discount (%)">
+              <input
+                type="number"
+                min="0"
+                max="99"
+                value={form.discount ?? ''}
+                onChange={e => setForm(f => ({ ...f, discount: e.target.value ? Number(e.target.value) : null }))}
+                placeholder="e.g. 10 for 10% off"
+                className={inputCls}
+              />
+              {form.discount && form.discount > 0 && (
+                <p className="text-[9px] text-emerald-400 font-sans mt-1.5">-{form.discount}% discount applied</p>
+              )}
+            </FormField>
 
             <FormField label="Inventory (Sizes & Quantity)">
               <div className="flex flex-col gap-2 mt-1">

@@ -452,7 +452,13 @@ interface DbProduct {
   subcategory: string;
   price: number;
   compare_price: number | null;
+<<<<<<< HEAD
   sizes: string[];
+=======
+  stock_quantity: StockItem[];
+  discount: number | null;
+  in_stock: boolean;
+>>>>>>> 20a751a107af6b65bbcecf8665be582c282be07d
   images: string[];
   status: string;
   created_at: string;
@@ -467,7 +473,13 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at'> => ({
   subcategory: 'T-Shirts',
   price: 0,
   compare_price: null,
+<<<<<<< HEAD
   sizes: [],
+=======
+  discount: null,
+  stock_quantity: [],
+  in_stock: true,
+>>>>>>> 20a751a107af6b65bbcecf8665be582c282be07d
   images: [],
   status: 'active',
 });
@@ -496,7 +508,7 @@ function ProductsSection() {
     setDbError('');
     try {
       const { data } = await productsApi.list({ limit: 100 });
-      setDbProducts((data as DbProduct[]) || []);
+      setDbProducts((data as unknown as DbProduct[]) || []);
     } catch (err: any) {
       setDbError('Could not load products. Make sure the database is connected.');
     } finally {
@@ -524,7 +536,13 @@ function ProductsSection() {
       subcategory: p.subcategory,
       price: p.price,
       compare_price: p.compare_price,
+<<<<<<< HEAD
       sizes: p.sizes || [],
+=======
+      discount: p.discount ?? null,
+      stock_quantity: p.stock_quantity || [],
+      in_stock: p.in_stock ?? true,
+>>>>>>> 20a751a107af6b65bbcecf8665be582c282be07d
       images: p.images || [],
       status: p.status,
     });
