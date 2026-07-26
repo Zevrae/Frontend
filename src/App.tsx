@@ -37,6 +37,9 @@ export default function App() {
   const [isClothingOpen, setIsClothingOpen] = useState(false);
   const [isMobileClothingOpen, setIsMobileClothingOpen] = useState(false);
   const clothingDropdownRef = useRef<HTMLDivElement>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { scrollY } = useScroll();
@@ -79,6 +82,9 @@ export default function App() {
     const handleClickOutside = (event: MouseEvent) => {
       if (clothingDropdownRef.current && !clothingDropdownRef.current.contains(event.target as Node)) {
         setIsClothingOpen(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -288,16 +294,45 @@ return (
               </button>
             )}
             {user ? (
-              <>
-                <button onClick={() => navTransition(() => navigate('/profile'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-                  MY ACCOUNT
+              <div className="relative" ref={profileDropdownRef}>
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)} 
+                  className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700 uppercase"
+                >
+                  {displayName}
                   <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
                 </button>
-                <button onClick={() => logout()} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-                  {displayName} | LOGOUT
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-                </button>
-              </>
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute top-[calc(100%+1.5rem)] right-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                    >
+                      <button 
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          navTransition(() => navigate('/profile'));
+                        }}
+                        className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em] uppercase"
+                      >
+                        PROFILE
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          logout();
+                        }}
+                        className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em] uppercase"
+                      >
+                        LOGOUT
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
                 LOGIN
@@ -348,10 +383,15 @@ return (
               ...(isAdmin 
                 ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]
                 : []),
-              ...(user ? [{ name: 'My Account', href: '#', onClick: () => { navTransition(() => navigate('/profile')); setIsMenuOpen(false); } }] : []),
-              user 
-                ? { name: `${displayName} | Logout`, href: '#', onClick: () => { logout(); setIsMenuOpen(false); } }
-                : { name: 'Login', href: '#', onClick: () => { navTransition(() => setIsLoginModalOpen(true)); setIsMenuOpen(false); } },
+              ...(user ? [
+                { name: displayName || 'USER', href: '#', onClick: () => setIsMobileProfileOpen(!isMobileProfileOpen) },
+                ...(isMobileProfileOpen ? [
+                  { name: '- Profile', href: '#', onClick: () => { navTransition(() => navigate('/profile')); setIsMenuOpen(false); setIsMobileProfileOpen(false); }, isSubItem: true },
+                  { name: '- Logout', href: '#', onClick: () => { logout(); setIsMenuOpen(false); setIsMobileProfileOpen(false); }, isSubItem: true },
+                ] : [])
+              ] : [
+                { name: 'Login', href: '#', onClick: () => { navTransition(() => setIsLoginModalOpen(true)); setIsMenuOpen(false); } }
+              ]),
               { name: `Bag(${items.reduce((total, item) => total + item.quantity, 0)})`, href: '#', onClick: () => { navTransition(() => navigate('/bag')); setIsMenuOpen(false); } }
             ].map((item, i) => (
               <motion.a
