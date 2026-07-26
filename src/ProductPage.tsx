@@ -123,6 +123,43 @@ export default function ProductPage() {
     return imgs;
   }, [product]);
 
+  // ─── PARSE RICH TEXT INTO ACCORDIONS ───
+  const parsedDescriptionSections = useMemo(() => {
+    if (!product?.description) return null;
+    
+    // If the description doesn't use the template (no <h2> tags), wrap it in a default "Details" accordion
+    if (!product.description.includes('<h2>')) {
+      return [{ title: 'Details', content: product.description }];
+    }
+
+    const parts = product.description.split('<h2>');
+    const sections: { title: string; content: string }[] = [];
+
+    // If there is text before the first <h2>, add it as a "Details" section
+    if (parts[0].trim()) {
+      sections.push({ title: 'Details', content: parts[0].trim() });
+    }
+
+    for (let i = 1; i < parts.length; i++) {
+      const closeIdx = parts[i].indexOf('</h2>');
+      if (closeIdx !== -1) {
+        // Strip HTML tags and decode &amp; HTML entities back to '&'
+        const rawTitle = parts[i]
+          .substring(0, closeIdx)
+          .replace(/<[^>]*>?/gm, '')
+          .replace(/&amp;/gi, '&')
+          .trim();
+
+        sections.push({
+          title: rawTitle,
+          content: parts[i].substring(closeIdx + 5).trim()
+        });
+      }
+    }
+    
+    return sections.length > 0 ? sections : null;
+  }, [product?.description]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setSelectedSize('');
@@ -554,29 +591,32 @@ export default function ProductPage() {
                 </button>
               </motion.div>
 
-              {/* ── PRODUCT DETAILS (RICH TEXT OR FALLBACK) ── */}
+              {/* ── PRODUCT DETAILS (PARSED RICH TEXT OR FALLBACK) ── */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-                className="pt-4"
+                className="pt-2"
               >
-                {product.description && product.description.includes('<h2>') ? (
-                  // Display Rich HTML generated from Admin Panel seamlessly styled
-                  <div 
-                    className="rich-text-content text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed
-                      [&_h2]:text-[11px] [&_h2]:uppercase [&_h2]:tracking-[0.3em] [&_h2]:text-[#EAE6E1]/70 [&_h2]:py-5 [&_h2]:border-t [&_h2]:border-[#EAE6E1]/10 
-                      [&_ul]:pb-6 [&_ul]:space-y-2.5
-                      [&_li]:flex [&_li]:items-start [&_li]:gap-3
-                      [&_li::before]:content-['—'] [&_li::before]:text-[#C8A96A] [&_li::before]:shrink-0 [&_li::before]:mt-0.5
-                      [&_p]:pb-3
-                      [&_strong]:text-[#EAE6E1]/35 [&_strong]:uppercase [&_strong]:tracking-[0.25em] [&_strong]:text-[10px] [&_strong]:w-28 [&_strong]:shrink-0 [&_strong]:inline-block [&_strong]:font-normal"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
+                {parsedDescriptionSections ? (
+                  // Map the split rich text into Accordions
+                  parsedDescriptionSections.map((section, idx) => (
+                    <AccordionSection key={idx} title={section.title} defaultOpen={idx === 0}>
+                      <div 
+                        className="text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed
+                          [&_ul]:space-y-2.5
+                          [&_li]:flex [&_li]:items-start [&_li]:gap-3
+                          [&_li::before]:content-['—'] [&_li::before]:text-[#C8A96A] [&_li::before]:shrink-0 [&_li::before]:mt-1.5
+                          [&_p:not(:last-child)]:mb-3
+                          [&_strong]:text-[#EAE6E1]/35 [&_strong]:uppercase [&_strong]:tracking-[0.25em] [&_strong]:text-[10px] [&_strong]:w-28 [&_strong]:shrink-0 [&_strong]:block sm:[&_strong]:inline-block [&_strong]:font-normal"
+                        dangerouslySetInnerHTML={{ __html: section.content }}
+                      />
+                    </AccordionSection>
+                  ))
                 ) : (
                   // Legacy Fallback for products without rich text descriptions
                   <>
-                    <AccordionSection title="Materials &amp; Construction" defaultOpen={true}>
+                    <AccordionSection title="Materials & Construction" defaultOpen={true}>
                       <div className="space-y-4">
                         {MATERIALS.map((m) => (
                           <div key={m.label} className="flex gap-6">
@@ -591,7 +631,7 @@ export default function ProductPage() {
                       </div>
                     </AccordionSection>
 
-                    <AccordionSection title="Fit &amp; Sizing">
+                    <AccordionSection title="Fit & Sizing">
                       <ul className="space-y-2.5">
                         {FIT_NOTES.map((note) => (
                           <li key={note} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
@@ -613,7 +653,7 @@ export default function ProductPage() {
                       </ul>
                     </AccordionSection>
 
-                    <AccordionSection title="Delivery &amp; Returns">
+                    <AccordionSection title="Delivery & Returns">
                       <div className="space-y-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
                         <p>Free shipping on orders above ₹999.</p>
                         <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
