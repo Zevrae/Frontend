@@ -426,9 +426,39 @@ function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_delete
 
 const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
+// Pre-built template for Product Description
+const PRODUCT_TEMPLATE = `
+  <h2>Materials & Construction</h2>
+  <ul>
+    <li><strong>Composition:</strong> 100% Premium Cotton — 240 GSM oversized fit</li>
+    <li><strong>Origin:</strong> Ethically produced in limited quantities</li>
+    <li><strong>Finish:</strong> Enzyme-washed for a lived-in softness</li>
+  </ul>
+
+  <h2>Fit & Sizing</h2>
+  <ul>
+    <li>Oversized silhouette — size down for a relaxed fit</li>
+    <li>Drop shoulders, extended hem</li>
+    <li>Crew neck collar with double stitching</li>
+  </ul>
+
+  <h2>Care Instructions</h2>
+  <ul>
+    <li>Machine wash cold, inside out</li>
+    <li>Do not tumble dry</li>
+    <li>Iron on low heat, avoid print</li>
+    <li>Do not bleach</li>
+  </ul>
+
+  <h2>Delivery & Returns</h2>
+  <p>Free shipping on orders above ₹999.</p>
+  <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
+  <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
+`;
+
 const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
   name: '',
-  description: '',
+  description: PRODUCT_TEMPLATE, // Set the default description to the template
   collections: [],
   category: 'Men',
   subcategory: 'T-Shirts',
@@ -1522,4 +1552,3 @@ export function DiscountsSection() {
     </div>
   );
 }
-

@@ -182,7 +182,7 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
         {/* Discount badge */}
         {product.discount && (
           <div className="pinterest-card__discount">
-            <span className="pinterest-card__discount-text">{product.discount}</span>
+            <span className="pinterest-card__discount-text">{product.discount}%OFF</span>
           </div>
         )}
       </div>

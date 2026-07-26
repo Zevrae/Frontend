@@ -4,8 +4,38 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Bold, Italic, List, ListOrdered, Heading2, Undo2, Redo2 } from 'lucide-react';
 
+// ─── Default Template ─────────────────────────────────────────────────────────
+
+const PRODUCT_TEMPLATE = `
+  <h2>Materials & Construction</h2>
+  <ul>
+    <li><strong>Composition:</strong> 100% Premium Cotton — 240 GSM oversized fit</li>
+    <li><strong>Origin:</strong> Ethically produced in limited quantities</li>
+    <li><strong>Finish:</strong> Enzyme-washed for a lived-in softness</li>
+  </ul>
+
+  <h2>Fit & Sizing</h2>
+  <ul>
+    <li>Oversized silhouette — size down for a relaxed fit</li>
+    <li>Drop shoulders, extended hem</li>
+    <li>Crew neck collar with double stitching</li>
+  </ul>
+
+  <h2>Care Instructions</h2>
+  <ul>
+    <li>Machine wash cold, inside out</li>
+    <li>Do not tumble dry</li>
+    <li>Iron on low heat, avoid print</li>
+    <li>Do not bleach</li>
+  </ul>
+
+  <h2>Delivery & Returns</h2>
+  <p>Free shipping on orders above ₹999.</p>
+  <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
+  <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
+`;
+
 // ─── Toolbar ──────────────────────────────────────────────────────────────────
-// Small, focused toolbar — only the marks/nodes StarterKit gives us by default.
 
 function ToolbarButton({
   onClick,
@@ -26,9 +56,6 @@ function ToolbarButton({
       aria-label={label}
       title={label}
       disabled={disabled}
-      // onMouseDown + preventDefault keeps the editor selection intact —
-      // otherwise clicking the button blurs the editor first and the
-      // command loses its target selection.
       onMouseDown={e => e.preventDefault()}
       onClick={onClick}
       className={`p-1.5 rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
@@ -48,7 +75,12 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-export default function RichTextEditor({ value, onChange, placeholder = 'Write a product description…' }: RichTextEditorProps) {
+export default function RichTextEditor({ 
+  value, 
+  onChange, 
+  placeholder = 'Write a product description…' 
+}: RichTextEditorProps) {
+  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -56,7 +88,8 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write a
       }),
       Placeholder.configure({ placeholder }),
     ],
-    content: value,
+    // 1. Inject the template as the default value if 'value' is empty
+    content: value || PRODUCT_TEMPLATE,
     editorProps: {
       attributes: {
         class:
@@ -67,25 +100,25 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write a
           '[&_.is-editor-empty:first-child::before]:text-[#EAE6E1]/20 [&_.is-editor-empty:first-child::before]:pointer-events-none [&_.is-editor-empty:first-child::before]:h-0',
       },
     },
-    // Fires on every keystroke/command — this is the single point where we
-    // push the HTML string back up into `form.description`. Tiptap owns its
-    // own internal ProseMirror state, so we intentionally do NOT feed
-    // `value` back into the editor on every render (see effect below) —
-    // that round-trip is what causes the classic Tiptap infinite-loop /
-    // cursor-jumping bug with controlled `useState` forms.
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
   });
 
-  // Only sync external -> editor when the value changes for a reason OTHER
-  // than the editor's own typing (e.g. switching from "Add" to "Edit", or
-  // resetting the form). Comparing against getHTML() prevents us from
-  // clobbering the cursor position on every keystroke.
   useEffect(() => {
     if (!editor) return;
+    
     const current = editor.getHTML();
-    if (value !== current) {
+    
+    // 2. If the parent state is empty, but the editor just loaded the template,
+    // sync the template UP to the parent state so they match.
+    if (!value && current === PRODUCT_TEMPLATE) {
+      onChange(PRODUCT_TEMPLATE);
+      return;
+    }
+
+    // 3. Normal sync: if parent value changes (e.g. from an API fetch), update editor
+    if (value !== current && value !== undefined) {
       editor.commands.setContent(value || '', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

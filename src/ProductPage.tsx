@@ -27,6 +27,7 @@ type ProductDetail = {
 
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
+// Legacy hardcoded details (Kept as a fallback for older products)
 const MATERIALS = [
   { label: 'Composition', value: '100% Premium Cotton — 240 GSM oversized fit' },
   { label: 'Origin', value: 'Ethically produced in limited quantities' },
@@ -45,15 +46,6 @@ const CARE = [
   'Iron on low heat, avoid print',
   'Do not bleach',
 ];
-
-function buildDescription(product: ProductDetail) {
-  if (product.description) return product.description;
-  if (product.category === 'jewellery')
-    return 'A statement piece designed with a clean, elevated finish that carries through the collection with precision.';
-  if (product.type === 'lower')
-    return 'Tailored for movement with a clean silhouette and a relaxed, modern drape.';
-  return 'A refined oversized cut in heavyweight cotton — designed for the archive, built for the everyday. One of a kind, never restocked.';
-}
 
 function AccordionSection({
   title,
@@ -234,7 +226,6 @@ export default function ProductPage() {
     );
   }
 
-  const productDescription = buildDescription(product);
   const availableSizes = product.sizes?.length ? product.sizes : [];
 
   return (
@@ -382,11 +373,6 @@ export default function ProductPage() {
                     </span>
                   )}
                 </div>
-
-                {/* Description */}
-                <p className="text-[13px] font-plex-mono leading-[1.8] text-[#EAE6E1]/55 tracking-[0.01em]">
-                  {productDescription}
-                </p>
               </motion.div>
 
               {/* Divider */}
@@ -403,7 +389,10 @@ export default function ProductPage() {
                   <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/50">
                     Size
                   </span>
-                  <button className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[#EAE6E1]/30 hover:text-[#C8A96A] transition-colors duration-300 underline underline-offset-4">
+                  <button 
+                    className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[#EAE6E1]/30 hover:text-[#C8A96A] transition-colors duration-300 underline underline-offset-4" 
+                    onClick={() => navigate('/size-guide')}
+                  >
                     Size Guide
                   </button>
                 </div>
@@ -565,57 +554,74 @@ export default function ProductPage() {
                 </button>
               </motion.div>
 
-              {/* Product details accordion */}
+              {/* ── PRODUCT DETAILS (RICH TEXT OR FALLBACK) ── */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-                className="pt-2"
+                className="pt-4"
               >
-                <AccordionSection title="Materials &amp; Construction" defaultOpen={true}>
-                  <div className="space-y-4">
-                    {MATERIALS.map((m) => (
-                      <div key={m.label} className="flex gap-6">
-                        <span className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[#EAE6E1]/35 w-28 shrink-0">
-                          {m.label}
-                        </span>
-                        <span className="text-[12px] font-plex-mono text-[#EAE6E1]/65 leading-relaxed">
-                          {m.value}
-                        </span>
+                {product.description && product.description.includes('<h2>') ? (
+                  // Display Rich HTML generated from Admin Panel seamlessly styled
+                  <div 
+                    className="rich-text-content text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed
+                      [&_h2]:text-[11px] [&_h2]:uppercase [&_h2]:tracking-[0.3em] [&_h2]:text-[#EAE6E1]/70 [&_h2]:py-5 [&_h2]:border-t [&_h2]:border-[#EAE6E1]/10 
+                      [&_ul]:pb-6 [&_ul]:space-y-2.5
+                      [&_li]:flex [&_li]:items-start [&_li]:gap-3
+                      [&_li::before]:content-['—'] [&_li::before]:text-[#C8A96A] [&_li::before]:shrink-0 [&_li::before]:mt-0.5
+                      [&_p]:pb-3
+                      [&_strong]:text-[#EAE6E1]/35 [&_strong]:uppercase [&_strong]:tracking-[0.25em] [&_strong]:text-[10px] [&_strong]:w-28 [&_strong]:shrink-0 [&_strong]:inline-block [&_strong]:font-normal"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                ) : (
+                  // Legacy Fallback for products without rich text descriptions
+                  <>
+                    <AccordionSection title="Materials &amp; Construction" defaultOpen={true}>
+                      <div className="space-y-4">
+                        {MATERIALS.map((m) => (
+                          <div key={m.label} className="flex gap-6">
+                            <span className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[#EAE6E1]/35 w-28 shrink-0">
+                              {m.label}
+                            </span>
+                            <span className="text-[12px] font-plex-mono text-[#EAE6E1]/65 leading-relaxed">
+                              {m.value}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </AccordionSection>
+                    </AccordionSection>
 
-                <AccordionSection title="Fit &amp; Sizing">
-                  <ul className="space-y-2.5">
-                    {FIT_NOTES.map((note) => (
-                      <li key={note} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
-                        <span className="text-[#C8A96A] mt-1.5 shrink-0">—</span>
-                        {note}
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionSection>
+                    <AccordionSection title="Fit &amp; Sizing">
+                      <ul className="space-y-2.5">
+                        {FIT_NOTES.map((note) => (
+                          <li key={note} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
+                            <span className="text-[#C8A96A] mt-1.5 shrink-0">—</span>
+                            {note}
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionSection>
 
-                <AccordionSection title="Care Instructions">
-                  <ul className="space-y-2.5">
-                    {CARE.map((c) => (
-                      <li key={c} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
-                        <span className="text-[#C8A96A] mt-1.5 shrink-0">—</span>
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionSection>
+                    <AccordionSection title="Care Instructions">
+                      <ul className="space-y-2.5">
+                        {CARE.map((c) => (
+                          <li key={c} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
+                            <span className="text-[#C8A96A] mt-1.5 shrink-0">—</span>
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionSection>
 
-                <AccordionSection title="Delivery &amp; Returns">
-                  <div className="space-y-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
-                    <p>Free shipping on orders above ₹999.</p>
-                    <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
-                    <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
-                  </div>
-                </AccordionSection>
+                    <AccordionSection title="Delivery &amp; Returns">
+                      <div className="space-y-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
+                        <p>Free shipping on orders above ₹999.</p>
+                        <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
+                        <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
+                      </div>
+                    </AccordionSection>
+                  </>
+                )}
               </motion.div>
             </div>
             {/* END RIGHT PANEL */}
