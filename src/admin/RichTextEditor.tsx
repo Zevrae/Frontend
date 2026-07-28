@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -81,6 +81,12 @@ export default function RichTextEditor({
   placeholder = 'Write a product description…' 
 }: RichTextEditorProps) {
   
+  // Tracks the last HTML string we emitted via onChange (i.e. from user input).
+  // If the `value` prop changes to exactly this string, it's just React
+  // reflecting our own edit back down — we must NOT call setContent or we'll
+  // reset the editor cursor / undo-stack mid-edit.
+  const lastEmittedHtml = useRef<string | null>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -88,7 +94,6 @@ export default function RichTextEditor({
       }),
       Placeholder.configure({ placeholder }),
     ],
-    // 1. Inject the template as the default value if 'value' is empty
     content: value || PRODUCT_TEMPLATE,
     editorProps: {
       attributes: {
@@ -101,27 +106,36 @@ export default function RichTextEditor({
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      // Record what we're about to emit so the useEffect knows it came from
+      // the user, not from an external prop change.
+      lastEmittedHtml.current = html;
+      onChange(html);
     },
   });
 
   useEffect(() => {
     if (!editor) return;
-    
+
+    // If value matches what we just sent via onUpdate, this is just React
+    // reflecting our own edit back — skip to avoid resetting the editor.
+    if (value === lastEmittedHtml.current) return;
+
+    // Genuinely external change (e.g. opening a different product for editing,
+    // or initial mount sync). Update the editor content.
     const current = editor.getHTML();
-    
-    // 2. If the parent state is empty, but the editor just loaded the template,
-    // sync the template UP to the parent state so they match.
-    if (!value && current === PRODUCT_TEMPLATE) {
-      onChange(PRODUCT_TEMPLATE);
+
+    // Handle the "new product" case: value is empty but editor loaded the
+    // template — sync the template up to the parent form state.
+    if (!value && current) {
+      lastEmittedHtml.current = current;
+      onChange(current);
       return;
     }
 
-    // 3. Normal sync: if parent value changes (e.g. from an API fetch), update editor
-    if (value !== current && value !== undefined) {
+    if (value !== undefined && value !== current) {
       editor.commands.setContent(value || '', false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, editor]);
 
   if (!editor) return null;
