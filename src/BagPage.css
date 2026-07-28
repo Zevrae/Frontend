@@ -140,7 +140,6 @@
 .mask-reveal-inner {
   display: inline-block;
   will-change: transform;
-  transform: translateY(110%);
 }
 
 .mask-reveal-block .mask-reveal-inner {

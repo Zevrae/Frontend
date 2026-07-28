@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+<<<<<<< HEAD
 import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/UseAuth';
 import { useAuthModal } from '../AuthModalContext';
 import { tryonApi } from '../api/tryon';
+=======
+import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles } from 'lucide-react';
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
 
 interface TryOnModalProps {
   isOpen: boolean;
@@ -12,6 +16,7 @@ interface TryOnModalProps {
   clothImageUrl: string;
 }
 
+<<<<<<< HEAD
 type Stage = 'upload' | 'generating' | 'result' | 'error';
 
 // The backend needs the cloth image as an actual uploaded file, not a URL —
@@ -33,17 +38,32 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
   const [stage, setStage] = useState<Stage>('upload');
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
+=======
+type Stage = 'upload' | 'generating' | 'result';
+
+export default function TryOnModal({ isOpen, onClose }: TryOnModalProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [stage, setStage] = useState<Stage>('upload');
+  const [progress, setProgress] = useState(0);
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setSelectedImage(null);
+<<<<<<< HEAD
       setSelectedFile(null);
       setGeneratedImage(null);
       setStage('upload');
       setProgress(0);
       setErrorMessage('');
+=======
+      setGeneratedImage(null);
+      setStage('upload');
+      setProgress(0);
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
     }
   }, [isOpen]);
 
@@ -70,6 +90,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
       const file = e.target.files[0];
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
+<<<<<<< HEAD
       setSelectedFile(file);
       setGeneratedImage(null);
       setStage('upload');
@@ -112,6 +133,33 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
       setErrorMessage(message);
       setStage('error');
     }
+=======
+      setGeneratedImage(null);
+      setStage('upload');
+    }
+  };
+
+  // Simulate generation — replace with real API call later
+  const handleGenerate = () => {
+    if (!selectedImage) return;
+    setStage('generating');
+    setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) { clearInterval(interval); return 95; }
+        return prev + Math.random() * 7 + 2;
+      });
+    }, 130);
+
+    // TODO: replace with real backend call — using selectedImage as placeholder result
+    setTimeout(() => {
+      clearInterval(interval);
+      setProgress(100);
+      setGeneratedImage(selectedImage);
+      setStage('result');
+    }, 3400);
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
   };
 
   const handleRegenerate = () => {
@@ -120,6 +168,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
     setProgress(0);
   };
 
+<<<<<<< HEAD
   const handleDownload = async () => {
     if (!generatedImage) return;
     try {
@@ -136,6 +185,14 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
       // opening the image so the user can still save it manually.
       window.open(generatedImage, '_blank');
     }
+=======
+  const handleDownload = () => {
+    if (!generatedImage) return;
+    const a = document.createElement('a');
+    a.href = generatedImage;
+    a.download = 'zevrae-tryon.jpg';
+    a.click();
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
   };
 
   const clampedProgress = Math.min(Math.round(progress), 100);
@@ -185,8 +242,11 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
                 <p className="text-[11px] font-plex-mono tracking-[0.05em] text-[#EAE6E1]/40 mt-3">
                   {stage === 'result'
                     ? 'Your AI-generated try-on is ready.'
+<<<<<<< HEAD
                     : stage === 'error'
                     ? "Something didn't go as planned."
+=======
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
                     : 'Upload a photo to see how this piece fits.'}
                 </p>
               </div>
@@ -328,6 +388,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
                   </motion.div>
                 )}
 
+<<<<<<< HEAD
                 {/* ERROR STAGE */}
                 {stage === 'error' && (
                   <motion.div
@@ -355,6 +416,8 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
                   </motion.div>
                 )}
 
+=======
+>>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
                 {/* RESULT STAGE */}
                 {stage === 'result' && generatedImage && (
                   <motion.div
