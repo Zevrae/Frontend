@@ -108,7 +108,7 @@ export default function ProductPage() {
   const [sizeError, setSizeError] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
-  const [imgLoaded, setImgLoaded] = useState(true);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const [added, setAdded] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>([]);
   const [tryOnOpen, setTryOnOpen] = useState(false);
@@ -251,10 +251,7 @@ export default function ProductPage() {
   const switchImage = (index: number) => {
     if (index === activeImg) return;
     setImgLoaded(false);
-    setTimeout(() => {
-      setActiveImg(index);
-      setImgLoaded(true);
-    }, 250);
+    setActiveImg(index);
   };
 
   const handleAddToCart = () => {
@@ -354,11 +351,13 @@ export default function ProductPage() {
                   src={images[activeImg]}
                   alt={product.name}
                   referrerPolicy="no-referrer"
+                  loading="eager"
+                  decoding="async"
                   onLoad={() => setImgLoaded(true)}
                   className="absolute inset-0 w-full h-full object-cover"
                   style={{
                     opacity: imgLoaded ? 1 : 0,
-                    transition: 'opacity 300ms ease',
+                    transition: 'opacity 400ms ease',
                   }}
                 />
 
