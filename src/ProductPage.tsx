@@ -119,24 +119,41 @@ export default function ProductPage() {
     const hydrateProduct = async () => {
       if (!params.id) return;
       try {
-        const { data } = await productsApi.list({ status: 'active', limit: 100 });
-        const p = data.find((item: any) => item.id === params.id);
+        // Fetch with a higher limit to prevent pagination misses
+        const { data } = await productsApi.list({ limit: 500 });
+        
+        // Loose comparison to handle String/Int and id/$id mismatches natively
+        const p = data.find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
+        
         if (p) {
-          setProduct({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            originalPrice: p.compare_price,
-            label: `${p.category} Premium`,
-            category: p.category?.toLowerCase(),
-            type: p.subcategory?.toLowerCase(),
-            sizes: p.sizes,
-            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
-            frontImg: p.images?.[0] || '',
-            backImg: p.images?.[1] || p.images?.[0] || '',
-            images: p.images || [],
-            description: p.description
-          });
+          // Safely parse backend images (handles Array, JSON string, or CSV formats)
+          let parsedImages: string[] = [];
+          if (Array.isArray(p.images)) {
+            parsedImages = p.images;
+          } else if (typeof p.images === 'string') {
+            try { 
+              parsedImages = JSON.parse(p.images); 
+            } catch { 
+              parsedImages = p.images.split(',').map((s: string) => s.trim()); 
+            }
+          }
+
+          setProduct(prev => ({
+            ...prev,
+            id: p.id || p.$id || params.id,
+            name: p.name || prev?.name || '',
+            price: p.price || prev?.price || 0,
+            originalPrice: p.compare_price || prev?.originalPrice,
+            label: p.category ? `${p.category} Premium` : prev?.label,
+            category: p.category?.toLowerCase() || prev?.category,
+            type: p.subcategory?.toLowerCase() || prev?.type,
+            sizes: p.sizes || prev?.sizes || [],
+            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : prev?.discount),
+            frontImg: parsedImages[0] || prev?.frontImg || '',
+            backImg: parsedImages[1] || parsedImages[0] || prev?.backImg || '',
+            images: parsedImages.length > 0 ? parsedImages : (prev?.images || []),
+            description: p.description || prev?.description
+          }));
         }
       } catch (e) {
         console.error("Failed to hydrate product", e);
@@ -144,12 +161,12 @@ export default function ProductPage() {
     };
 
     const routeProduct = (location.state as any)?.product;
-    // If the route didn't provide a product, OR if it provided one but it's missing the images array, fetch the full details.
-    if (!routeProduct || !routeProduct.images || routeProduct.images.length === 0) {
-      hydrateProduct();
-    } else {
+    if (routeProduct) {
       setProduct(routeProduct);
     }
+    
+    // Unconditionally hydrate in the background to guarantee full images array
+    hydrateProduct();
   }, [params.id, location.state]);
 
   // ─── AGGRESSIVE IMAGE DEDUPLICATION ───
@@ -161,13 +178,19 @@ export default function ProductPage() {
     if (product.frontImg) imgs.push(product.frontImg);
     if (product.backImg) imgs.push(product.backImg);
     
-    // Push the full array from backend
+    // Push the full array from backend safely
     if (product.images && Array.isArray(product.images)) {
       imgs.push(...product.images);
+    } else if (typeof product.images === 'string') {
+      try { 
+        imgs.push(...JSON.parse(product.images)); 
+      } catch (e) {
+        // Silent catch for bad formats
+      }
     }
     
     // Convert to Set to remove duplicates, and filter out empty strings
-    return Array.from(new Set(imgs)).filter(Boolean);
+    return Array.from(new Set(imgs)).filter(img => typeof img === 'string' && img.trim() !== '');
   }, [product]);
 
   // ─── PARSE RICH TEXT INTO ACCORDIONS ───

@@ -8,25 +8,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
-<<<<<<< HEAD
-=======
-
-    define: {
-      "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
-    },
-
->>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "."),
       },
     },
-<<<<<<< HEAD
-=======
-
-    server: {
-      hmr: process.env.DISABLE_HMR !== "true",
-    },
->>>>>>> 2ed565c4f89a783c904ebdc4427487708584db7a
   };
 });
