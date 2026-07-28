@@ -516,6 +516,7 @@ export function ProductsSection() {
       subcategory: p.subcategory,
       price: p.price,
       compare_price: p.compare_price,
+      discount: p.discount ?? null,
       stock_quantity: p.stock_quantity || [],
       in_stock: p.in_stock ?? true,
       images: p.images || [],

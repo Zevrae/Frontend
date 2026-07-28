@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
 import { ordersApi, Order } from './api/orders';
+import { tryonApi, TryonResult } from './api/tryon';
 
 const formatVal = (val: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
@@ -112,7 +113,7 @@ function OrderTrackingCard({ order }: { order: Order }) {
 export default function ProfilePage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<'profile' | 'orders'>('profile');
+  const [tab, setTab] = useState<'profile' | 'orders' | 'tryons'>('profile');
 
   useEffect(() => {
     if (!authLoading && user === null) navigate('/');
@@ -184,6 +185,21 @@ export default function ProfilePage() {
       .finally(() => setOrdersLoading(false));
   }, [tab, user]);
 
+  // ── Try-Ons ───────────────────────────────────────────────────────────────
+  const [tryons, setTryons] = useState<TryonResult[]>([]);
+  const [tryonsLoading, setTryonsLoading] = useState(true);
+  const [tryonsError, setTryonsError] = useState('');
+
+  useEffect(() => {
+    if (tab !== 'tryons' || !user) return;
+    setTryonsLoading(true);
+    setTryonsError('');
+    tryonApi.history({ limit: 50 })
+      .then(({ data }) => setTryons(data))
+      .catch(() => setTryonsError('Could not load your try-on history. Please try again.'))
+      .finally(() => setTryonsLoading(false));
+  }, [tab, user]);
+
   if (!user) {
     return (
       <div className="min-h-screen bg-[#12100C] flex items-center justify-center">
@@ -217,6 +233,12 @@ export default function ProfilePage() {
             className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'orders' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
           >
             <Package size={13} /> Orders
+          </button>
+          <button
+            onClick={() => setTab('tryons')}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'tryons' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
+          >
+            <Sparkles size={13} /> Try-Ons
           </button>
         </div>
 
@@ -274,7 +296,7 @@ export default function ProfilePage() {
               <p className="text-[9px] font-sans text-[#EAE6E1]/25 mt-4">Address changes are saved together with "Save Changes" above.</p>
             </div>
           </div>
-        ) : (
+        ) : tab === 'orders' ? (
           <div className="space-y-4">
             {ordersError && (
               <p className="text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm px-4 py-3">{ordersError}</p>
@@ -288,6 +310,37 @@ export default function ProfilePage() {
               </div>
             ) : (
               orders.map(order => <OrderTrackingCard key={order.id} order={order} />)
+            )}
+          </div>
+        ) : (
+          <div>
+            {tryonsError && (
+              <p className="text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm px-4 py-3 mb-4">{tryonsError}</p>
+            )}
+            {tryonsLoading ? (
+              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] animate-pulse text-center py-16">Loading try-ons...</p>
+            ) : tryons.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-[12px] font-sans text-[#EAE6E1]/40 mb-4">You haven't generated any try-ons yet.</p>
+                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] hover:text-[#D4AE68] transition-colors">Browse Products</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {tryons.map(t => {
+                  const productInfo = typeof t.product === 'object' ? t.product : null;
+                  return (
+                    <div key={t.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden group">
+                      <div className="aspect-[3/4] bg-[#1A1814] overflow-hidden">
+                        <img src={t.imageUrl} alt={productInfo?.name || 'Try-on result'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                      <div className="p-3">
+                        <p className="text-[10px] font-sans text-[#EAE6E1]/70 truncate">{productInfo?.name || 'Product'}</p>
+                        <p className="text-[9px] font-sans text-[#EAE6E1]/30 mt-0.5">{formatDate(t.created_at)}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

@@ -8,6 +8,7 @@ export interface Product {
   subcategory: string;
   price: number; // stored as smallest currency unit (integer)
   compare_price?: number | null; // optional — stored as smallest currency unit (integer)
+  discount?: number | null; // manual discount percentage override (0-100), independent of compare_price
   images: string[];
   sizes: string[];
   size_stock: Record<string, number>;

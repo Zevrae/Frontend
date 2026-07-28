@@ -21,7 +21,7 @@ type ProductDetail = {
   backImg?: string;
   description?: string;
   originalPrice?: number;
-  discount?: string;
+  discount?: number;
   images?: string[];
 };
 
@@ -772,7 +772,12 @@ export default function ProductPage() {
       </main>
 
       {/* Try On Modal */}
-      <TryOnModal isOpen={tryOnOpen} onClose={() => setTryOnOpen(false)} />
+      <TryOnModal
+        isOpen={tryOnOpen}
+        onClose={() => setTryOnOpen(false)}
+        productId={product?.id || ''}
+        clothImageUrl={images[0] || product?.frontImg || ''}
+      />
     </div>
   );
 }

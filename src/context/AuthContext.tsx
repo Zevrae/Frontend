@@ -31,6 +31,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (data: LoginData) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   register: (data: RegisterData) => Promise<any>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -81,6 +82,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async (credential: string) => {
+    setLoading(true);
+    try {
+      const response = await authApi.googleLogin(credential);
+      const { token, data } = response;
+
+      tokenUtils.setToken(token);
+      setToken(token);
+      setUser(data);
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Register does NOT log the user in — no token or user state is set.
   // Just returns the backend response so the UI can show the success message.
   const register = async (formData: RegisterData) => {
@@ -119,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginWithGoogle, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
