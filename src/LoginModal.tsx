@@ -363,8 +363,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
             {/* Google Sign-In */}
             {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
-              <div className="flex flex-col items-center gap-2">
-                <div ref={googleBtnRef} className="w-full flex justify-center [&>div]:!w-full" />
+              <div className="flex flex-col items-center justify-center w-full gap-2">
+                {/* Removed [&>div]:!w-full so the inner iframe can naturally center */}
+                <div ref={googleBtnRef} className="w-full flex justify-center" />
                 {!googleReady && (
                   <p className="text-[10px] font-plex-mono text-[#EAE6E1]/30 tracking-wider">Loading Google Sign-In…</p>
                 )}
