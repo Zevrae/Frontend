@@ -67,12 +67,21 @@ export const productsApi = {
   },
 
   uploadImages: async (id: string, files: File[]): Promise<Product> => {
-    const formData = new FormData();
-    files.forEach((file) => formData.append('images', file));
-    const response = await api.post(`/products/${id}/images`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return response.data.data;
+    // The backend Multer is configured to reject more than 2 files per request.
+    // To allow uploading 4 or more images, we upload them sequentially one by one.
+    let lastProduct: Product | undefined;
+    
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('images', file);
+      
+      const response = await api.post(`/products/${id}/images`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      lastProduct = response.data.data;
+    }
+    
+    return lastProduct!;
   },
 
   deleteImage: async (id: string, imageUrl: string): Promise<Product> => {
