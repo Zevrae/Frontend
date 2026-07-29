@@ -229,12 +229,16 @@ export default function ProductPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-    setSelectedSize('');
     setSizeError(false);
     setQuantity(1);
     setActiveImg(0);
     setAdded(false);
-  }, [params.id]);
+    // For jewellery & accessories, size is irrelevant — auto-select 'One Size'
+    const cat = (product?.category || '').toLowerCase();
+    const isNonApparel = cat === 'jewellery' || cat === 'accessories' ||
+      ['rings','pendants','ears','bracelets','keychains','soft toys'].includes(cat);
+    setSelectedSize(isNonApparel ? 'One Size' : '');
+  }, [params.id, product?.category]);
 
   // Fetch related products
   useEffect(() => {
@@ -473,77 +477,85 @@ export default function ProductPage() {
               {/* Divider */}
               <div className="h-px bg-[#EAE6E1]/8" />
 
-              {/* Size selector */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-                className="space-y-4"
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/50">
-                    Size
-                  </span>
-                  <button 
-                    className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[#EAE6E1]/30 hover:text-[#C8A96A] transition-colors duration-300 underline underline-offset-4" 
-                    onClick={() => navigate('/size-guide')}
+              {/* Size selector — hidden for jewellery & accessories */}
+              {(() => {
+                const cat = (product.category || '').toLowerCase();
+                const isNonApparel = cat === 'jewellery' || cat === 'accessories' ||
+                  ['rings','pendants','ears','bracelets','keychains','soft toys'].includes(cat);
+                if (isNonApparel) return null;
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="space-y-4"
                   >
-                    Size Guide
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2.5">
-                  {DEFAULT_SIZES.map((size) => {
-                    const isAvailable = availableSizes.includes(size);
-                    return (
-                    <button
-                      key={size}
-                      id={`size-${size}`}
-                      onClick={() => {
-                        if (isAvailable) {
-                          setSelectedSize(size);
-                          setSizeError(false);
-                        } else {
-                          setSizeError(true);
-                        }
-                      }}
-                      className={`min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
-                        selectedSize === size
-                          ? 'border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/8'
-                          : !isAvailable 
-                            ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/20 cursor-not-allowed opacity-50'
-                            : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                    );
-                  })}
-                </div>
-                <AnimatePresence>
-                  {sizeError && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-[10px] tracking-[0.2em] font-plex-mono text-red-500"
-                    >
-                      Size not available
-                    </motion.p>
-                  )}
-                  {!selectedSize && !sizeError && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-[10px] tracking-[0.2em] font-plex-mono text-[#C8A96A]/70"
-                    >
-                      Please select a size to continue
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/50">
+                        Size
+                      </span>
+                      <button 
+                        className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[#EAE6E1]/30 hover:text-[#C8A96A] transition-colors duration-300 underline underline-offset-4" 
+                        onClick={() => navigate('/size-guide')}
+                      >
+                        Size Guide
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2.5">
+                      {DEFAULT_SIZES.map((size) => {
+                        const isAvailable = availableSizes.includes(size);
+                        return (
+                        <button
+                          key={size}
+                          id={`size-${size}`}
+                          onClick={() => {
+                            if (isAvailable) {
+                              setSelectedSize(size);
+                              setSizeError(false);
+                            } else {
+                              setSizeError(true);
+                            }
+                          }}
+                          className={`min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
+                            selectedSize === size
+                              ? 'border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/8'
+                              : !isAvailable 
+                                ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/20 cursor-not-allowed opacity-50'
+                                : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                        );
+                      })}
+                    </div>
+                    <AnimatePresence>
+                      {sizeError && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-[10px] tracking-[0.2em] font-plex-mono text-red-500"
+                        >
+                          Size not available
+                        </motion.p>
+                      )}
+                      {!selectedSize && !sizeError && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-[10px] tracking-[0.2em] font-plex-mono text-[#C8A96A]/70"
+                        >
+                          Please select a size to continue
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })()}
 
               {/* Quantity + Total */}
               <motion.div

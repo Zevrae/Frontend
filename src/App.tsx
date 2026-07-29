@@ -519,9 +519,12 @@ return (
         <Route path="/jewellery/pendants" element={<ProductGrid categoryFilter="pendants" />} />
         <Route path="/jewellery/bracelet" element={<ProductGrid categoryFilter="bracelet" />} />
         <Route path="/jewellery/earrings" element={<ProductGrid categoryFilter="earrings" />} />
+        <Route path="/jewellery/ear" element={<ProductGrid categoryFilter="earrings" />} />
         <Route path="/accessories" element={<ProductGrid categoryFilter="accessories" />} />
-        <Route path="/accessories/keychain" element={<ProductGrid categoryFilter="keychain" />} />
-        <Route path="/accessories/toys" element={<ComingSoon />} />
+        <Route path="/accessories/keychain" element={<ProductGrid categoryFilter="keychains" />} />
+        <Route path="/accessories/keychains" element={<ProductGrid categoryFilter="keychains" />} />
+        <Route path="/accessories/toys" element={<ProductGrid categoryFilter="soft-toys" />} />
+        <Route path="/accessories/soft-toys" element={<ProductGrid categoryFilter="soft-toys" />} />
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/bag" element={<BagPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
