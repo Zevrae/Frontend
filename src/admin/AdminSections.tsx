@@ -457,6 +457,16 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
 
 // ─── Products Section ─────────────────────────────────────────────────────────
 
+// Local category→subcategory map so Jewellery & Accessories always appear
+// regardless of what the backend returns.
+const CATEGORY_MAP: Record<string, string[]> = {
+  Men:         ['T-Shirts', 'Lowers'],
+  Women:       ['T-Shirts', 'Lowers', 'Crop-Tops'],
+  Unisex:      ['T-Shirts', 'Lowers' ],
+  Jewellery:   ['Rings', 'Pendants', 'Ears', 'Bracelets'],
+  Accessories: ['Keychains', 'Soft Toys'],
+};
+
 export function ProductsSection() {
   const [dbProducts, setDbProducts] = useState<DbProduct[]>([]);
   const [dbLoading, setDbLoading] = useState(true);
@@ -479,8 +489,33 @@ export function ProductsSection() {
       .catch(() => setCollections([]));
 
     categoriesApi.list()
-      .then(({ data }) => setAvailableCategories(data || []))
-      .catch(() => setAvailableCategories([]));
+      .then(({ data }) => {
+        // Merge backend categories with our local map so locally-defined
+        // categories always appear even if the backend doesn't have them.
+        const backendNames = (data || []).filter((c: Category) => !c.parent).map((c: Category) => c.name);
+        const localOnly = Object.keys(CATEGORY_MAP).filter(n => !backendNames.includes(n));
+        const synthetic: Category[] = localOnly.map((name, i) => ({
+          id: `local-${i}`,
+          name,
+          slug: name.toLowerCase(),
+          parent: null,
+          status: 'active' as const,
+          created_at: '',
+        }));
+        setAvailableCategories([...(data || []), ...synthetic]);
+      })
+      .catch(() => {
+        // Fallback: show all local categories if API fails completely
+        const fallback: Category[] = Object.keys(CATEGORY_MAP).map((name, i) => ({
+          id: `local-${i}`,
+          name,
+          slug: name.toLowerCase(),
+          parent: null,
+          status: 'active' as const,
+          created_at: '',
+        }));
+        setAvailableCategories(fallback);
+      });
   }, []);
 
   const fetchDbProducts = async () => {
@@ -795,7 +830,11 @@ export function ProductsSection() {
               <FormField label="Category *">
                 <select 
                   value={form.category} 
-                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))} 
+                  onChange={e => {
+                    const cat = e.target.value;
+                    const subs = CATEGORY_MAP[cat] || [];
+                    setForm(f => ({ ...f, category: cat, subcategory: subs[0] || '' }));
+                  }} 
                   className={selectCls}
                 >
                   <option value="" disabled>Select a category</option>
@@ -805,7 +844,20 @@ export function ProductsSection() {
                 </select>
               </FormField>
               <FormField label="Subcategory *">
-                <input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} className={inputCls} />
+                {(CATEGORY_MAP[form.category] || []).length > 0 ? (
+                  <select
+                    value={form.subcategory}
+                    onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))}
+                    className={selectCls}
+                  >
+                    <option value="" disabled>Select a subcategory</option>
+                    {(CATEGORY_MAP[form.category] || []).map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} className={inputCls} placeholder="e.g. T-Shirts" />
+                )}
               </FormField>
             </div>
 

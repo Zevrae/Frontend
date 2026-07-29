@@ -30,7 +30,9 @@ const mockCollections = [
 const mockCategories = [
   { id: 'cat1', name: 'Men', slug: 'men', subcategories: ['T-Shirts', 'Lowers', 'Outerwear'], products: 24, status: 'active' },
   { id: 'cat2', name: 'Women', slug: 'women', subcategories: ['T-Shirts', 'Lowers', 'Dresses'], products: 31, status: 'active' },
-  { id: 'cat3', name: 'Jewellery', slug: 'jewellery', subcategories: ['Rings', 'Pendants', 'Bracelets', 'Earrings', 'Keychain', 'Toys'], products: 18, status: 'active' },
+  { id: 'cat3', name: 'Unisex', slug: 'unisex', subcategories: ['T-Shirts', 'Lowers', 'Outerwear'], products: 15, status: 'active' },
+  { id: 'cat4', name: 'Jewellery', slug: 'jewellery', subcategories: ['Rings', 'Pendants', 'Ears', 'Bracelets'], products: 18, status: 'active' },
+  { id: 'cat5', name: 'Accessories', slug: 'accessories', subcategories: ['Keychains', 'Soft Toys'], products: 5, status: 'active' },
 ];
 
 const mockDiscounts = [
