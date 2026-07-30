@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import ProductCardSober from './components/ProductCardSober';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
-import ComingSoon from './pages/comingsoon/ComingSoon';
 import stuffedAnimalImg from './assets/stuffed animal.jpg';
 import { productsApi } from './api/products';
 import ringImg from "./assets/static/RING.png";
@@ -16,87 +14,48 @@ import menTshirts from "./assets/static/menTshirts.png";
 import womenTops from "./assets/static/womenTops.png";
 
 const mensCategories = [
-  {
-    id: 'tshirts',
-    name: 'TSHIRTS',
-    image: menTshirts,
-    path: '/men/tshirts'
-  },
-  {
-    id: 'lowers',
-    name: 'LOWERS',
-    image: 'https://i.ibb.co/RGyBrL7q/THE-DRAGON-LOWER-FRONT.jpg',
-    path: '/men/lowers'
-  }
+  { id: 'tshirts', name: 'TSHIRTS', image: menTshirts, path: '/men/tshirts' },
+  { id: 'lowers',  name: 'LOWERS',  image: 'https://i.ibb.co/RGyBrL7q/THE-DRAGON-LOWER-FRONT.jpg', path: '/men/lowers' }
 ];
 
 const womensCategories = [
-  {
-    id: 'tshirts',
-    name: 'TSHIRTS',
-    image: womenTops,
-    path: '/women/tshirts'
-  },
-  {
-    id: 'lowers',
-    name: 'LOWERS',
-    image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop',
-    path: '/women/lowers'
-  }
+  { id: 'tshirts', name: 'TSHIRTS', image: womenTops, path: '/women/tshirts' },
+  { id: 'lowers',  name: 'LOWERS',  image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' }
 ];
 
-const jewelleryCategories = [
-  {
-    id: 'rings',
-    name: 'RINGS',
-    image: ringImg,
-    fit: 'contain',
-    path: '/jewellery/rings'
-  },
-  {
-    id: 'pendants',
-    name: 'PENDANTS',
-    image: pendantImg,
-    fit: 'contain',
-    path: '/jewellery/pendants'
-  },
-  {
-    id: 'bracelet',
-    name: 'BRACELET',
-    image: braceletImg,
-    fit: 'contain',
-    path: '/jewellery/bracelet'
-  },
-  {
-    id: 'ear',
-    name: 'EAR',
-    image: earringsImg,
-    fit: 'contain',
-    path: '/jewellery/earrings'
-  }
+
+// Subcategory cards for Men's Jewellery
+const mensJewelleryCategories = [
+  { id: 'rings',     name: 'RINGS',     image: ringImg,     fit: 'contain', path: '/jewellery/men/rings' },
+  { id: 'pendants',  name: 'PENDANTS',  image: pendantImg,  fit: 'contain', path: '/jewellery/men/pendants' },
+  { id: 'bracelets', name: 'BRACELETS', image: braceletImg, fit: 'contain', path: '/jewellery/men/bracelets' },
+  { id: 'earrings',  name: 'EARRINGS',  image: earringsImg, fit: 'contain', path: '/jewellery/men/earrings' },
+];
+
+// Subcategory cards for Women's Jewellery
+const womensJewelleryCategories = [
+  { id: 'rings',     name: 'RINGS',     image: ringImg,     fit: 'contain', path: '/jewellery/women/rings' },
+  { id: 'pendants',  name: 'PENDANTS',  image: pendantImg,  fit: 'contain', path: '/jewellery/women/pendants' },
+  { id: 'bracelets', name: 'BRACELETS', image: braceletImg, fit: 'contain', path: '/jewellery/women/bracelets' },
+  { id: 'earrings',  name: 'EARRINGS',  image: earringsImg, fit: 'contain', path: '/jewellery/women/earrings' },
 ];
 
 const accessoriesCategories = [
-  {
-    id: 'keychain',
-    name: 'KEYCHAIN',
-    image: keychainImg,
-    fit: 'contain',
-    path: '/accessories/keychain'
-  },
-  {
-    id: 'toys',
-    name: 'TOYS',
-    image: stuffedAnimalImg,
-    fit: 'cover',
-    path: '/accessories/toys'
-  }
+  { id: 'keychain', name: 'KEYCHAIN', image: keychainImg,     fit: 'contain', path: '/accessories/keychain' },
+  { id: 'toys',     name: 'TOYS',     image: stuffedAnimalImg, fit: 'cover',   path: '/accessories/toys' }
 ];
 
 export default function ProductGrid({ 
   categoryFilter = 'all' 
 }: { 
-  categoryFilter?: 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'rings' | 'pendants' | 'earrings' | 'bracelet' | 'keychain' | 'keychains' | 'toys' | 'soft-toys' | 'ear' | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' | 'unisex' 
+  categoryFilter?: 
+    | 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | ''
+    | 'rings' | 'pendants' | 'earrings' | 'bracelet' | 'keychain' | 'keychains'
+    | 'toys' | 'soft-toys' | 'ear'
+    | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' | 'unisex'
+    | 'jewellery-men' | 'jewellery-women'
+    | 'men-rings' | 'men-pendants' | 'men-bracelets' | 'men-earrings'
+    | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings'
 }) {
   const navigate = useNavigate();
   const [dbProducts, setDbProducts] = useState<any[]>([]);
@@ -107,26 +66,40 @@ export default function ProductGrid({
         const { data } = await productsApi.list({ status: 'active', limit: 100 });
 
         const formatted = (data || []).map((p: any) => {
-          const isJewellery = p.category?.toLowerCase() === 'jewellery';
-          const isAccessories = p.category?.toLowerCase() === 'accessories';
+          const catLower = p.category?.toLowerCase() || '';
+          const isJewellery   = catLower === 'jewellery' || catLower.startsWith('jewellery/');
+          const isAccessories = catLower === 'accessories';
+          const isMenJewellery   = catLower === 'jewellery/men';
+          const isWomenJewellery = catLower === 'jewellery/women';
+
+          // gender is used for top-level filtering
+          let gender: string;
+          if (isMenJewellery)   gender = 'jewellery-men';
+          else if (isWomenJewellery) gender = 'jewellery-women';
+          else gender = catLower;
+
           return {
             id: p.id,
             name: p.name,
             price: p.price,
             originalPrice: p.compare_price,
             label: `${p.category} Premium`,
-            // For jewellery & accessories, use subcategory as the filter key;
-            // for apparel, use the top-level category (men/women/unisex)
+            // For jewellery & accessories use subcategory as the filter key;
+            // for apparel use the top-level category (men/women/unisex)
             category: (isJewellery || isAccessories)
               ? p.subcategory?.toLowerCase()
-              : p.category?.toLowerCase() || '',
-            gender: p.category?.toLowerCase() || '',
-            type: p.subcategory?.toLowerCase() === 'lowers' ? 'lower' : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')),
+              : catLower || '',
+            gender,
+            type: p.subcategory?.toLowerCase() === 'lowers'
+              ? 'lower'
+              : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')),
             sizes: p.sizes,
-            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
+            discount: p.discount || (p.compare_price && p.compare_price > p.price
+              ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
+              : undefined),
             description: p.description,
             frontImg: p.images?.[0] || '',
-            backImg: p.images?.[1] || p.images?.[0] || '',
+            backImg:  p.images?.[1] || p.images?.[0] || '',
           };
         });
         setDbProducts(formatted);
@@ -137,34 +110,108 @@ export default function ProductGrid({
     fetchDbProducts();
   }, [categoryFilter]);
 
-  const dbMenProducts = dbProducts.filter((p: any) => p.gender === 'men' || p.gender === 'unisex');
-  const dbWomenProducts = dbProducts.filter((p: any) => p.gender === 'women' || p.gender === 'unisex');
-  const dbJewelleryProducts = dbProducts.filter((p: any) => p.gender === 'jewellery');
-  const dbAccessoriesProducts = dbProducts.filter((p: any) => p.gender === 'accessories');
+  // ─── Product pools ───────────────────────────────────────────────────────────
+  const dbMenProducts          = dbProducts.filter(p => p.gender === 'men'   || p.gender === 'unisex');
+  const dbWomenProducts        = dbProducts.filter(p => p.gender === 'women' || p.gender === 'unisex');
+  const dbJewelleryMenProducts   = dbProducts.filter(p => p.gender === 'jewellery-men');
+  const dbJewelleryWomenProducts = dbProducts.filter(p => p.gender === 'jewellery-women');
+  const dbAccessoriesProducts  = dbProducts.filter(p => p.gender === 'accessories');
 
   const allWomenProducts = dbWomenProducts;
-  const displayWomenProducts = categoryFilter === 'all' ? allWomenProducts.slice(0, 3) : allWomenProducts;
-  const allJewelleryProducts = dbJewelleryProducts;
-  const displayJewelleryProducts = categoryFilter === 'all' ? allJewelleryProducts.slice(0, 3) : allJewelleryProducts;
 
-  // ─── CLEANED UP SUBCATEGORY FILTERING ───
-  const isMenFilter = categoryFilter.startsWith('men');
+  // ─── Apparel subcategory helpers ─────────────────────────────────────────────
+  const isMenFilter    = categoryFilter.startsWith('men') && !categoryFilter.startsWith('men-rings') && !categoryFilter.startsWith('men-pendants') && !categoryFilter.startsWith('men-bracelets') && !categoryFilter.startsWith('men-earrings');
   const isTshirtFilter = categoryFilter.includes('tshirts');
-  
-  // This smoothly grabs Men/Women + Unisex based on the active tab
-  const activeSubcategoryProducts = dbProducts.filter(p => 
-    (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') && 
+
+  const activeSubcategoryProducts = dbProducts.filter(p =>
+    (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') &&
     p.type === (isTshirtFilter ? 'tshirt' : 'lower')
   );
+
+  // ─── Gendered jewellery helpers ───────────────────────────────────────────────
+  const JEWELLERY_MEN_SUBS   = ['men-rings', 'men-pendants', 'men-bracelets', 'men-earrings'];
+  const JEWELLERY_WOMEN_SUBS = ['women-rings', 'women-pendants', 'women-bracelets', 'women-earrings'];
+  const isGenderedJewellerySubcategory = [...JEWELLERY_MEN_SUBS, ...JEWELLERY_WOMEN_SUBS].includes(categoryFilter);
+
+  const getJewellerySubcategoryLabel = () => {
+    const parts = categoryFilter.split('-');
+    if (parts.length < 2) return '';
+    return parts.slice(1).join(' ').toUpperCase();
+  };
+
+  const getGenderedJewelleryProducts = () => {
+    const isMenSub = categoryFilter.startsWith('men-');
+    const [, ...subParts] = categoryFilter.split('-');
+    const sub = subParts.join('').toLowerCase(); // "rings", "pendants", "bracelets", "earrings"
+    const pool = isMenSub ? dbJewelleryMenProducts : dbJewelleryWomenProducts;
+    if (!sub) return pool;
+    return pool.filter(p => p.category?.toLowerCase() === sub);
+  };
 
   const openProduct = (product: any) => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
 
+  // ─── Reusable Jewellery Subcategory Grid ─────────────────────────────────────
+  const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewelleryCategories }) => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+      {categories.map((item, i) => (
+        <motion.div 
+          key={item.id}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.8, delay: (i % 4) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+          className="group relative flex flex-col cursor-pointer"
+          onClick={() => navigate(item.path)}
+        >
+          <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
+            <img 
+              src={item.image} 
+              alt={item.name} 
+              className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase text-center w-full px-2">
+                {item.name}
+              </h3>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+
+  // ─── Shared section heading ───────────────────────────────────────────────────
+  const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => (
+    <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
+        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
+      >
+        {eyebrow}
+      </motion.h2>
+      <motion.h3
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
+      >
+        {title}
+      </motion.h3>
+    </div>
+  );
+
   return (
     <>
       <AnimatePresence mode="wait">
-      
+
       {/* ── MEN'S SECTION ── */}
       {categoryFilter === 'men' && (
         <motion.section 
@@ -176,26 +223,7 @@ export default function ProductGrid({
           id="men" 
           className="py-[120px] bg-[#12100C] relative z-10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              LATEST DROPS
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              Men's Collection
-            </motion.h3>
-          </div>
+          <SectionHeading eyebrow="LATEST DROPS" title="Men's Collection" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row flex-wrap justify-center gap-[36px] items-center">
               {mensCategories.map((item, i) => (
@@ -209,17 +237,10 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                      referrerPolicy="no-referrer"
-                    />
+                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">
-                        {item.name}
-                      </h3>
+                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>
@@ -228,19 +249,9 @@ export default function ProductGrid({
           </div>
           {dbMenProducts.length > 0 && (
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
-              <motion.h2 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-                className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left"
-              >
-                FROM OUR CATALOG
-              </motion.h2>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
               <div className="pinterest-grid">
-                {dbMenProducts.map((item, i) => (
-                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
-                ))}
+                {dbMenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
             </div>
           )}
@@ -258,39 +269,18 @@ export default function ProductGrid({
           id="gendered-category" 
           className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              {isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              {isMenFilter ? "MEN'S " : "WOMEN'S "}
-              {isTshirtFilter ? 'TSHIRTS' : 'LOWERS'}
-            </motion.h3>
-          </div>
+          <SectionHeading
+            eyebrow={isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
+            title={`${isMenFilter ? "MEN'S" : "WOMEN'S"} ${isTshirtFilter ? 'TSHIRTS' : 'LOWERS'}`}
+          />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             {activeSubcategoryProducts.length === 0 ? (
               <div className="w-full flex justify-center py-24">
-                <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">
-                  New Collection Coming Soon
-                </h3>
+                <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">New Collection Coming Soon</h3>
               </div>
             ) : (
               <div className="pinterest-grid">
-                {activeSubcategoryProducts.map((item, i) => (
-                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
-                ))}
+                {activeSubcategoryProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
             )}
           </div>
@@ -308,26 +298,7 @@ export default function ProductGrid({
           id="women" 
           className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              NEW ARRIVALS
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              Women's Collection
-            </motion.h3>
-          </div>
+          <SectionHeading eyebrow="NEW ARRIVALS" title="Women's Collection" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row flex-wrap justify-center gap-[36px] items-center">
               {womensCategories.map((item, i) => (
@@ -341,17 +312,10 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                      referrerPolicy="no-referrer"
-                    />
+                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">
-                        {item.name}
-                      </h3>
+                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>
@@ -360,19 +324,9 @@ export default function ProductGrid({
           </div>
           {allWomenProducts.length > 0 && (
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
-              <motion.h2 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-                className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left"
-              >
-                FROM OUR CATALOG
-              </motion.h2>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
               <div className="pinterest-grid">
-                {allWomenProducts.map((item, i) => (
-                  <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
-                ))}
+                {allWomenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
             </div>
           )}
@@ -390,26 +344,7 @@ export default function ProductGrid({
           id="accessories" 
           className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              NEW ARRIVALS
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              ACCESSORIES COLLECTION
-            </motion.h3>
-          </div>
+          <SectionHeading eyebrow="NEW ARRIVALS" title="ACCESSORIES COLLECTION" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 max-w-2xl mx-auto">
               {accessoriesCategories.map((item, i) => (
@@ -423,16 +358,10 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                    />
+                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[#FFE55A]' : 'text-[#EAE6E1]'}`}>
-                        {item.name}
-                      </h3>
+                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[#FFE55A]' : 'text-[#EAE6E1]'}`}>{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>
@@ -442,119 +371,84 @@ export default function ProductGrid({
         </motion.section>
       )}
 
-      {/* ── JEWELLERY ── */}
-      {categoryFilter === 'jewellery' && (
+
+      {/* ── JEWELLERY / MEN LANDING ── */}
+      {categoryFilter === 'jewellery-men' && (
         <motion.section 
-          key="jewellery"
+          key="jewellery-men"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
-          id="jewellery" 
+          id="jewellery-men" 
           className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              NEW ARRIVALS
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              JEWELLERY COLLECTION
-            </motion.h3>
-          </div>
+          <SectionHeading eyebrow="JEWELLERY" title="MEN'S JEWELLERY" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-              {jewelleryCategories.map((item, i) => (
-                <motion.div 
-                  key={item.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.8, delay: (i % 6) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                  className="group relative flex flex-col cursor-pointer"
-                  onClick={() => navigate(item.path)}
-                >
-                  <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className={`absolute inset-0 w-full h-full ${'fit' in item && item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase text-center w-full px-2">
-                        {item.name}
-                      </h3>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <JewellerySubcategoryGrid categories={mensJewelleryCategories} />
           </div>
+          {dbJewelleryMenProducts.length > 0 && (
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
+              <div className="pinterest-grid">
+                {dbJewelleryMenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
+              </div>
+            </div>
+          )}
         </motion.section>
       )}
 
-      {/* ── JEWELLERY SUBCATEGORIES ── */}
-      {['rings', 'pendants', 'bracelet', 'earrings', 'ear'].includes(categoryFilter) && (
+      {/* ── JEWELLERY / WOMEN LANDING ── */}
+      {categoryFilter === 'jewellery-women' && (
         <motion.section 
-          key="jewellery-category"
+          key="jewellery-women"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
-          id="jewellery-category" 
+          id="jewellery-women" 
           className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              JEWELLERY
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              {categoryFilter === 'earrings' || categoryFilter === 'ear' ? 'EARRINGS' : categoryFilter.toUpperCase()}
-            </motion.h3>
+          <SectionHeading eyebrow="JEWELLERY" title="WOMEN'S JEWELLERY" />
+          <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+            <JewellerySubcategoryGrid categories={womensJewelleryCategories} />
           </div>
+          {dbJewelleryWomenProducts.length > 0 && (
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
+              <div className="pinterest-grid">
+                {dbJewelleryWomenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
+              </div>
+            </div>
+          )}
+        </motion.section>
+      )}
+
+      {/* ── GENDERED JEWELLERY SUBCATEGORIES (men-rings, women-pendants, etc.) ── */}
+      {isGenderedJewellerySubcategory && (
+        <motion.section 
+          key="gendered-jewellery-sub"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.5 }}
+          id="gendered-jewellery-sub" 
+          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+        >
+          <SectionHeading
+            eyebrow={categoryFilter.startsWith('men-') ? "MEN'S JEWELLERY" : "WOMEN'S JEWELLERY"}
+            title={getJewellerySubcategoryLabel()}
+          />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             {(() => {
-              // Normalize filter: 'earrings' and 'ear' both match products with category 'ears'
-              const normalizedFilter =
-                categoryFilter === 'earrings' || categoryFilter === 'ear' ? 'ears'
-                : categoryFilter;
-              const filtered = allJewelleryProducts.filter(p => p.category === normalizedFilter);
+              const filtered = getGenderedJewelleryProducts();
               return filtered.length === 0 ? (
                 <div className="w-full flex justify-center py-24">
-                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">
-                    New Collection Coming Soon
-                  </h3>
+                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">New Collection Coming Soon</h3>
                 </div>
               ) : (
                 <div className="pinterest-grid">
-                  {filtered.map((item, i) => (
-                    <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
-                  ))}
+                  {filtered.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
                 </div>
               );
             })()}
@@ -573,44 +467,21 @@ export default function ProductGrid({
           id="accessories-category" 
           className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
-            >
-              ACCESSORIES
-            </motion.h2>
-            <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
-            >
-              {(categoryFilter === 'keychain' || categoryFilter === 'keychains') ? 'KEYCHAINS' : 'SOFT TOYS'}
-            </motion.h3>
-          </div>
+          <SectionHeading
+            eyebrow="ACCESSORIES"
+            title={(categoryFilter === 'keychain' || categoryFilter === 'keychains') ? 'KEYCHAINS' : 'SOFT TOYS'}
+          />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             {(() => {
-              // Normalize filter to match stored subcategory values
-              const normalizedFilter =
-                categoryFilter === 'keychain' || categoryFilter === 'keychains' ? 'keychains'
-                : 'soft toys';
+              const normalizedFilter = (categoryFilter === 'keychain' || categoryFilter === 'keychains') ? 'keychains' : 'soft toys';
               const filtered = dbAccessoriesProducts.filter(p => p.category === normalizedFilter);
               return filtered.length === 0 ? (
                 <div className="w-full flex justify-center py-24">
-                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">
-                    New Collection Coming Soon
-                  </h3>
+                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">New Collection Coming Soon</h3>
                 </div>
               ) : (
                 <div className="pinterest-grid">
-                  {filtered.map((item, i) => (
-                    <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
-                  ))}
+                  {filtered.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
                 </div>
               );
             })()}

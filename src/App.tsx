@@ -37,6 +37,9 @@ export default function App() {
   const [isClothingOpen, setIsClothingOpen] = useState(false);
   const [isMobileClothingOpen, setIsMobileClothingOpen] = useState(false);
   const clothingDropdownRef = useRef<HTMLDivElement>(null);
+  const [isJewelleryOpen, setIsJewelleryOpen] = useState(false);
+  const [isMobileJewelleryOpen, setIsMobileJewelleryOpen] = useState(false);
+  const jewelleryDropdownRef = useRef<HTMLDivElement>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -82,6 +85,9 @@ export default function App() {
     const handleClickOutside = (event: MouseEvent) => {
       if (clothingDropdownRef.current && !clothingDropdownRef.current.contains(event.target as Node)) {
         setIsClothingOpen(false);
+      }
+      if (jewelleryDropdownRef.current && !jewelleryDropdownRef.current.contains(event.target as Node)) {
+        setIsJewelleryOpen(false);
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
@@ -249,10 +255,46 @@ return (
                 )}
               </AnimatePresence>
             </div>
-            <button onClick={() => navTransition(() => navigate('/jewellery'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-              JEWELLERY
-              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-            </button>
+            <div className="relative" ref={jewelleryDropdownRef}>
+              <button
+                onClick={() => setIsJewelleryOpen(!isJewelleryOpen)}
+                className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700"
+              >
+                JEWELLERY
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+              </button>
+
+              <AnimatePresence>
+                {isJewelleryOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                  >
+                    <button
+                      onClick={() => {
+                        setIsJewelleryOpen(false);
+                        navTransition(() => navigate('/jewellery/men'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                    >
+                      MEN
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsJewelleryOpen(false);
+                        navTransition(() => navigate('/jewellery/women'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                    >
+                      WOMEN
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <button onClick={() => navTransition(() => navigate('/accessories'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
               ACCESSORIES
               <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
@@ -377,7 +419,11 @@ return (
                 { name: '- Men', href: '#collection', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
                 { name: '- Women', href: '#collection', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
               ] : []),
-              { name: 'Jewellery', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery')); setIsMenuOpen(false); } },
+              { name: 'Jewellery', href: '#', onClick: () => setIsMobileJewelleryOpen(!isMobileJewelleryOpen) },
+              ...(isMobileJewelleryOpen ? [
+                { name: '- Men', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery/men')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
+                { name: '- Women', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery/women')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
+              ] : []),
               { name: 'Accessories', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories')); setIsMenuOpen(false); } },
               ...(isAdmin ? [] : [{ name: 'AI Wardrobe', href: '#', onClick: () => { navTransition(() => navigate('/ai-wardrobe')); setIsMenuOpen(false); } }]),
               ...(isAdmin 
@@ -514,12 +560,19 @@ return (
         <Route path="/women" element={<ProductGrid categoryFilter="women" />} />
         <Route path="/women/tshirts" element={<ProductGrid categoryFilter="women-tshirts" />} />
         <Route path="/women/lowers" element={<ProductGrid categoryFilter="women-lowers" />} />
-        <Route path="/jewellery" element={<ProductGrid categoryFilter="jewellery" />} />
-        <Route path="/jewellery/rings" element={<ProductGrid categoryFilter="rings" />} />
-        <Route path="/jewellery/pendants" element={<ProductGrid categoryFilter="pendants" />} />
-        <Route path="/jewellery/bracelet" element={<ProductGrid categoryFilter="bracelet" />} />
-        <Route path="/jewellery/earrings" element={<ProductGrid categoryFilter="earrings" />} />
-        <Route path="/jewellery/ear" element={<ProductGrid categoryFilter="earrings" />} />
+        <Route path="/jewellery" element={<ProductGrid categoryFilter="jewellery-men" />} />
+        {/* Men's Jewellery */}
+        <Route path="/jewellery/men" element={<ProductGrid categoryFilter="jewellery-men" />} />
+        <Route path="/jewellery/men/rings" element={<ProductGrid categoryFilter="men-rings" />} />
+        <Route path="/jewellery/men/pendants" element={<ProductGrid categoryFilter="men-pendants" />} />
+        <Route path="/jewellery/men/bracelets" element={<ProductGrid categoryFilter="men-bracelets" />} />
+        <Route path="/jewellery/men/earrings" element={<ProductGrid categoryFilter="men-earrings" />} />
+        {/* Women's Jewellery */}
+        <Route path="/jewellery/women" element={<ProductGrid categoryFilter="jewellery-women" />} />
+        <Route path="/jewellery/women/rings" element={<ProductGrid categoryFilter="women-rings" />} />
+        <Route path="/jewellery/women/pendants" element={<ProductGrid categoryFilter="women-pendants" />} />
+        <Route path="/jewellery/women/bracelets" element={<ProductGrid categoryFilter="women-bracelets" />} />
+        <Route path="/jewellery/women/earrings" element={<ProductGrid categoryFilter="women-earrings" />} />
         <Route path="/accessories" element={<ProductGrid categoryFilter="accessories" />} />
         <Route path="/accessories/keychain" element={<ProductGrid categoryFilter="keychains" />} />
         <Route path="/accessories/keychains" element={<ProductGrid categoryFilter="keychains" />} />
