@@ -8,6 +8,7 @@ import { useAuth } from './hooks/UseAuth';
 import { productsApi } from './api/products';
 import TryOn from './components/TryOn';
 import TryOnModal from './components/TryOnModal';
+import ReviewSection from './components/ReviewSection';
 
 type ProductDetail = {
   id: string;
@@ -801,6 +802,8 @@ export default function ProductPage() {
           </section>
         )}
 
+        {product?.id && <ReviewSection productId={product.id} />}
+
         {/* Footer spacer */}
         <div className="h-32" />
       </main>
@@ -810,7 +813,7 @@ export default function ProductPage() {
         isOpen={tryOnOpen}
         onClose={() => setTryOnOpen(false)}
         productId={product?.id || ''}
-        clothImageUrl={images[0] || product?.frontImg || ''}
+        clothImages={images.length > 0 ? images : product?.frontImg ? [product.frontImg] : []}
       />
     </div>
   );

@@ -1,34 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
+import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles, AlertCircle, Check } from 'lucide-react';
 import { useAuth } from '../hooks/UseAuth';
 import { useAuthModal } from '../AuthModalContext';
 import { tryonApi } from '../api/tryon';
+import { buildImageProxyUrl } from '../api/images';
 
 interface TryOnModalProps {
   isOpen: boolean;
   onClose: () => void;
   productId: string;
-  clothImageUrl: string;
+  // All of the product's own photos the shopper can pick from as garments —
+  // one or more can be combined into a single try-on generation.
+  clothImages: string[];
 }
+
+const MAX_CLOTH_IMAGES = 5;
 
 type Stage = 'upload' | 'generating' | 'result' | 'error';
 
-// The backend needs the cloth image as an actual uploaded file, not a URL —
-// the product photo is already hosted, so we fetch it once and turn it into
-// a File to send alongside the person's photo.
-async function urlToFile(url: string, filename: string): Promise<File> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Could not load the product image for try-on.');
-  const blob = await res.blob();
-  return new File([blob], filename, { type: blob.type || 'image/jpeg' });
-}
-
-export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }: TryOnModalProps) {
+export default function TryOnModal({ isOpen, onClose, productId, clothImages }: TryOnModalProps) {
   const { token } = useAuth();
   const { setIsLoginModalOpen } = useAuthModal();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedCloths, setSelectedCloths] = useState<string[]>(() => (clothImages[0] ? [clothImages[0]] : []));
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>('upload');
   const [progress, setProgress] = useState(0);
@@ -40,11 +36,13 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
     if (!isOpen) {
       setSelectedImage(null);
       setSelectedFile(null);
+      setSelectedCloths(clothImages[0] ? [clothImages[0]] : []);
       setGeneratedImage(null);
       setStage('upload');
       setProgress(0);
       setErrorMessage('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Require login before letting someone start a try-on — mirrors the same
@@ -65,6 +63,14 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const toggleCloth = (url: string) => {
+    setSelectedCloths((prev) => {
+      if (prev.includes(url)) return prev.filter((u) => u !== url);
+      if (prev.length >= MAX_CLOTH_IMAGES) return prev;
+      return [...prev, url];
+    });
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -77,13 +83,13 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
     }
   };
 
-  // Real generation can take anywhere from a few seconds to ~30s (Gemini +
-  // Appwrite upload round trip) with no server-sent progress events, so the
-  // progress bar here is a deliberately-slowing visual approximation, not a
-  // measurement of actual work done — it creeps toward 90% and only
-  // completes once the response actually arrives.
+  // Real generation can take anywhere from a few seconds to ~30-45s (Gemini +
+  // Appwrite upload round trip, longer with several garments) with no
+  // server-sent progress events, so the progress bar here is a deliberately-
+  // slowing visual approximation, not a measurement of actual work done — it
+  // creeps toward 90% and only completes once the response actually arrives.
   const handleGenerate = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || selectedCloths.length === 0) return;
     setStage('generating');
     setProgress(0);
     setErrorMessage('');
@@ -93,8 +99,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
     }, 350);
 
     try {
-      const clothFile = await urlToFile(clothImageUrl, 'garment.jpg');
-      const result = await tryonApi.generate(productId, selectedFile, clothFile);
+      const result = await tryonApi.generate(productId, selectedFile, selectedCloths);
       clearInterval(interval);
       setProgress(100);
       setGeneratedImage(result.imageUrl);
@@ -123,7 +128,10 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
   const handleDownload = async () => {
     if (!generatedImage) return;
     try {
-      const res = await fetch(generatedImage);
+      // The generated image is hosted on Appwrite too, so it goes through
+      // the backend proxy rather than being fetch()'d directly — Appwrite's
+      // CORS policy would otherwise block this from the browser.
+      const res = await fetch(buildImageProxyUrl(generatedImage));
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -132,8 +140,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
       a.click();
       URL.revokeObjectURL(objectUrl);
     } catch {
-      // Cross-origin fetch failed for some reason — fall back to just
-      // opening the image so the user can still save it manually.
+      // Fall back to just opening the image so the user can still save it manually.
       window.open(generatedImage, '_blank');
     }
   };
@@ -187,7 +194,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
                     ? 'Your AI-generated try-on is ready.'
                     : stage === 'error'
                     ? "Something didn't go as planned."
-                    : 'Upload a photo to see how this piece fits.'}
+                    : 'Pick one or more photos of the piece, then upload yours.'}
                 </p>
               </div>
 
@@ -203,6 +210,44 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.28 }}
                   >
+                    {/* Cloth image multi-select */}
+                    {clothImages.length > 1 && (
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="text-[10px] font-plex-mono text-[#EAE6E1]/45 tracking-[0.2em] uppercase">
+                            Choose garment photos
+                          </span>
+                          <span className="text-[10px] font-plex-mono text-[#C5A059]/70 tracking-[0.1em]">
+                            {selectedCloths.length}/{MAX_CLOTH_IMAGES}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          {clothImages.slice(0, 8).map((url) => {
+                            const isSelected = selectedCloths.includes(url);
+                            return (
+                              <button
+                                key={url}
+                                type="button"
+                                onClick={() => toggleCloth(url)}
+                                className={`relative aspect-square rounded-lg overflow-hidden border transition-all duration-200 ${
+                                  isSelected
+                                    ? 'border-[#C5A059] ring-1 ring-[#C5A059]/60'
+                                    : 'border-[#EAE6E1]/12 hover:border-[#C5A059]/40'
+                                }`}
+                              >
+                                <img src={url} alt="Garment option" className="w-full h-full object-cover" />
+                                {isSelected && (
+                                  <div className="absolute top-1 right-1 bg-[#C5A059] rounded-full p-0.5">
+                                    <Check size={10} strokeWidth={3} className="text-[#12100C]" />
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mb-6">
                       {!selectedImage ? (
                         <div
@@ -213,7 +258,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
                             <UploadCloud size={26} className="text-[#C5A059]/65" strokeWidth={1.2} />
                           </div>
                           <span className="text-[12px] font-plex-mono text-[#EAE6E1]/60 tracking-[0.15em] uppercase">
-                            Click to upload photo
+                            Click to upload your photo
                           </span>
                           <span className="text-[10px] font-plex-mono text-[#EAE6E1]/30 mt-2 tracking-wide">
                             JPG, PNG up to 5MB
@@ -251,7 +296,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImageUrl }
 
                     <button
                       type="button"
-                      disabled={!selectedImage}
+                      disabled={!selectedImage || selectedCloths.length === 0}
                       onClick={handleGenerate}
                       className="w-full py-4 bg-[#C5A059] text-[#12100C] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[#d4af37] transition-all duration-300 rounded-md disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 uppercase"
                     >
