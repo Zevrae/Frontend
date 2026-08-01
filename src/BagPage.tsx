@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
+import { ChevronLeft } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
@@ -268,6 +269,14 @@ export default function BagPage() {
         transition: 'opacity 0.3s ease, transform 0.3s ease',
       }}
     >
+      {/* ── Back Navigation ── */}
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center text-[10px] uppercase font-mono tracking-[0.2em] text-[#EAE6E1]/50 hover:text-[#C5A059] transition-colors duration-300 mb-8"
+      >
+        <ChevronLeft size={16} className="mr-2" /> Back
+      </button>
+
       {/* ── Hero Heading ── */}
       <header className="bag-header" ref={headerRef}>
         <h1 className="bag-heading" aria-label="YOUR BAG">

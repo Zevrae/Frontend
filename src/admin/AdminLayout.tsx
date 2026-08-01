@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import {
   Package2, LayoutDashboard, ShoppingBag, Layers, FolderOpen, Percent,
-  ChevronRight, Archive,
+  ChevronRight, Archive, ArrowLeft,
 } from 'lucide-react';
 import { ordersApi, Order } from '../api/orders';
 import {
@@ -95,8 +95,25 @@ export default function AdminLayout() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
-  const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
+  const [activeSection, setActiveSectionState] = useState<AdminSection>('dashboard');
+  const [sectionHistory, setSectionHistory] = useState<AdminSection[]>([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Wrap setActive so every navigation push is recorded in history
+  const setActive = (next: AdminSection) => {
+    setSectionHistory(prev => [...prev, activeSection]);
+    setActiveSectionState(next);
+  };
+
+  // Pop back to the previous section
+  const goBack = () => {
+    setSectionHistory(prev => {
+      const history = [...prev];
+      const previous = history.pop();
+      if (previous) setActiveSectionState(previous);
+      return history;
+    });
+  };
 
   const fetchOrders = async (showLoader = true) => {
     if (showLoader) setLoading(true);
@@ -136,20 +153,32 @@ export default function AdminLayout() {
     <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans">
       <Sidebar
         active={activeSection}
-        setActive={setActiveSection}
+        setActive={setActive}
         isMobileOpen={mobileSidebarOpen}
         onClose={() => setMobileSidebarOpen(false)}
       />
 
       <div className="md:ml-56 min-h-screen flex flex-col">
         <header className="sticky top-0 z-20 bg-[#12100C]/95 backdrop-blur-sm border-b border-[#EAE6E1]/8 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="md:hidden text-[#EAE6E1]/50 hover:text-[#EAE6E1] transition-colors"
             >
               <Package2 size={20} />
             </button>
+
+            {/* ── Back arrow — visible whenever there's history to go back to ── */}
+            {sectionHistory.length > 0 && (
+              <button
+                onClick={goBack}
+                className="flex items-center justify-center w-7 h-7 rounded-sm border border-[#EAE6E1]/15 text-[#EAE6E1]/50 hover:text-[#C5A059] hover:border-[#C5A059]/40 transition-all duration-200"
+                title="Go back"
+              >
+                <ArrowLeft size={13} />
+              </button>
+            )}
+
             <button
               onClick={() => navigate('/')}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.15em] font-sans bg-[#12100C] border border-[#EAE6E1]/15 text-[#EAE6E1]/70 hover:text-[#C5A059] hover:border-[#C5A059]/40 transition-colors rounded-sm"

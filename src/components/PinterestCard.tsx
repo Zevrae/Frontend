@@ -8,7 +8,7 @@ interface PinterestCardProps {
     name: string;
     price: number;
     originalPrice?: number;
-    discount?: string;
+    discount?: string | number;
     label?: string;
     category?: string;
     frontImg?: string;

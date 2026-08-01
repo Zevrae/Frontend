@@ -460,11 +460,12 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
 // Local category→subcategory map so Jewellery & Accessories always appear
 // regardless of what the backend returns.
 const CATEGORY_MAP: Record<string, string[]> = {
-  Men:         ['T-Shirts', 'Lowers'],
-  Women:       ['T-Shirts', 'Lowers', 'Crop-Tops'],
-  Unisex:      ['T-Shirts', 'Lowers' ],
-  Jewellery:   ['Rings', 'Pendants', 'Ears', 'Bracelets'],
-  Accessories: ['Keychains', 'Soft Toys'],
+  Men:               ['T-Shirts', 'Lowers'],
+  Women:             ['T-Shirts', 'Lowers', 'Crop-Tops'],
+  Unisex:            ['T-Shirts', 'Lowers'],
+  'Jewellery/Men':   ['Rings', 'Pendants', 'Bracelets', 'Earrings'],
+  'Jewellery/Women': ['Rings', 'Pendants', 'Bracelets', 'Earrings'],
+  Accessories:       ['Keychains', 'Soft Toys'],
 };
 
 export function ProductsSection() {

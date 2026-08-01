@@ -9,6 +9,9 @@ import { productsApi } from './api/products';
 import TryOn from './components/TryOn';
 import TryOnModal from './components/TryOnModal';
 import ReviewSection from './components/ReviewSection';
+import PinterestCard from './components/PinterestCard';
+import './components/PinterestCard.css';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
 
 type ProductDetail = {
   id: string;
@@ -105,6 +108,13 @@ export default function ProductPage() {
     (location.state as { product?: ProductDetail } | null)?.product || null
   );
 
+  useDocumentTitle(
+    product?.name,
+    product
+      ? `${product.name} — ${product.label || 'ZEVRAE'}. ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}. Shop now with virtual try-on.`
+      : undefined
+  );
+
   const [selectedSize, setSelectedSize] = useState('');
   const [sizeError, setSizeError] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -124,7 +134,7 @@ export default function ProductPage() {
         const { data } = await productsApi.list({ limit: 500 });
         
         // Loose comparison to handle String/Int and id/$id mismatches natively
-        const p = data.find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
+        const p: any = (data as any[]).find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
         
         if (p) {
           // Safely parse backend images (handles Array, JSON string, or CSV formats)
@@ -764,38 +774,14 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-12">
+              <div className="pinterest-grid">
                 {relatedProducts.map((p, i) => (
-                  <motion.div
+                  <PinterestCard
                     key={p.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-60px' }}
-                    transition={{ duration: 0.7, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="group cursor-pointer"
-                    onClick={() =>
-                      navigate(`/product/${p.id}`, { state: { product: p } })
-                    }
-                  >
-                    <div className="relative aspect-[3/4] bg-[#0d0d0d] overflow-hidden mb-5">
-                      <img
-                        src={p.frontImg}
-                        alt={p.name}
-                        referrerPolicy="no-referrer"
-                        className="absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 opacity-85 group-hover:opacity-100"
-                      />
-                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-400" />
-                    </div>
-                    <p className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[#C8A96A] mb-1.5">
-                      {p.label}
-                    </p>
-                    <h3 className="text-[13px] font-archivo font-bold tracking-[0.05em] text-[#EAE6E1] uppercase mb-2 leading-tight line-clamp-2">
-                      {p.name}
-                    </h3>
-                    <p className="text-[12px] font-plex-mono text-[#EAE6E1]/60">
-                      {formatPrice(p.price)}
-                    </p>
-                  </motion.div>
+                    product={p}
+                    index={i}
+                    onClick={() => navigate(`/product/${p.id}`, { state: { product: p } })}
+                  />
                 ))}
               </div>
             </div>
