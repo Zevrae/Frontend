@@ -6,7 +6,7 @@ import { usePageTransition } from '../features/PageTransitionContext';
 import clothingDefault from '../assets/static/image1.jpg';
 import menClothing from '../assets/static/zoom.jpg';
 import womenClothing from '../assets/static/front.jpeg';
-import jewelleryCover from '../assets/static/jewelHome.png';
+import jewelHome from '../assets/static/jewelHome.png';
 import jewelleryMen from '../assets/static/jewelMen.png';
 import jewelleryWomen from '../assets/static/jewelWomen.png';
 
@@ -54,7 +54,7 @@ const collections: Collection[] = [
     menRoute: '/jewellery',
     womenRoute: '/jewellery',
     bgColor: '#0c0c10',
-    image: jewelleryCover,
+    image: jewelHome,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
 },

@@ -481,9 +481,7 @@ return (
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/shipping-returns" element={<ShippingReturns />} />
-        
         <Route path="/ai-wardrobe" element={<ComingSoon />} />
-
       </Routes>
 
 
