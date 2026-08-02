@@ -326,7 +326,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {tryons.map(t => {
+                {tryons.filter(t => t.status === 'completed' && t.imageUrl).map(t => {
                   const productInfo = typeof t.product === 'object' ? t.product : null;
                   return (
                     <div key={t.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden group">

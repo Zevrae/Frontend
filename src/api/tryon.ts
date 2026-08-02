@@ -4,7 +4,9 @@ export interface TryonResult {
   id: string;
   user: string;
   product: string | { id: string; name: string; images: string[] };
-  imageUrl: string;
+  imageUrl?: string;
+  status: 'pending' | 'completed' | 'failed';
+  error?: string;
   clothImageUrls: string[];
   created_at: string;
 }
@@ -14,7 +16,13 @@ export const tryonApi = {
   // try on (one or more). The backend resolves and fetches these itself via
   // its Appwrite SDK — the browser never needs to fetch() Appwrite directly,
   // which sidesteps Appwrite's CORS restrictions.
-  generate: async (productId: string, personImage: File, clothImageUrls: string[]): Promise<TryonResult> => {
+  //
+  // This starts a background job and returns almost immediately (status:
+  // 'pending') — it does NOT wait for generation to finish. Actual
+  // generation takes 25-40s, which is too long/fragile to hold open as a
+  // single HTTP request in production (proxy/load-balancer timeouts). Poll
+  // getStatus() with the returned id until status is 'completed' or 'failed'.
+  start: async (productId: string, personImage: File, clothImageUrls: string[]): Promise<TryonResult> => {
     const formData = new FormData();
     formData.append('productId', productId);
     formData.append('person_image', personImage);
@@ -22,8 +30,12 @@ export const tryonApi = {
 
     const response = await api.post('/tryon', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 60000, // the underlying Gemini generation can take a while, more so with several garments
     });
+    return response.data.data;
+  },
+
+  getStatus: async (id: string): Promise<TryonResult> => {
+    const response = await api.get(`/tryon/${id}/status`);
     return response.data.data;
   },
 

@@ -83,43 +83,97 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
     }
   };
 
-  // Real generation can take anywhere from a few seconds to ~30-45s (Gemini +
-  // Appwrite upload round trip, longer with several garments) with no
-  // server-sent progress events, so the progress bar here is a deliberately-
-  // slowing visual approximation, not a measurement of actual work done — it
-  // creeps toward 90% and only completes once the response actually arrives.
+  // Real generation takes anywhere from a few seconds to ~30-45s (Gemini +
+  // Appwrite upload round trip, longer with several garments). Rather than
+  // holding one HTTP request open that long — fragile against proxy/load
+  // balancer timeouts in production — the backend starts a background job
+  // and we poll for its result. The progress bar is still a visual
+  // approximation (no granular progress from the microservice), but it's
+  // now driven by real poll responses rather than a blind client-side timer.
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    };
+  }, []);
+
   const handleGenerate = async () => {
     if (!selectedFile || selectedCloths.length === 0) return;
     setStage('generating');
     setProgress(0);
     setErrorMessage('');
 
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 90 ? 90 : prev + Math.random() * 6 + 2));
-    }, 350);
+    progressTimerRef.current = setInterval(() => {
+      setProgress((prev) => (prev >= 90 ? 90 : prev + Math.random() * 4 + 1));
+    }, 600);
+
+    const stopTimers = () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    };
 
     try {
-      const result = await tryonApi.generate(productId, selectedFile, selectedCloths);
-      clearInterval(interval);
-      setProgress(100);
-      setGeneratedImage(result.imageUrl);
-      setStage('result');
+      const job = await tryonApi.start(productId, selectedFile, selectedCloths);
+
+      const startedAt = Date.now();
+      const MAX_WAIT_MS = 120000; // give up after 2 minutes — generation is normally well under 1
+
+      pollTimerRef.current = setInterval(async () => {
+        try {
+          const current = await tryonApi.getStatus(job.id);
+
+          if (current.status === 'completed') {
+            stopTimers();
+            setProgress(100);
+            setGeneratedImage(current.imageUrl || null);
+            setStage('result');
+            return;
+          }
+
+          if (current.status === 'failed') {
+            stopTimers();
+            setProgress(0);
+            setErrorMessage(current.error || 'Something went wrong generating your try-on.');
+            setStage('error');
+            return;
+          }
+
+          if (Date.now() - startedAt > MAX_WAIT_MS) {
+            stopTimers();
+            setProgress(0);
+            setErrorMessage('This is taking longer than expected. Please try again in a moment.');
+            setStage('error');
+          }
+        } catch (pollErr) {
+          // A single failed poll (e.g. transient network blip) shouldn't
+          // abort the whole job — keep polling until MAX_WAIT_MS.
+          if (Date.now() - startedAt > MAX_WAIT_MS) {
+            stopTimers();
+            setProgress(0);
+            setErrorMessage('Lost connection while checking your try-on. Please try again.');
+            setStage('error');
+          }
+        }
+      }, 2500);
     } catch (err: any) {
-      clearInterval(interval);
+      stopTimers();
       setProgress(0);
       const status = err?.response?.status;
       const message =
         status === 503
           ? 'Virtual try-on is not available right now. Please try again later.'
-          : status === 502
-          ? 'The try-on service had trouble processing these photos — try a clearer, front-facing photo.'
-          : err?.response?.data?.message || err?.message || 'Something went wrong generating your try-on.';
+          : err?.response?.data?.message || err?.message || 'Something went wrong starting your try-on.';
       setErrorMessage(message);
       setStage('error');
     }
   };
 
   const handleRegenerate = () => {
+    if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     setGeneratedImage(null);
     setStage('upload');
     setProgress(0);
