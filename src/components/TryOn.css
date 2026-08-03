@@ -2,7 +2,7 @@
 .specular-button.tryon-specular {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 14px !important;
-  font-weight: bold;
+  font-weight: 500;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   /* Remove filled-button visual weight */
