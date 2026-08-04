@@ -19,6 +19,7 @@ import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.webp';
+import { TrustSection } from './components/TrustSection';
 
 // Code-split everything that isn't the core "browse the storefront /
 // view a product" path most visitors are on — the admin panel alone
@@ -33,6 +34,8 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const CustomerCare = lazy(() => import('./pages/customerCare'));
 const SizeGuide = lazy(() => import('./pages/sizeGuide'));
 const ShippingReturns = lazy(() => import('./pages/shippingReturns'));
+const PrivacyPolicy = lazy(() => import('./pages/privacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/termsOfService'));
 
 
 export default function App() {
@@ -554,6 +557,11 @@ return (
 
           {/* Collection Scroller */}
           <CollectionScroller />
+
+          {/* Trust / About section — explains what Zevrae does and why
+              Google Sign-In is offered, required for Google OAuth
+              verification. Styled to match the rest of the homepage. */}
+          <TrustSection />
         </>
       )}
 
@@ -604,6 +612,8 @@ return (
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/shipping-returns" element={<ShippingReturns />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
         
         <Route path="/ai-wardrobe" element={<ComingSoon />} />
 
@@ -641,8 +651,8 @@ return (
 
             <div className="col-span-1 md:col-span-2">
               <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">LEGAL</a></li>
-                <li><a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">PRIVACY</a></li>
+                <li><a href="/terms-of-service" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/terms-of-service')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">LEGAL</a></li>
+                <li><a href="/privacy-policy" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/privacy-policy')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">PRIVACY</a></li>
               </ul>
             </div>
           </div>
