@@ -20,6 +20,7 @@ import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.webp';
 import { TrustSection } from './components/TrustSection';
+import { Footer } from './components/Footer';
 
 // Code-split everything that isn't the core "browse the storefront /
 // view a product" path most visitors are on — the admin panel alone
@@ -622,51 +623,7 @@ return (
 
 
       {/* Footer */}
-      {!location.pathname.startsWith('/admin') && (
-      <footer className="bg-[#12100C] pt-[160px] pb-16 px-6 md:px-12 border-t border-[#C5A059]/10 font-plex-mono">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8 mb-32">
-            <div className="col-span-1 md:col-span-4">
-              <h2 className="text-xl md:text-3xl font-archivo font-bold tracking-[0.1em] mb-12 text-[#EAE6E1]" style={{ fontStretch: '125%' }}>ZEVRAE</h2>
-              <div className="mt-8 flex border-b border-[#EAE6E1]/20 pb-3 max-w-xs group focus-within:border-[#C5A059]/40 transition-colors duration-700">
-                <input 
-                  type="email" 
-                  placeholder="Newsletter" 
-                  className="bg-transparent border-none outline-none w-full text-[11px] placeholder:text-[#EAE6E1]/30 text-[#EAE6E1] tracking-[0.1em]"
-                />
-                <button className="text-[9px] uppercase tracking-[0.2em] text-[#EAE6E1]/50 hover:text-[#EAE6E1] transition-colors duration-500">
-                  Subscribe
-                </button>
-              </div>
-            </div>
-            
-            <div className="col-span-1 md:col-span-2 md:col-start-7">
-              <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
-                <li><a href="/customer-care" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/customer-care')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">CUSTOMER CARE</a></li>
-                <li><a href="/shipping-returns" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/shipping-returns')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">SHIPPING</a></li>
-                <li><a href="/shipping-returns" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/shipping-returns')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">RETURNS</a></li>
-                <li><a href="/size-guide" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/size-guide')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">SIZE GUIDE</a></li>
-              </ul>
-            </div>
-
-            <div className="col-span-1 md:col-span-2">
-              <ul className="space-y-6 text-[11px] text-[#EAE6E1]/60 tracking-[0.05em]">
-                <li><a href="/terms-of-service" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/terms-of-service')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">LEGAL</a></li>
-                <li><a href="/privacy-policy" onClick={(e) => { e.preventDefault(); navTransition(() => navigate('/privacy-policy')); }} className="hover:text-[#EAE6E1] transition-colors duration-500">PRIVACY</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-[#EAE6E1]/10 text-[10px] text-[#EAE6E1]/40 tracking-[0.1em]">
-            <p>&copy; {new Date().getFullYear()} ZEVRAE.</p>
-            <div className="flex space-x-12 mt-8 md:mt-0">
-              <a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Instagram</a>
-              <a href="#" className="hover:text-[#EAE6E1] transition-colors duration-500">Twitter</a>
-            </div>
-          </div>
-        </div>
-      </footer>
-      )}
+      {!location.pathname.startsWith('/admin') && <Footer />}
 
       <CartDrawer />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />

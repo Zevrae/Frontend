@@ -216,3 +216,528 @@ body[data-loading="true"] {
     padding: 1.2rem 1rem 0;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ZEVRAE FOOTER  (zf-* namespace)
+   Black + white luxury theme · gold accent #C5A059
+   ═══════════════════════════════════════════════ */
+
+/* ── Root shell ── */
+.zf-root {
+  background: #0a0a0a;
+  color: #EAE6E1;
+  font-family: "IBM Plex Mono", monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle radial ambient glow behind footer */
+.zf-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(197,160,89,0.04) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+/* ── Hairline top border with gold gradient ── */
+.zf-top-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #C5A059 30%, #C5A059 70%, transparent 100%);
+  opacity: 0.35;
+}
+
+/* ── Max-width wrapper ── */
+.zf-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 64px 48px 0;
+}
+
+/* ─────────────────────────────────────────────
+   Main 5-column grid
+───────────────────────────────────────────── */
+.zf-main-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1.2fr 0.9fr 1.4fr;
+  gap: 40px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ── Brand column ── */
+.zf-brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.zf-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zf-logo {
+  font-family: "Archivo", sans-serif;
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  letter-spacing: 0.08em;
+  color: #EAE6E1;
+}
+
+.zf-brand-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(234,230,225,0.55);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* Newsletter */
+.zf-newsletter-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zf-newsletter-label {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #C5A059;
+  font-weight: 600;
+  margin: 0;
+}
+
+.zf-newsletter-sub {
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(234,230,225,0.45);
+  margin: 0 0 6px;
+}
+
+.zf-newsletter-form {
+  display: flex;
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: border-color 0.4s;
+}
+
+.zf-newsletter-form:focus-within {
+  border-color: rgba(197,160,89,0.5);
+}
+
+.zf-email-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  color: #EAE6E1;
+  letter-spacing: 0.05em;
+}
+
+.zf-email-input::placeholder {
+  color: rgba(234,230,225,0.25);
+}
+
+.zf-subscribe-btn {
+  background: #C5A059;
+  border: none;
+  padding: 10px 16px;
+  font-size: 9px;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #0a0a0a;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.3s, color 0.3s;
+  text-transform: uppercase;
+}
+
+.zf-subscribe-btn:hover {
+  background: #d4b270;
+}
+
+.zf-subscribed-msg {
+  font-size: 11px;
+  color: #C5A059;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+/* Social icons row */
+.zf-socials {
+  display: flex;
+  gap: 10px;
+}
+
+.zf-social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50%;
+  color: rgba(234,230,225,0.5);
+  transition: color 0.35s, border-color 0.35s, background 0.35s;
+  text-decoration: none;
+}
+
+.zf-social-icon:hover {
+  color: #C5A059;
+  border-color: rgba(197,160,89,0.5);
+  background: rgba(197,160,89,0.06);
+}
+
+/* ── Link columns ── */
+.zf-link-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.zf-col-header {
+  font-family: "IBM Plex Mono", monospace !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.22em !important;
+  color: #C5A059 !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.zf-link-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zf-nav-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  color: rgba(234,230,225,0.6);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.3s, padding-left 0.3s;
+  position: relative;
+}
+
+.zf-nav-link::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%) scaleX(0);
+  width: 6px;
+  height: 1px;
+  background: #C5A059;
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.zf-nav-link:hover {
+  color: #EAE6E1;
+  padding-left: 10px;
+}
+
+.zf-nav-link:hover::before {
+  transform: translateY(-50%) scaleX(1);
+}
+
+/* ── Support column ── */
+.zf-support-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.zf-support-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.zf-support-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  transition: border-color 0.35s, background 0.35s;
+}
+
+.zf-support-card:hover {
+  border-color: rgba(197,160,89,0.25);
+  background: rgba(197,160,89,0.04);
+}
+
+.zf-support-icon-wrap {
+  color: #C5A059;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.zf-support-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #EAE6E1;
+  letter-spacing: 0.05em;
+  margin: 0 0 3px;
+}
+
+.zf-support-card-sub {
+  font-size: 11px;
+  color: rgba(234,230,225,0.45);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* ─────────────────────────────────────────────
+   Feature strip
+───────────────────────────────────────────── */
+.zf-feature-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 40px 0 0;
+}
+
+.zf-feature-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 24px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+  transition: background 0.35s;
+  position: relative;
+}
+
+.zf-feature-card:last-child {
+  border-right: none;
+}
+
+.zf-feature-card:hover {
+  background: rgba(197,160,89,0.04);
+}
+
+.zf-feature-icon {
+  color: #C5A059;
+  flex-shrink: 0;
+}
+
+.zf-feature-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #EAE6E1;
+  margin: 0 0 4px;
+}
+
+.zf-feature-desc {
+  font-size: 11px;
+  color: rgba(234,230,225,0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────
+   Bottom bar
+───────────────────────────────────────────── */
+.zf-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 32px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  margin-top: 40px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.zf-copyright {
+  font-size: 11px;
+  color: rgba(234,230,225,0.35);
+  letter-spacing: 0.08em;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Payment chips */
+.zf-payments {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.zf-pay-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.zf-pay-chip:hover {
+  border-color: rgba(255,255,255,0.25);
+}
+
+.zf-pay-svg {
+  width: 46px;
+  height: 30px;
+  display: block;
+}
+
+/* Bottom social links */
+.zf-bottom-socials {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.zf-bottom-social-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(234,230,225,0.35);
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.zf-bottom-social-link:hover {
+  color: #EAE6E1;
+}
+
+/* ─────────────────────────────────────────────
+   Responsive
+───────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .zf-main-grid {
+    grid-template-columns: 1.4fr 1fr 1.2fr 0.9fr;
+    gap: 32px;
+  }
+
+  /* Support col becomes full-width row */
+  .zf-support-col {
+    grid-column: 1 / -1;
+  }
+
+  .zf-support-cards {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .zf-support-card {
+    flex: 1 1 200px;
+  }
+}
+
+@media (max-width: 900px) {
+  .zf-container {
+    padding: 48px 28px 0;
+  }
+
+  .zf-main-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+
+  .zf-brand-col {
+    grid-column: 1 / -1;
+  }
+
+  .zf-support-col {
+    grid-column: 1 / -1;
+  }
+
+  .zf-feature-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .zf-feature-card {
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .zf-feature-card:nth-child(even) {
+    border-right: none;
+  }
+
+  .zf-feature-card:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .zf-container {
+    padding: 40px 20px 0;
+  }
+
+  .zf-main-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .zf-feature-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .zf-feature-card {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .zf-feature-card:last-child {
+    border-bottom: none;
+  }
+
+  .zf-bottom-bar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .zf-newsletter-form {
+    flex-direction: column;
+  }
+
+  .zf-subscribe-btn {
+    width: 100%;
+    text-align: center;
+    padding: 11px;
+  }
+
+  .zf-support-cards {
+    flex-direction: column;
+  }
+}
