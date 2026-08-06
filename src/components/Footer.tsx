@@ -4,6 +4,7 @@ import {
   Instagram,
   Twitter,
   Facebook,
+  Linkedin,
   Award,
   RotateCcw,
   ShieldCheck,
@@ -224,14 +225,14 @@ export const Footer: React.FC = () => {
 
             {/* Social icons */}
             <div className="zf-socials">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Instagram">
+              <a href="https://www.instagram.com/zevrae.co?igsh=MWhpY3E1eXZ4ZnJ4Yw==" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Instagram">
                 <Instagram size={17} strokeWidth={1.5} />
               </a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Facebook">
                 <Facebook size={17} strokeWidth={1.5} />
               </a>
-              <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Pinterest">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.236 2.636 7.855 6.356 9.312-.088-.791-.167-2.005.035-2.868.181-.78 1.172-4.97 1.172-4.97s-.299-.598-.299-1.482c0-1.388.806-2.428 1.808-2.428.853 0 1.267.64 1.267 1.408 0 .858-.546 2.141-.828 3.33-.236.995.498 1.806 1.476 1.806 1.771 0 3.132-1.867 3.132-4.563 0-2.386-1.715-4.052-4.163-4.052-2.836 0-4.498 2.127-4.498 4.325 0 .856.33 1.775.741 2.278a.3.3 0 0 1 .069.285c-.076.313-.244.995-.277 1.134-.044.183-.146.222-.336.134C7.6 16.9 7 15.38 7 14.015c0-2.878 2.09-5.522 6.029-5.522 3.164 0 5.623 2.254 5.623 5.265 0 3.141-1.98 5.668-4.728 5.668-1.548 0-3.006-.805-3.504-1.753l-.951 3.546c-.345 1.325-1.274 2.985-1.896 3.995C10.667 22.003 11.33 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+              <a href="https://www.linkedin.com/company/zevrae/" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="LinkedIn">
+                <Linkedin size={17} strokeWidth={1.5} />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Twitter">
                 <Twitter size={17} strokeWidth={1.5} />
@@ -284,7 +285,7 @@ export const Footer: React.FC = () => {
                 </div>
                 <div>
                   <p className="zf-support-card-title">Free Shipping</p>
-                  <p className="zf-support-card-sub">On all orders above $50</p>
+                  <p className="zf-support-card-sub">On all orders above Rs.999</p>
                 </div>
               </div>
 
@@ -321,21 +322,8 @@ export const Footer: React.FC = () => {
         {/* ── SECTION 3: Bottom bar ── */}
         <div className="zf-bottom-bar">
           <p className="zf-copyright">
-            &copy; {new Date().getFullYear()} ZEVRAE. All rights reserved.
+            &copy; 2026 ZEVRAE. All rights reserved.
           </p>
-
-          <PaymentIcons />
-
-          <div className="zf-bottom-socials">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="zf-bottom-social-link" aria-label="Instagram">
-              <Instagram size={14} strokeWidth={1.5} />
-              <span>Instagram</span>
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="zf-bottom-social-link" aria-label="Twitter">
-              <Twitter size={14} strokeWidth={1.5} />
-              <span>Twitter</span>
-            </a>
-          </div>
         </div>
 
       </div>
