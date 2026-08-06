@@ -349,6 +349,7 @@ interface DbProduct {
   price: number;
   compare_price: number | null;
   discount: number | null;
+  inventory_mode: 'size' | 'nosize';
   stock_quantity: StockItem[];
   in_stock: boolean;
   images: string[];
@@ -361,6 +362,7 @@ interface DbProduct {
 // productsApi) into the UI's per-size StockItem[] shape.
 function productToDbProduct(p: Product): DbProduct {
   const sizeStock = p.size_stock || {};
+  const inventory_mode = p.inventory_mode || (p.sizes && p.sizes.length > 0 ? 'size' : 'nosize');
   const sizes = p.sizes && p.sizes.length > 0 ? p.sizes : Object.keys(sizeStock);
   const stock_quantity: StockItem[] = sizes.map(size => ({
     size,
@@ -376,6 +378,7 @@ function productToDbProduct(p: Product): DbProduct {
     price: p.price,
     compare_price: p.compare_price ?? null,
     discount: p.discount ?? null,
+    inventory_mode,
     stock_quantity,
     in_stock: stock_quantity.some(s => s.quantity > 0) || stock_quantity.length === 0,
     images: p.images || [],
@@ -389,9 +392,17 @@ function productToDbProduct(p: Product): DbProduct {
 // backend can accept: `sizes` and `size_stock` are both real backend fields;
 // `stock_quantity` is derived server-side from size_stock and shouldn't be
 // sent directly.
+//
+// In 'size' mode, `sizes` is populated (standard clothing sizes, e.g. S/M/L)
+// and every stock_quantity row's `size` is one of those. In 'nosize' mode
+// (jewellery, accessories, anything without standard sizing), `sizes` stays
+// empty — the rows instead hold a free-text, optionally-blank label (e.g.
+// "One Size", "Adjustable", or nothing at all) as the size_stock key.
 function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'>): Partial<Product> {
-  const sizes = form.stock_quantity.filter(s => s.quantity > 0).map(s => s.size);
-  const size_stock = Object.fromEntries(form.stock_quantity.map(s => [s.size, s.quantity]));
+  const sizes = form.inventory_mode === 'size'
+    ? form.stock_quantity.filter(s => s.quantity > 0).map(s => s.size)
+    : [];
+  const size_stock = Object.fromEntries(form.stock_quantity.map(s => [s.size.trim(), s.quantity]));
   return {
     name: form.name,
     description: form.description,
@@ -403,6 +414,7 @@ function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_delete
     discount: form.discount ?? undefined,
     images: form.images,
     status: form.status as Product['status'],
+    inventory_mode: form.inventory_mode,
     sizes,
     size_stock,
   };
@@ -449,6 +461,7 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
   price: 0,
   compare_price: null,
   discount: null,
+  inventory_mode: 'size',
   stock_quantity: [],
   in_stock: true,
   images: [],
@@ -553,6 +566,7 @@ export function ProductsSection() {
       price: p.price,
       compare_price: p.compare_price,
       discount: p.discount ?? null,
+      inventory_mode: p.inventory_mode,
       stock_quantity: p.stock_quantity || [],
       in_stock: p.in_stock ?? true,
       images: p.images || [],
@@ -580,6 +594,37 @@ export function ProductsSection() {
     }));
   };
 
+  // Switching between "Clothing" (standard sizes) and "Other" (custom,
+  // possibly-unlabeled) inventory clears the existing rows — the two modes
+  // use the size_stock keys completely differently (fixed size codes vs.
+  // free-text labels), so carrying rows across would just be confusing.
+  const handleInventoryModeChange = (mode: 'size' | 'nosize') => {
+    setForm(f => ({
+      ...f,
+      inventory_mode: mode,
+      stock_quantity: mode === 'nosize' ? [{ size: '', quantity: 0 }] : [],
+    }));
+  };
+
+  // "Other" mode: a free-form list of {label, quantity} rows. The label
+  // (stored as `size` on StockItem for reuse) can be left blank — it's
+  // just a name shown to the admin, e.g. "One Size" or "Adjustable"; a
+  // ring or keychain with a single stock count needs no label at all.
+  const addCustomStockRow = () => {
+    setForm(f => ({ ...f, stock_quantity: [...f.stock_quantity, { size: '', quantity: 0 }] }));
+  };
+
+  const removeCustomStockRow = (index: number) => {
+    setForm(f => ({ ...f, stock_quantity: f.stock_quantity.filter((_, i) => i !== index) }));
+  };
+
+  const updateCustomStockRow = (index: number, patch: Partial<StockItem>) => {
+    setForm(f => ({
+      ...f,
+      stock_quantity: f.stock_quantity.map((row, i) => i === index ? { ...row, ...patch } : row),
+    }));
+  };
+
   const toggleCollection = (colId: string) => {
     setForm(f => ({
       ...f,
@@ -600,6 +645,16 @@ export function ProductsSection() {
     if (!form.category.trim()) return 'Category is required.';
     if (!form.subcategory.trim()) return 'Subcategory is required.';
     if (!form.price || form.price <= 0) return 'Price must be greater than 0.';
+
+    if (form.inventory_mode === 'size') {
+      if (form.stock_quantity.length === 0) return 'Select at least one size for a Clothing item.';
+    } else {
+      if (form.stock_quantity.length === 0) return 'Add at least one stock entry for an Other item.';
+      const labels = form.stock_quantity.map(r => r.size.trim().toLowerCase());
+      if (new Set(labels).size !== labels.length) {
+        return 'Two stock rows have the same (or both blank) label — give each a distinct name, or remove one.';
+      }
+    }
     return null;
   };
 
@@ -886,35 +941,98 @@ export function ProductsSection() {
               )}
             </FormField>
 
-            <FormField label="Inventory (Sizes & Quantity)">
-              <div className="flex flex-col gap-2 mt-1">
-                {ALL_SIZES.map(s => {
-                  const existing = form.stock_quantity.find(x => x.size === s);
-                  const isSelected = !!existing;
-                  return (
-                    <div key={s} className="flex items-center gap-3">
+            <FormField label="Inventory Type">
+              <div className="flex gap-2 mt-1 mb-3">
+                <button
+                  type="button"
+                  onClick={() => handleInventoryModeChange('size')}
+                  className={`flex-1 px-3 py-2 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
+                    form.inventory_mode === 'size' ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                  }`}
+                >
+                  Clothing (Standard Sizes)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInventoryModeChange('nosize')}
+                  className={`flex-1 px-3 py-2 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
+                    form.inventory_mode === 'nosize' ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                  }`}
+                >
+                  Other (Custom / No Size)
+                </button>
+              </div>
+
+              {form.inventory_mode === 'size' ? (
+                <div className="flex flex-col gap-2">
+                  {ALL_SIZES.map(s => {
+                    const existing = form.stock_quantity.find(x => x.size === s);
+                    const isSelected = !!existing;
+                    return (
+                      <div key={s} className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleSize(s)}
+                          className={`px-3 py-1.5 w-14 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
+                            isSelected ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                        {isSelected && (
+                          <input
+                            type="number"
+                            value={existing.quantity}
+                            onChange={e => handleQuantityChange(s, parseInt(e.target.value) || 0)}
+                            className={`${inputCls} w-24 py-1.5`}
+                            placeholder="Qty"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <p className="text-[10px] text-[#EAE6E1]/40 font-sans mb-1">
+                    For items without standard sizing — jewellery, accessories, etc. A label is optional; leave it blank for a single stock count with no variant name.
+                  </p>
+                  {form.stock_quantity.map((row, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={row.size}
+                        onChange={e => updateCustomStockRow(i, { size: e.target.value })}
+                        placeholder="Label (optional) — e.g. One Size"
+                        className={`${inputCls} flex-1 py-1.5`}
+                      />
+                      <input
+                        type="number"
+                        value={row.quantity}
+                        onChange={e => updateCustomStockRow(i, { quantity: parseInt(e.target.value) || 0 })}
+                        placeholder="Qty"
+                        className={`${inputCls} w-24 py-1.5`}
+                      />
                       <button
                         type="button"
-                        onClick={() => toggleSize(s)}
-                        className={`px-3 py-1.5 w-14 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
-                          isSelected ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
-                        }`}
+                        onClick={() => removeCustomStockRow(i)}
+                        disabled={form.stock_quantity.length === 1}
+                        className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                        title={form.stock_quantity.length === 1 ? 'At least one row is required' : 'Remove row'}
                       >
-                        {s}
+                        <Trash2 size={14} />
                       </button>
-                      {isSelected && (
-                        <input
-                          type="number"
-                          value={existing.quantity}
-                          onChange={e => handleQuantityChange(s, parseInt(e.target.value) || 0)}
-                          className={`${inputCls} w-24 py-1.5`}
-                          placeholder="Qty"
-                        />
-                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addCustomStockRow}
+                    className="flex items-center gap-1.5 mt-1 text-[10px] uppercase tracking-wider font-sans text-[#C5A059] hover:text-[#D4AE68] transition-colors self-start"
+                  >
+                    <Plus size={12} /> Add Row
+                  </button>
+                </div>
+              )}
             </FormField>
 
             <div className="grid grid-cols-2 gap-3 mt-4">

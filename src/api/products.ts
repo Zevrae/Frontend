@@ -12,6 +12,7 @@ export interface Product {
   images: string[];
   sizes: string[];
   size_stock: Record<string, number>;
+  inventory_mode: 'size' | 'nosize'; // 'size' = standard clothing sizes; 'nosize' = custom/no-size items (jewellery, accessories, etc.)
   stock_quantity: number; // server-derived total across size_stock — read only, don't send this on create/update
   status: 'active' | 'inactive' | 'draft' | 'archived';
   collections: string[]; // multiple collection IDs

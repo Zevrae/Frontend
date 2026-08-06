@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import stuffedAnimalImg from './assets/stuffed animal.jpg';
@@ -192,9 +193,12 @@ export default function ProductGrid({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
+        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 flex items-center justify-center md:justify-start"
       >
-        {eyebrow}
+        <button onClick={() => navigate(-1)} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          {eyebrow}
+        </button>
       </motion.h2>
       <motion.h3
         initial={{ opacity: 0, y: 20 }}
