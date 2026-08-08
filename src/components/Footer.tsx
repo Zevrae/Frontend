@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Instagram,
   Twitter,
-  Facebook,
   Linkedin,
   Award,
   RotateCcw,
@@ -14,6 +13,14 @@ import {
   Lock,
 } from 'lucide-react';
 import { usePageTransition } from '../features/PageTransitionContext';
+
+const WhatsappIcon = ({ size = 17, strokeWidth = 1.5 }: { size?: number; strokeWidth?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+    <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9"></path>
+    <path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"></path>
+  </svg>
+);
 
 /* ─────────────────────────────────────────────
    Types
@@ -229,8 +236,8 @@ export const Footer: React.FC = () => {
               <a href="https://www.instagram.com/zevrae.co?igsh=MWhpY3E1eXZ4ZnJ4Yw==" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Instagram">
                 <Instagram size={17} strokeWidth={1.5} />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Facebook">
-                <Facebook size={17} strokeWidth={1.5} />
+              <a href="https://chat.whatsapp.com/CHa6PU1SjtxGSBAOjDN9Sg" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="WhatsApp">
+                <WhatsappIcon size={17} strokeWidth={1.5} />
               </a>
               <a href="https://www.linkedin.com/company/zevrae/" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="LinkedIn">
                 <Linkedin size={17} strokeWidth={1.5} />
