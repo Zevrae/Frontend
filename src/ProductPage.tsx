@@ -21,6 +21,8 @@ type ProductDetail = {
   category?: string;
   type?: string;
   sizes?: string[];
+  size_stock?: Record<string, number>;
+  stock_quantity?: number;
   frontImg: string;
   backImg?: string;
   description?: string;
@@ -102,7 +104,7 @@ export default function ProductPage() {
   const location = useLocation();
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   
   const [product, setProduct] = useState<ProductDetail | null>(
     (location.state as { product?: ProductDetail } | null)?.product || null
@@ -159,6 +161,8 @@ export default function ProductPage() {
             category: p.category?.toLowerCase() || prev?.category,
             type: p.subcategory?.toLowerCase() || prev?.type,
             sizes: p.sizes || prev?.sizes || [],
+            size_stock: p.size_stock || prev?.size_stock || {},
+            stock_quantity: p.stock_quantity ?? prev?.stock_quantity,
             discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : prev?.discount),
             frontImg: parsedImages[0] || prev?.frontImg || '',
             backImg: parsedImages[1] || parsedImages[0] || prev?.backImg || '',
@@ -292,6 +296,38 @@ export default function ProductPage() {
     setActiveImg(index);
   };
 
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
+  const [notifyError, setNotifyError] = useState('');
+
+  const handleNotifyMe = async () => {
+    if (!product) return;
+    const email = user?.email || notifyEmail.trim();
+    if (!email) {
+      setNotifyError('Enter your email to get notified.');
+      return;
+    }
+    setNotifyStatus('submitting');
+    setNotifyError('');
+    try {
+      await productsApi.notifyMe(product.id, {
+        email: user ? undefined : email,
+        size: isNoSizeProduct ? undefined : selectedSize,
+      });
+      setNotifyStatus('done');
+    } catch (err: any) {
+      setNotifyStatus('error');
+      setNotifyError(err?.response?.data?.message || 'Something went wrong. Please try again.');
+    }
+  };
+
+  // Reset the notify form whenever the shopper picks a different size, so a
+  // stale "you're signed up" message from a previous size doesn't linger.
+  useEffect(() => {
+    setNotifyStatus('idle');
+    setNotifyError('');
+  }, [selectedSize]);
+
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
     addToCart({
@@ -335,6 +371,17 @@ export default function ProductPage() {
   }
 
   const availableSizes = product.sizes?.length ? product.sizes : [];
+  const sizeStock = product.size_stock || {};
+  const isNoSizeProduct = availableSizes.length === 0;
+  // A size the product offers at all, but currently has zero stock for —
+  // distinct from a size the product simply doesn't come in.
+  const isSizeOutOfStock = (size: string) => (sizeStock[size] ?? 0) <= 0;
+  const overallInStock = isNoSizeProduct
+    ? (product.stock_quantity ?? 0) > 0
+    : availableSizes.some(s => !isSizeOutOfStock(s));
+  const showNotifyMe = isNoSizeProduct
+    ? !overallInStock
+    : !!selectedSize && isSizeOutOfStock(selectedSize);
 
   return (
     <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans selection:bg-[#C8A96A]/30 selection:text-[#EAE6E1]">
@@ -514,28 +561,31 @@ export default function ProductPage() {
                     </div>
                     <div className="flex flex-wrap gap-2.5">
                       {DEFAULT_SIZES.map((size) => {
-                        const isAvailable = availableSizes.includes(size);
+                        const isOffered = availableSizes.includes(size);
+                        const outOfStock = isOffered && isSizeOutOfStock(size);
                         return (
                         <button
                           key={size}
                           id={`size-${size}`}
                           onClick={() => {
-                            if (isAvailable) {
+                            if (isOffered) {
                               setSelectedSize(size);
                               setSizeError(false);
                             } else {
                               setSizeError(true);
                             }
                           }}
-                          className={`min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
+                          className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
                             selectedSize === size
                               ? 'border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/8'
-                              : !isAvailable 
+                              : !isOffered
                                 ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/20 cursor-not-allowed opacity-50'
-                                : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
+                                : outOfStock
+                                  ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/30 hover:border-[#EAE6E1]/30'
+                                  : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
                           }`}
                         >
-                          {size}
+                          <span className={outOfStock ? 'line-through decoration-[#EAE6E1]/30' : ''}>{size}</span>
                         </button>
                         );
                       })}
@@ -618,58 +668,100 @@ export default function ProductPage() {
                 transition={{ duration: 0.7, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                 className="flex flex-col gap-3"
               >
-                {/* Add to bag */}
-                <button
-                  id="add-to-bag"
-                  onClick={handleAddToCart}
-                  disabled={!selectedSize}
-                  className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${
-                    selectedSize
-                      ? 'bg-[#EAE6E1] text-[#12100C] hover:bg-[#C8A96A] cursor-pointer'
-                      : 'bg-[#EAE6E1]/8 text-[#EAE6E1]/25 cursor-not-allowed'
-                  }`}
-                >
-                  <AnimatePresence mode="wait">
-                    {added ? (
-                      <motion.span
-                        key="added"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-2"
-                      >
-                        Added ✓
-                      </motion.span>
+                {showNotifyMe ? (
+                  <div className="border border-[#EAE6E1]/12 p-5">
+                    <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/60 mb-1">
+                      {isNoSizeProduct ? 'Currently Out of Stock' : `Size ${selectedSize} is Out of Stock`}
+                    </p>
+                    <p className="text-[11px] font-sans text-[#EAE6E1]/40 mb-4">
+                      Enter your email and we'll let you know the moment it's back.
+                    </p>
+                    {notifyStatus === 'done' ? (
+                      <p className="text-[11px] font-plex-mono text-[#C8A96A] flex items-center gap-2">
+                        You're on the list — we'll email you when it's back in stock.
+                      </p>
                     ) : (
-                      <motion.span
-                        key="add"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-2"
-                      >
-                        <ShoppingBag size={15} strokeWidth={1.8} />
-                        Add to Bag
-                      </motion.span>
+                      <>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          {!user && (
+                            <input
+                              type="email"
+                              value={notifyEmail}
+                              onChange={e => setNotifyEmail(e.target.value)}
+                              placeholder="you@example.com"
+                              className="flex-1 bg-transparent border border-[#EAE6E1]/15 px-4 py-3 text-[11px] font-plex-mono text-[#EAE6E1] placeholder:text-[#EAE6E1]/25 focus:border-[#C8A96A]/50 focus:outline-none"
+                            />
+                          )}
+                          <button
+                            onClick={handleNotifyMe}
+                            disabled={notifyStatus === 'submitting'}
+                            className="px-6 py-3 bg-[#C8A96A] text-[#12100C] text-[10px] uppercase tracking-[0.2em] font-plex-mono font-bold hover:bg-[#EAE6E1] transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {notifyStatus === 'submitting' ? 'Submitting...' : 'Notify Me'}
+                          </button>
+                        </div>
+                        {notifyError && (
+                          <p className="text-[10px] text-red-400 font-sans mt-2">{notifyError}</p>
+                        )}
+                      </>
                     )}
-                  </AnimatePresence>
-                </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Add to bag */}
+                    <button
+                      id="add-to-bag"
+                      onClick={handleAddToCart}
+                      disabled={!selectedSize}
+                      className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${
+                        selectedSize
+                          ? 'bg-[#EAE6E1] text-[#12100C] hover:bg-[#C8A96A] cursor-pointer'
+                          : 'bg-[#EAE6E1]/8 text-[#EAE6E1]/25 cursor-not-allowed'
+                      }`}
+                    >
+                      <AnimatePresence mode="wait">
+                        {added ? (
+                          <motion.span
+                            key="added"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center gap-2"
+                          >
+                            Added ✓
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="add"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center gap-2"
+                          >
+                            <ShoppingBag size={15} strokeWidth={1.8} />
+                            Add to Bag
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </button>
 
-                {/* Buy now */}
-                <button
-                  id="buy-now"
-                  onClick={handleBuyNow}
-                  disabled={!selectedSize}
-                  className={`w-full h-[54px] flex items-center justify-center text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
-                    selectedSize
-                      ? 'border-[#C8A96A]/60 text-[#C8A96A] hover:bg-[#C8A96A] hover:text-[#12100C] cursor-pointer'
-                      : 'border-[#EAE6E1]/10 text-[#EAE6E1]/20 cursor-not-allowed'
-                  }`}
-                >
-                  Buy It Now
-                </button>
+                    {/* Buy now */}
+                    <button
+                      id="buy-now"
+                      onClick={handleBuyNow}
+                      disabled={!selectedSize}
+                      className={`w-full h-[54px] flex items-center justify-center text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
+                        selectedSize
+                          ? 'border-[#C8A96A]/60 text-[#C8A96A] hover:bg-[#C8A96A] hover:text-[#12100C] cursor-pointer'
+                          : 'border-[#EAE6E1]/10 text-[#EAE6E1]/20 cursor-not-allowed'
+                      }`}
+                    >
+                      Buy It Now
+                    </button>
+                  </>
+                )}
               </motion.div>
 
               {/* ── PRODUCT DETAILS (PARSED RICH TEXT OR FALLBACK) ── */}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import {
   Package2, LayoutDashboard, ShoppingBag, Layers, FolderOpen, Percent,
-  ChevronRight, Archive, ArrowLeft,
+  ChevronRight, Archive, ArrowLeft, BarChart3,
 } from 'lucide-react';
 import { ordersApi, Order } from '../api/orders';
 import {
@@ -14,6 +14,7 @@ import {
   CollectionsSection,
   CategoriesSection,
   DiscountsSection,
+  AnalysisSection,
 } from './AdminSections';
 
 // This whole module (plus everything it imports — the *Section components,
@@ -28,6 +29,7 @@ const navItems: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: 'collections', label: 'Collections', icon: <Layers size={15} /> },
   { id: 'categories', label: 'Categories', icon: <FolderOpen size={15} /> },
   { id: 'discounts', label: 'Discounts', icon: <Percent size={15} /> },
+  { id: 'analysis', label: 'Analysis', icon: <BarChart3 size={15} /> },
 ];
 
 function Sidebar({ active, setActive, isMobileOpen, onClose }: {
@@ -221,6 +223,7 @@ export default function AdminLayout() {
               {activeSection === 'collections' && <CollectionsSection />}
               {activeSection === 'categories' && <CategoriesSection />}
               {activeSection === 'discounts' && <DiscountsSection />}
+              {activeSection === 'analysis' && <AnalysisSection />}
             </motion.div>
           </AnimatePresence>
         </main>

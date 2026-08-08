@@ -30,16 +30,16 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <button className="lg:hidden">
-            <Menu className="w-5 h-5" />
+            <Menu className="w-[24px] h-[24px]" />
           </button>
-          <div className="hidden lg:flex items-center gap-8 text-xs tracking-[0.2em] uppercase">
+          <div className="hidden lg:flex items-center gap-8 text-[14.4px] tracking-[0.2em] uppercase">
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setIsClothingOpen(!isClothingOpen)}
                 className="flex items-center gap-1 hover:text-gray-400 transition-colors tracking-[0.2em] uppercase focus:outline-none"
               >
                 Clothing
-                <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isClothingOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-[14.4px] h-[14.4px] transition-transform duration-300 ${isClothingOpen ? 'rotate-180' : ''}`} />
               </button>
               
               <div 
@@ -77,9 +77,9 @@ export const Navbar: React.FC = () => {
             className="hover:text-gray-400 transition-colors relative"
             onClick={() => setIsCartOpen(true)}
           >
-            <ShoppingBag className="w-5 h-5" />
+            <ShoppingBag className="w-[24px] h-[24px]" />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-white text-black text-[8px] flex items-center justify-center rounded-full font-medium">
+              <span className="absolute -top-1 -right-1 w-[14.4px] h-[14.4px] bg-white text-black text-[9.6px] flex items-center justify-center rounded-full font-medium">
                 {itemCount}
               </span>
             )}
