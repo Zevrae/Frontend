@@ -49,6 +49,9 @@ export default function App() {
   const [isJewelleryOpen, setIsJewelleryOpen] = useState(false);
   const [isMobileJewelleryOpen, setIsMobileJewelleryOpen] = useState(false);
   const jewelleryDropdownRef = useRef<HTMLDivElement>(null);
+  const [isAccessoriesOpen, setIsAccessoriesOpen] = useState(false);
+  const [isMobileAccessoriesOpen, setIsMobileAccessoriesOpen] = useState(false);
+  const accessoriesDropdownRef = useRef<HTMLDivElement>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -97,6 +100,9 @@ export default function App() {
       }
       if (jewelleryDropdownRef.current && !jewelleryDropdownRef.current.contains(event.target as Node)) {
         setIsJewelleryOpen(false);
+      }
+      if (accessoriesDropdownRef.current && !accessoriesDropdownRef.current.contains(event.target as Node)) {
+        setIsAccessoriesOpen(false);
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
@@ -224,9 +230,13 @@ return (
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
-            <div className="relative" ref={clothingDropdownRef}>
+            <div 
+              className="relative" 
+              ref={clothingDropdownRef}
+              onMouseEnter={() => setIsClothingOpen(true)}
+              onMouseLeave={() => setIsClothingOpen(false)}
+            >
               <button 
-                onClick={() => setIsClothingOpen(!isClothingOpen)} 
                 className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700"
               >
                 CLOTHING
@@ -264,9 +274,13 @@ return (
                 )}
               </AnimatePresence>
             </div>
-            <div className="relative" ref={jewelleryDropdownRef}>
+            <div 
+              className="relative" 
+              ref={jewelleryDropdownRef}
+              onMouseEnter={() => setIsJewelleryOpen(true)}
+              onMouseLeave={() => setIsJewelleryOpen(false)}
+            >
               <button
-                onClick={() => setIsJewelleryOpen(!isJewelleryOpen)}
                 className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700"
               >
                 JEWELLERY
@@ -304,10 +318,48 @@ return (
                 )}
               </AnimatePresence>
             </div>
-            <button onClick={() => navTransition(() => navigate('/accessories'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
-              ACCESSORIES
-              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-            </button>
+            <div 
+              className="relative" 
+              ref={accessoriesDropdownRef}
+              onMouseEnter={() => setIsAccessoriesOpen(true)}
+              onMouseLeave={() => setIsAccessoriesOpen(false)}
+            >
+              <button className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+                ACCESSORIES
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+              </button>
+
+              <AnimatePresence>
+                {isAccessoriesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                  >
+                    <button
+                      onClick={() => {
+                        setIsAccessoriesOpen(false);
+                        navTransition(() => navigate('/accessories/keychains'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                    >
+                      KEYCHAINS
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsAccessoriesOpen(false);
+                        navTransition(() => navigate('/accessories/soft-toys'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                    >
+                      SOFT TOYS
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <motion.button 
@@ -345,9 +397,13 @@ return (
               </button>
             )}
             {user ? (
-              <div className="relative" ref={profileDropdownRef}>
+              <div 
+                className="relative" 
+                ref={profileDropdownRef}
+                onMouseEnter={() => setIsProfileOpen(true)}
+                onMouseLeave={() => setIsProfileOpen(false)}
+              >
                 <button 
-                  onClick={() => setIsProfileOpen(!isProfileOpen)} 
                   className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700 uppercase"
                 >
                   {displayName}
@@ -433,7 +489,11 @@ return (
                 { name: '- Men', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery/men')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
                 { name: '- Women', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery/women')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
               ] : []),
-              { name: 'Accessories', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories')); setIsMenuOpen(false); } },
+              { name: 'Accessories', href: '#', onClick: () => setIsMobileAccessoriesOpen(!isMobileAccessoriesOpen) },
+              ...(isMobileAccessoriesOpen ? [
+                { name: '- Keychains', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories/keychains')); setIsMenuOpen(false); setIsMobileAccessoriesOpen(false); }, isSubItem: true },
+                { name: '- Soft Toys', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories/soft-toys')); setIsMenuOpen(false); setIsMobileAccessoriesOpen(false); }, isSubItem: true },
+              ] : []),
               ...(isAdmin ? [] : [{ name: 'AI Wardrobe', href: '#', onClick: () => { navTransition(() => navigate('/ai-wardrobe')); setIsMenuOpen(false); } }]),
               ...(isAdmin 
                 ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]

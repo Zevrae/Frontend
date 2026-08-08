@@ -234,7 +234,7 @@ export const Footer: React.FC = () => {
               <a href="https://www.linkedin.com/company/zevrae/" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="LinkedIn">
                 <Linkedin size={17} strokeWidth={1.5} />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Twitter">
+              <a href="https://x.com/zevrae01?s=11" target="_blank" rel="noreferrer" className="zf-social-icon" aria-label="Twitter">
                 <Twitter size={17} strokeWidth={1.5} />
               </a>
             </div>
