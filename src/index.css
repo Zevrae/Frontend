@@ -21,9 +21,69 @@
   --color-brand-white: #f5f5f5;
 }
 
+/* ═══════════════════════════════════════════════
+   DYNAMIC CATEGORY THEMES
+   ───────────────────────────────────────────────
+   Every themeable surface reads these custom
+   properties instead of hardcoded hex values.
+   `ThemeProvider` (src/theme/ThemeProvider.tsx) sets
+   data-theme on <html> based on the current route's
+   top-level category, and these blocks supply the
+   palette for that category. Swapping data-theme is
+   all it takes to re-theme the entire site — the
+   *-rgb variants exist so rgba()/opacity utilities
+   can tint the palette without hardcoding a color.
+   ═══════════════════════════════════════════════ */
+:root,
+html[data-theme="clothing"] {
+  /* Original brand palette — untouched per spec */
+  --theme-bg: #12100C;
+  --theme-bg-rgb: 18, 16, 12;
+  --theme-surface: #111111;
+  --theme-surface-rgb: 17, 17, 17;
+  --theme-text: #EAE6E1;
+  --theme-text-rgb: 234, 230, 225;
+  --theme-accent: #C5A059;
+  --theme-accent-rgb: 197, 160, 89;
+}
+
+html[data-theme="accessories"] {
+  /* Color Hunt: f5f5f5 / dff1f1 / bbd5da / ff0000 */
+  --theme-bg: #F5F5F5;
+  --theme-bg-rgb: 245, 245, 245;
+  --theme-surface: #DFF1F1;
+  --theme-surface-rgb: 223, 241, 241;
+  --theme-text: #17282D;
+  --theme-text-rgb: 23, 40, 45;
+  --theme-accent: #E10600;
+  --theme-accent-rgb: 225, 6, 0;
+}
+
+html[data-theme="jewellery"] {
+  /* Color Hunt: faf8f1 / faeab1 / 34656d / 334443 */
+  --theme-bg: #FAF8F1;
+  --theme-bg-rgb: 250, 248, 241;
+  --theme-surface: #FAEAB1;
+  --theme-surface-rgb: 250, 234, 177;
+  --theme-text: #334443;
+  --theme-text-rgb: 51, 68, 67;
+  --theme-accent: #34656D;
+  --theme-accent-rgb: 52, 101, 109;
+}
+
+html {
+  /* Crossfade whenever data-theme changes. Kept slow enough to still be
+     mid-flight while the page-transition curtain covers the screen, so
+     the swap reads as a deliberate transition rather than a flash. */
+  transition: background-color 0.9s ease;
+}
+
 @layer base {
   body {
-    @apply bg-brand-black text-brand-white font-sans antialiased;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    @apply font-sans antialiased;
+    transition: background-color 0.9s ease, color 0.9s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -236,14 +296,14 @@ body[data-loading="true"] {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(197,160,89,0.04) 0%, transparent 65%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(var(--theme-accent-rgb),0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 
 /* ── Hairline top border with gold gradient ── */
 .zf-top-line {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #C5A059 30%, #C5A059 70%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--theme-accent) 30%, var(--theme-accent) 70%, transparent 100%);
   opacity: 0.35;
 }
 
@@ -305,7 +365,7 @@ body[data-loading="true"] {
 .zf-newsletter-label {
   font-size: 10px;
   letter-spacing: 0.25em;
-  color: #C5A059;
+  color: var(--theme-accent);
   font-weight: 600;
   margin: 0;
 }
@@ -329,7 +389,7 @@ body[data-loading="true"] {
 }
 
 .zf-newsletter-form:focus-within {
-  border-color: rgba(197,160,89,0.5);
+  border-color: rgba(var(--theme-accent-rgb),0.5);
 }
 
 .zf-email-input {
@@ -349,7 +409,7 @@ body[data-loading="true"] {
 }
 
 .zf-subscribe-btn {
-  background: #C5A059;
+  background: var(--theme-accent);
   border: none;
   padding: 10px 16px;
   font-size: 9px;
@@ -364,12 +424,12 @@ body[data-loading="true"] {
 }
 
 .zf-subscribe-btn:hover {
-  background: #d4b270;
+  filter: brightness(1.12);
 }
 
 .zf-subscribed-msg {
   font-size: 11px;
-  color: #C5A059;
+  color: var(--theme-accent);
   letter-spacing: 0.08em;
   margin: 0;
 }
@@ -394,9 +454,9 @@ body[data-loading="true"] {
 }
 
 .zf-social-icon:hover {
-  color: #C5A059;
-  border-color: rgba(197,160,89,0.5);
-  background: rgba(197,160,89,0.06);
+  color: var(--theme-accent);
+  border-color: rgba(var(--theme-accent-rgb),0.5);
+  background: rgba(var(--theme-accent-rgb),0.06);
 }
 
 /* ── Link columns ── */
@@ -411,7 +471,7 @@ body[data-loading="true"] {
   font-size: 10px !important;
   font-weight: 600 !important;
   letter-spacing: 0.22em !important;
-  color: #C5A059 !important;
+  color: var(--theme-accent) !important;
   text-transform: uppercase !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -470,12 +530,12 @@ body[data-loading="true"] {
 }
 
 .zf-support-card:hover {
-  border-color: rgba(197,160,89,0.25);
-  background: rgba(197,160,89,0.04);
+  border-color: rgba(var(--theme-accent-rgb),0.25);
+  background: rgba(var(--theme-accent-rgb),0.04);
 }
 
 .zf-support-icon-wrap {
-  color: #C5A059;
+  color: var(--theme-accent);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -524,11 +584,11 @@ body[data-loading="true"] {
 }
 
 .zf-feature-card:hover {
-  background: rgba(197,160,89,0.04);
+  background: rgba(var(--theme-accent-rgb),0.04);
 }
 
 .zf-feature-icon {
-  color: #C5A059;
+  color: var(--theme-accent);
   flex-shrink: 0;
 }
 
