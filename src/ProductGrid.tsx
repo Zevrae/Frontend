@@ -13,6 +13,9 @@ import pendantImg from "./assets/static/PENDANT.webp";
 import braceletImg from "./assets/static/BRACELET.webp";
 import menTshirts from "./assets/static/menTshirts.webp";
 import womenTops from "./assets/static/womenTops.webp";
+import menRingImg from "./assets/men ring.png";
+import menPendantImg from "./assets/men pendant.png";
+import menEarringsImg from "./assets/men earrings.png";
 
 const mensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', image: menTshirts, path: '/men/tshirts' },
@@ -27,10 +30,10 @@ const womensCategories = [
 
 // Subcategory cards for Men's Jewellery
 const mensJewelleryCategories = [
-  { id: 'rings',     name: 'RINGS',     image: ringImg,     fit: 'contain', path: '/jewellery/men/rings' },
-  { id: 'pendants',  name: 'PENDANTS',  image: pendantImg,  fit: 'contain', path: '/jewellery/men/pendants' },
+  { id: 'rings',     name: 'RINGS',     image: menRingImg,     fit: 'contain', path: '/jewellery/men/rings' },
+  { id: 'pendants',  name: 'PENDANTS',  image: menPendantImg,  fit: 'contain', path: '/jewellery/men/pendants' },
   { id: 'bracelets', name: 'BRACELETS', image: braceletImg, fit: 'contain', path: '/jewellery/men/bracelets' },
-  { id: 'earrings',  name: 'EARRINGS',  image: earringsImg, fit: 'contain', path: '/jewellery/men/earrings' },
+  { id: 'earrings',  name: 'EARRINGS',  image: menEarringsImg, fit: 'contain', path: '/jewellery/men/earrings' },
 ];
 
 // Subcategory cards for Women's Jewellery
