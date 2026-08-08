@@ -1,21 +1,40 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getThemeForPath, type ThemeName } from './themeConfig';
 
-const ThemeContext = createContext<ThemeName>('clothing');
+interface ThemeContextValue {
+  theme: ThemeName;
+  /** Force a theme regardless of route — used by in-page scroll experiences
+   * (e.g. the homepage CollectionScroller) that want the palette to follow
+   * whichever category is currently in view without actually navigating. */
+  setTheme: (theme: ThemeName) => void;
+}
 
-/** Read the active category theme anywhere in the tree, if a component
- * ever needs to branch on it in JS instead of pure CSS. */
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: 'clothing',
+  setTheme: () => {},
+});
+
+/** Read the active category theme anywhere in the tree. */
 export function useTheme(): ThemeName {
-  return useContext(ThemeContext);
+  return useContext(ThemeContext).theme;
+}
+
+/** Imperatively override the active theme (e.g. while scrubbing through a
+ * scroll-linked slider). Route navigation will still take precedence the
+ * next time the pathname changes. */
+export function useSetTheme(): (theme: ThemeName) => void {
+  return useContext(ThemeContext).setTheme;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const [theme, setTheme] = useState<ThemeName>(() => getThemeForPath(location.pathname));
+  const [theme, setThemeState] = useState<ThemeName>(() => getThemeForPath(location.pathname));
 
+  // Route change always wins — whatever a slider left the theme on gets
+  // overridden the moment the URL actually changes category.
   useEffect(() => {
-    setTheme(getThemeForPath(location.pathname));
+    setThemeState(getThemeForPath(location.pathname));
   }, [location.pathname]);
 
   useEffect(() => {
@@ -30,5 +49,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+  const setTheme = useCallback((next: ThemeName) => setThemeState(next), []);
+
+  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }

@@ -3,6 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
+import { useSetTheme } from '../theme/ThemeProvider';
+import type { ThemeName } from '../theme/themeConfig';
 import clothingDefault from '../assets/static/image1.jpg';
 import menClothing from '../assets/static/zoom.jpg';
 import womenClothing from '../assets/static/front.jpeg';
@@ -176,6 +178,14 @@ export function CollectionScroller() {
   const stickyRef  = useRef<HTMLDivElement>(null);
   const trackRef   = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const setTheme = useSetTheme();
+
+  // Keep the site's color theme in lockstep with whichever collection card
+  // is centered as the user scrubs through this pinned slider — no route
+  // change involved, just a live palette swap synced to scroll position.
+  useEffect(() => {
+    setTheme(collections[activeIdx].id as ThemeName);
+  }, [activeIdx, setTheme]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -203,12 +213,16 @@ export function CollectionScroller() {
             const idx = Math.round(self.progress * (count - 1));
             setActiveIdx(Math.min(Math.max(idx, 0), count - 1));
           },
+          // Scrolling back up above the slider (towards the hero) hands the
+          // theme back to the site default rather than leaving it stuck on
+          // whatever card was last centered.
+          onLeaveBack: () => setTheme('clothing'),
         },
       });
     }, wrapper);
 
     return () => ctx.revert();
-  }, []);
+  }, [setTheme]);
 
   const scrollToCard = (idx: number) => {
     const wrapper = wrapperRef.current;
