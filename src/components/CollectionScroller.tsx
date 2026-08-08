@@ -7,8 +7,8 @@ import clothingDefault from '../assets/static/image1.jpg';
 import menClothing from '../assets/static/zoom.jpg';
 import womenClothing from '../assets/static/front.jpeg';
 import jewelleryCover from '../assets/static/jewelHome.webp';
-import jewelleryMen from '../assets/static/jewelMen.webp';
-import jewelleryWomen from '../assets/static/jewelWomen.webp';
+import jewelleryMen from '../assets/men jewellery.png';
+import jewelleryWomen from '../assets/women jewellery.jpeg';
 
 
 gsap.registerPlugin(ScrollTrigger);
