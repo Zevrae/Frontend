@@ -437,30 +437,12 @@ body[data-loading="true"] {
   letter-spacing: 0.02em;
   cursor: pointer;
   text-align: left;
-  transition: color 0.3s, padding-left 0.3s;
+  transition: color 0.3s;
   position: relative;
-}
-
-.zf-nav-link::before {
-  content: '';
-  position: absolute;
-  left: -12px;
-  top: 50%;
-  transform: translateY(-50%) scaleX(0);
-  width: 6px;
-  height: 1px;
-  background: #C5A059;
-  transform-origin: right;
-  transition: transform 0.3s ease;
 }
 
 .zf-nav-link:hover {
   color: #EAE6E1;
-  padding-left: 10px;
-}
-
-.zf-nav-link:hover::before {
-  transform: translateY(-50%) scaleX(1);
 }
 
 /* ── Support column ── */
