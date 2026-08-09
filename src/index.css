@@ -62,9 +62,9 @@ html[data-theme="accessories"] {
 
 html[data-theme="jewellery"] {
   /* Champagne Warmth & Deep Teal Accent */
-  --theme-bg: #FAF8F1;
+  --theme-bg: #FAEAB1;
   --theme-bg-rgb: 250, 248, 241;
-  --theme-surface: #FAEAB1;
+  --theme-surface: #efdea2;
   --theme-surface-rgb: 250, 234, 177;
   --theme-text: #334443;
   --theme-text-rgb: 51, 68, 67;

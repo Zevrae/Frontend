@@ -374,6 +374,8 @@ export default function ProductPage() {
     ? !overallInStock
     : !!selectedSize && isSizeOutOfStock(selectedSize);
 
+    console.log("Product Response", product);
+
   return (
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
       {/* Film grain overlay */}
