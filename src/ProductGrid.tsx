@@ -178,7 +178,7 @@ export default function ProductGrid({
             />
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-2">
+              <h3 className="text-sm md:text-2xl font-archivo font-bold tracking-[0.08em] md:tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-1 break-words">
                 {item.name}
               </h3>
             </div>
