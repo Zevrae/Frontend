@@ -127,19 +127,24 @@ export default function ProductPage() {
   const [tryOnOpen, setTryOnOpen] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
 
+  // ─── UNIFIED NON-APPAREL CHECK ───
+  const isNonApparel = useMemo(() => {
+    if (!product) return false;
+    const cat = (product.category || '').toLowerCase();
+    const type = (product.type || '').toLowerCase();
+    const nonApparelKeys = ['jewellery', 'accessories', 'rings', 'pendants', 'ears', 'bracelets', 'keychains', 'soft toys'];
+    return nonApparelKeys.includes(cat) || nonApparelKeys.includes(type);
+  }, [product]);
+
   // ─── HYDRATE PRODUCT IF DATA IS INCOMPLETE ───
   useEffect(() => {
     const hydrateProduct = async () => {
       if (!params.id) return;
       try {
-        // Fetch with a higher limit to prevent pagination misses
         const { data } = await productsApi.list({ limit: 500 });
-        
-        // Loose comparison to handle String/Int and id/$id mismatches natively
         const p: any = (data as any[]).find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
         
         if (p) {
-          // Safely parse backend images (handles Array, JSON string, or CSV formats)
           let parsedImages: string[] = [];
           if (Array.isArray(p.images)) {
             parsedImages = p.images;
@@ -163,7 +168,7 @@ export default function ProductPage() {
             sizes: p.sizes || prev?.sizes || [],
             size_stock: p.size_stock || prev?.size_stock || {},
             stock_quantity: p.stock_quantity ?? prev?.stock_quantity,
-            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : prev?.discount),
+            discount: p.discount ?? (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : prev?.discount),
             frontImg: parsedImages[0] || prev?.frontImg || '',
             backImg: parsedImages[1] || parsedImages[0] || prev?.backImg || '',
             images: parsedImages.length > 0 ? parsedImages : (prev?.images || []),
@@ -180,7 +185,6 @@ export default function ProductPage() {
       setProduct(routeProduct);
     }
     
-    // Unconditionally hydrate in the background to guarantee full images array
     hydrateProduct();
   }, [params.id, location.state]);
 
@@ -189,22 +193,17 @@ export default function ProductPage() {
     if (!product) return [];
     const imgs: string[] = [];
     
-    // Always start with front and back images if they exist
     if (product.frontImg) imgs.push(product.frontImg);
     if (product.backImg) imgs.push(product.backImg);
     
-    // Push the full array from backend safely
     if (product.images && Array.isArray(product.images)) {
       imgs.push(...product.images);
     } else if (typeof product.images === 'string') {
       try { 
         imgs.push(...JSON.parse(product.images)); 
-      } catch (e) {
-        // Silent catch for bad formats
-      }
+      } catch (e) {}
     }
     
-    // Convert to Set to remove duplicates, and filter out empty strings
     return Array.from(new Set(imgs)).filter(img => typeof img === 'string' && img.trim() !== '');
   }, [product]);
 
@@ -248,12 +247,8 @@ export default function ProductPage() {
     setQuantity(1);
     setActiveImg(0);
     setAdded(false);
-    // For jewellery & accessories, size is irrelevant — auto-select 'One Size'
-    const cat = (product?.category || '').toLowerCase();
-    const isNonApparel = cat === 'jewellery' || cat === 'accessories' ||
-      ['rings','pendants','ears','bracelets','keychains','soft toys'].includes(cat);
     setSelectedSize(isNonApparel ? 'One Size' : '');
-  }, [params.id, product?.category]);
+  }, [params.id, isNonApparel]);
 
   // Fetch related products
   useEffect(() => {
@@ -278,10 +273,10 @@ export default function ProductPage() {
             category: p.category?.toLowerCase(),
             type: p.subcategory?.toLowerCase(),
             sizes: p.sizes,
-            discount: p.discount || (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
+            discount: p.discount ?? (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
             frontImg: p.images?.[0] || '',
             backImg: p.images?.[1] || p.images?.[0] || '',
-            images: p.images || [], // Included to pass all images to the next view
+            images: p.images || [],
             description: p.description
           }));
         setRelatedProducts(related);
@@ -312,7 +307,7 @@ export default function ProductPage() {
     try {
       await productsApi.notifyMe(product.id, {
         email: user ? undefined : email,
-        size: isNoSizeProduct ? undefined : selectedSize,
+        size: isNonApparel ? undefined : selectedSize,
       });
       setNotifyStatus('done');
     } catch (err: any) {
@@ -321,20 +316,18 @@ export default function ProductPage() {
     }
   };
 
-  // Reset the notify form whenever the shopper picks a different size, so a
-  // stale "you're signed up" message from a previous size doesn't linger.
   useEffect(() => {
     setNotifyStatus('idle');
     setNotifyError('');
   }, [selectedSize]);
 
   const handleAddToCart = () => {
-    if (!product || !selectedSize) return;
+    if (!product || (!selectedSize && !isNonApparel)) return;
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
-      size: selectedSize,
+      size: selectedSize || 'One Size',
       quantity,
       image: product.frontImg,
       category: product.category || 'unknown',
@@ -344,7 +337,7 @@ export default function ProductPage() {
   };
 
   const handleBuyNow = () => {
-    if (!product || !selectedSize) return;
+    if (!product || (!selectedSize && !isNonApparel)) return;
     if (!token) {
       setIsLoginModalOpen(true);
       return;
@@ -373,8 +366,6 @@ export default function ProductPage() {
   const availableSizes = product.sizes?.length ? product.sizes : [];
   const sizeStock = product.size_stock || {};
   const isNoSizeProduct = availableSizes.length === 0;
-  // A size the product offers at all, but currently has zero stock for —
-  // distinct from a size the product simply doesn't come in.
   const isSizeOutOfStock = (size: string) => (sizeStock[size] ?? 0) <= 0;
   const overallInStock = isNoSizeProduct
     ? (product.stock_quantity ?? 0) > 0
@@ -504,18 +495,12 @@ export default function ProductPage() {
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 className="space-y-5"
               >
-                {/* Category label + TryOn row (Try It On is clothing-only — jewellery/accessories aren't worn the same way) */}
+                {/* Category label + TryOn row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0' }}>
                   <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]" style={{ margin: 0 }}>
                     {product.label || "Men's Collection"}
                   </p>
-                  {(() => {
-                    const cat = (product.category || '').toLowerCase();
-                    const isNonApparel = cat === 'jewellery' || cat === 'accessories' ||
-                      ['rings','pendants','ears','bracelets','keychains','soft toys'].includes(cat);
-                    if (isNonApparel) return null;
-                    return <TryOn onClick={() => setTryOnOpen(true)} />;
-                  })()}
+                  {!isNonApparel && <TryOn onClick={() => setTryOnOpen(true)} />}
                 </div>
 
                 <h1
@@ -541,35 +526,30 @@ export default function ProductPage() {
               {/* Divider */}
               <div className="h-px bg-[rgba(var(--theme-text-rgb),0.08)]" />
 
-              {/* Size selector — hidden for jewellery & accessories */}
-              {(() => {
-                const cat = (product.category || '').toLowerCase();
-                const isNonApparel = cat === 'jewellery' || cat === 'accessories' ||
-                  ['rings','pendants','ears','bracelets','keychains','soft toys'].includes(cat);
-                if (isNonApparel) return null;
-                return (
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="space-y-4"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)]">
-                        Size
-                      </span>
-                      <button 
-                        className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4" 
-                        onClick={() => navigate('/size-guide')}
-                      >
-                        Size Guide
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
-                      {DEFAULT_SIZES.map((size) => {
-                        const isOffered = availableSizes.includes(size);
-                        const outOfStock = isOffered && isSizeOutOfStock(size);
-                        return (
+              {/* Size selector — hidden for non-apparel */}
+              {!isNonApparel && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="space-y-4"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)]">
+                      Size
+                    </span>
+                    <button 
+                      className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4" 
+                      onClick={() => navigate('/size-guide')}
+                    >
+                      Size Guide
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {DEFAULT_SIZES.map((size) => {
+                      const isOffered = availableSizes.includes(size);
+                      const outOfStock = isOffered && isSizeOutOfStock(size);
+                      return (
                         <button
                           key={size}
                           id={`size-${size}`}
@@ -585,44 +565,43 @@ export default function ProductPage() {
                             selectedSize === size
                               ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.08)]'
                               : !isOffered
-                                ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed opacity-50'
-                                : outOfStock
-                                  ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
-                                  : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
+                              ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed opacity-50'
+                              : outOfStock
+                              ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
+                              : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
                           }`}
                         >
                           <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>{size}</span>
                         </button>
-                        );
-                      })}
-                    </div>
-                    <AnimatePresence>
-                      {sizeError && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.2 }}
-                          className="text-[10px] tracking-[0.2em] font-plex-mono text-red-500"
-                        >
-                          Size not available
-                        </motion.p>
-                      )}
-                      {!selectedSize && !sizeError && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.2 }}
-                          className="text-[10px] tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-accent-rgb),0.7)]"
-                        >
-                          Please select a size to continue
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                );
-              })()}
+                      );
+                    })}
+                  </div>
+                  <AnimatePresence>
+                    {sizeError && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-[10px] tracking-[0.2em] font-plex-mono text-red-500"
+                      >
+                        Size not available
+                      </motion.p>
+                    )}
+                    {!selectedSize && !sizeError && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-[10px] tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-accent-rgb),0.7)]"
+                      >
+                        Please select a size to continue
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
 
               {/* Quantity + Total */}
               <motion.div
@@ -718,9 +697,9 @@ export default function ProductPage() {
                     <button
                       id="add-to-bag"
                       onClick={handleAddToCart}
-                      disabled={!selectedSize}
+                      disabled={!selectedSize && !isNonApparel}
                       className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${
-                        selectedSize
+                        (selectedSize || isNonApparel)
                           ? 'bg-[var(--theme-text)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent)] cursor-pointer'
                           : 'bg-[rgba(var(--theme-text-rgb),0.08)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
                       }`}
@@ -729,24 +708,22 @@ export default function ProductPage() {
                         {added ? (
                           <motion.span
                             key="added"
-                            initial={{ opacity: 0, y: 8 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.2 }}
+                            exit={{ opacity: 0, y: -10 }}
                             className="flex items-center gap-2"
                           >
-                            Added ✓
+                            Added to Bag
                           </motion.span>
                         ) : (
                           <motion.span
-                            key="add"
-                            initial={{ opacity: 0, y: 8 }}
+                            key="normal"
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.2 }}
+                            exit={{ opacity: 0, y: -10 }}
                             className="flex items-center gap-2"
                           >
-                            <ShoppingBag size={15} strokeWidth={1.8} />
+                            <ShoppingBag size={14} strokeWidth={1.5} />
                             Add to Bag
                           </motion.span>
                         )}
@@ -757,147 +734,99 @@ export default function ProductPage() {
                     <button
                       id="buy-now"
                       onClick={handleBuyNow}
-                      disabled={!selectedSize}
-                      className={`w-full h-[54px] flex items-center justify-center text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
-                        selectedSize
-                          ? 'border-[rgba(var(--theme-accent-rgb),0.6)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] cursor-pointer'
-                          : 'border-[rgba(var(--theme-text-rgb),0.1)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed'
+                      disabled={!selectedSize && !isNonApparel}
+                      className={`w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold transition-all duration-300 border border-[rgba(var(--theme-text-rgb),0.2)] ${
+                        (selectedSize || isNonApparel)
+                          ? 'hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] cursor-pointer'
+                          : 'opacity-40 cursor-not-allowed'
                       }`}
                     >
-                      Buy It Now
+                      <span>Buy Now</span>
+                      <ArrowRight size={14} strokeWidth={1.5} />
                     </button>
                   </>
                 )}
               </motion.div>
 
-              {/* ── PRODUCT DETAILS (PARSED RICH TEXT OR FALLBACK) ── */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-                className="pt-2"
-              >
+              {/* Product description & accordions */}
+              <div className="space-y-4 pt-4 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
                 {parsedDescriptionSections ? (
-                  // Map the split rich text into Accordions
-                  parsedDescriptionSections.map((section, idx) => (
-                    <AccordionSection key={idx} title={section.title} defaultOpen={idx === 0}>
+                  parsedDescriptionSections.map((sec, idx) => (
+                    <AccordionSection key={idx} title={sec.title} defaultOpen={idx === 0}>
                       <div 
-                        className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed
-                          [&_ul]:space-y-2.5
-                          [&_li]:flex [&_li]:items-start [&_li]:gap-3
-                          [&_li::before]:content-['—'] [&_li::before]:text-[var(--theme-accent)] [&_li::before]:shrink-0 [&_li::before]:mt-1.5
-                          [&_p:not(:last-child)]:mb-3
-                          [&_strong]:text-[rgba(var(--theme-text-rgb),0.35)] [&_strong]:uppercase [&_strong]:tracking-[0.25em] [&_strong]:text-[10px] [&_strong]:w-28 [&_strong]:shrink-0 [&_strong]:block sm:[&_strong]:inline-block [&_strong]:font-normal"
-                        dangerouslySetInnerHTML={{ __html: section.content }}
+                        className="text-[13px] text-[rgba(var(--theme-text-rgb),0.7)] leading-relaxed space-y-3 font-sans"
+                        dangerouslySetInnerHTML={{ __html: sec.content }}
                       />
                     </AccordionSection>
                   ))
-                ) : (
-                  // Legacy Fallback for products without rich text descriptions
-                  <>
-                    <AccordionSection title="Materials & Construction" defaultOpen={true}>
-                      <div className="space-y-4">
-                        {MATERIALS.map((m) => (
-                          <div key={m.label} className="flex gap-6">
-                            <span className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] w-28 shrink-0">
-                              {m.label}
-                            </span>
-                            <span className="text-[12px] font-plex-mono text-[var(--theme-text)]/65 leading-relaxed">
-                              {m.value}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </AccordionSection>
+                ) : product.description ? (
+                  <AccordionSection title="Description" defaultOpen={true}>
+                    <div 
+                      className="text-[13px] text-[rgba(var(--theme-text-rgb),0.7)] leading-relaxed space-y-3 font-sans"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
+                  </AccordionSection>
+                ) : null}
 
-                    <AccordionSection title="Fit & Sizing">
-                      <ul className="space-y-2.5">
-                        {FIT_NOTES.map((note) => (
-                          <li key={note} className="flex items-start gap-3 text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
-                            <span className="text-[var(--theme-accent)] mt-1.5 shrink-0">—</span>
-                            {note}
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionSection>
+                <AccordionSection title="Materials & Production">
+                  <ul className="space-y-2 text-[13px] text-[rgba(var(--theme-text-rgb),0.7)]">
+                    {MATERIALS.map((m, idx) => (
+                      <li key={idx} className="flex justify-between">
+                        <span className="font-plex-mono text-[11px] uppercase tracking-[0.2em]">{m.label}</span>
+                        <span>{m.value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionSection>
 
-                    <AccordionSection title="Care Instructions">
-                      <ul className="space-y-2.5">
-                        {CARE.map((c) => (
-                          <li key={c} className="flex items-start gap-3 text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
-                            <span className="text-[var(--theme-accent)] mt-1.5 shrink-0">—</span>
-                            {c}
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionSection>
+                <AccordionSection title="Fit Notes">
+                  <ul className="list-disc list-inside space-y-1.5 text-[13px] text-[rgba(var(--theme-text-rgb),0.7)]">
+                    {FIT_NOTES.map((note, idx) => (
+                      <li key={idx}>{note}</li>
+                    ))}
+                  </ul>
+                </AccordionSection>
 
-                    <AccordionSection title="Delivery & Returns">
-                      <div className="space-y-3 text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
-                        <p>Free shipping on orders above ₹999.</p>
-                        <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
-                        <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
-                      </div>
-                    </AccordionSection>
-                  </>
-                )}
-              </motion.div>
-            </div>
-            {/* END RIGHT PANEL */}
-          </div>
-        </div>
-
-        {/* ── RELATED PRODUCTS ── */}
-        {relatedProducts.length > 0 && (
-          <section className="mt-32 pt-20 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-              <div className="flex items-end justify-between mb-14">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-3">
-                    You May Also Like
-                  </p>
-                  <h2
-                    className="font-archivo font-extrabold uppercase text-[var(--theme-text)] leading-tight"
-                    style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', fontStretch: '125%' }}
-                  >
-                    Related Pieces
-                  </h2>
-                </div>
-                <button
-                  onClick={() => navigate(-1)}
-                  className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors duration-300 group"
-                >
-                  View All
-                  <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform duration-300" />
-                </button>
+                <AccordionSection title="Care Instructions">
+                  <ul className="list-disc list-inside space-y-1.5 text-[13px] text-[rgba(var(--theme-text-rgb),0.7)]">
+                    {CARE.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </AccordionSection>
               </div>
 
-              <div className="pinterest-grid">
-                {relatedProducts.map((p, i) => (
-                  <PinterestCard
-                    key={p.id}
-                    product={p}
-                    index={i}
-                    onClick={() => navigate(`/product/${p.id}`, { state: { product: p } })}
-                  />
+            </div>
+
+          </div>
+
+          {/* Reviews Section */}
+          <div className="mt-24 pt-16 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
+            <ReviewSection productId={product.id} />
+          </div>
+
+          {/* Related Products */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-24 pb-24 pt-16 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
+              <h3 className="text-[11px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] mb-8">
+                You May Also Like
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedProducts.map((rel) => (
+                  <PinterestCard key={rel.id} product={rel} />
                 ))}
               </div>
             </div>
-          </section>
-        )}
+          )}
 
-        {product?.id && <ReviewSection productId={product.id} />}
-
-        {/* Footer spacer */}
-        <div className="h-32" />
+        </div>
       </main>
 
-      {/* Try On Modal */}
+      {/* Virtual Try-On Modal */}
       <TryOnModal
         isOpen={tryOnOpen}
         onClose={() => setTryOnOpen(false)}
-        productId={product?.id || ''}
-        clothImages={images.length > 0 ? images : product?.frontImg ? [product.frontImg] : []}
+        product={product}
       />
     </div>
   );
