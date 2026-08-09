@@ -6,19 +6,20 @@ import {
   Tag, Percent, Plus, Edit2, Trash2,
   Search, X, Image, ToggleLeft, ToggleRight,
   Star, AlertCircle, TrendingUp, Users, ArrowUpRight,
-  Save, Upload, RefreshCw
+  Save, Upload, RefreshCw, Bell, BarChart3,
 } from 'lucide-react';
 import { productsApi, Product } from '../api/products';
 import { collectionsApi, Collection } from '../api/collections';
 import { categoriesApi, Category } from '../api/categories';
 import { discountsApi, Discount } from '../api/discounts';
 import { ordersApi, Order } from '../api/orders';
+import { analysisApi, AnalysisSummary } from '../api/analysis';
 import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 // Exported so AdminLayout.tsx can type its section-switch state.
 
-export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts';
+export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts' | 'analysis';
 export type { Order };
 
 const formatVal = (val: number) =>
@@ -1720,6 +1721,155 @@ export function DiscountsSection() {
           </Modal>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+// ─── Analysis (Demand Insights) ──────────────────────────────────────────────
+// Two demand signals feed this dashboard:
+//  - demandCounter: units actually ordered (real, fulfilled demand)
+//  - notifyCounter: "notify me when back in stock" signups on out-of-stock
+//    items — unfulfilled demand, arguably the more actionable signal for
+//    restocking decisions since it's demand that COULDN'T be captured as a
+//    sale at all.
+export function AnalysisSection() {
+  const [summary, setSummary] = useState<AnalysisSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchSummary = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await analysisApi.summary();
+      setSummary(data);
+    } catch (err: any) {
+      setError('Could not load demand analytics. Make sure the backend is reachable.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchSummary(); }, []);
+
+  const productImage = (p: { images: string[] } | null) => p?.images?.[0] || '';
+
+  if (loading) {
+    return (
+      <div>
+        <SectionHeader title="Analysis" />
+        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse text-center p-16">Loading demand insights...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <SectionHeader title="Analysis" />
+      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-6">
+        Demand signals across the catalog — units ordered, plus "notify me" signups on items people wanted but couldn't buy.
+      </p>
+
+      {error && (
+        <div className="mb-5 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+          <AlertCircle size={14} /> {error}
+        </div>
+      )}
+
+      {summary && (
+        <>
+          {/* The single most actionable list: real demand going unfulfilled right now */}
+          <div className="bg-[#111] border border-[#C5A059]/20 rounded-sm p-5 mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Bell size={14} className="text-[#C5A059]" />
+              <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Unfulfilled Demand — Restock Priority</p>
+            </div>
+            <p className="text-[10px] text-[#EAE6E1]/40 font-sans mb-4">Out of stock right now, with active "notify me" signups. These are the clearest restocking candidates.</p>
+            {summary.unfulfilledDemand.length === 0 ? (
+              <p className="text-[11px] font-sans text-[#EAE6E1]/30 py-6 text-center">No unfulfilled demand right now — nothing out of stock has active notify signups.</p>
+            ) : (
+              <div className="space-y-2">
+                {summary.unfulfilledDemand.map((item) => (
+                  <div key={item.product?._id} className="flex items-center gap-3 bg-[#12100C] border border-[#EAE6E1]/5 rounded-sm p-3">
+                    <div className="w-10 h-10 bg-[#1a1a1a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                      {productImage(item.product) && <img src={productImage(item.product)} alt={item.product?.name} className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-sans text-[#EAE6E1] truncate">{item.product?.name || 'Unknown product'}</p>
+                      <p className="text-[9px] font-sans text-[#EAE6E1]/40">{item.product?.category} / {item.product?.subcategory}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[#C5A059] flex-shrink-0">
+                      <Bell size={12} />
+                      <span className="text-[12px] font-mono">{item.notifyCounter}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Top products overall */}
+            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp size={14} className="text-[#C5A059]" />
+                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Top Products Overall</p>
+              </div>
+              {summary.topOverall.length === 0 ? (
+                <p className="text-[11px] font-sans text-[#EAE6E1]/30 py-6 text-center">No demand data yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {summary.topOverall.map((item, i) => (
+                    <div key={item.product?._id} className="flex items-center gap-3">
+                      <span className="text-[10px] font-mono text-[#EAE6E1]/25 w-4">{i + 1}</span>
+                      <div className="w-8 h-8 bg-[#1a1a1a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                        {productImage(item.product) && <img src={productImage(item.product)} alt={item.product?.name} className="w-full h-full object-cover" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-sans text-[#EAE6E1] truncate">{item.product?.name || 'Unknown product'}</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-[9px] font-mono text-[#EAE6E1]/40 flex-shrink-0">
+                        <span title="Units ordered">{item.demandCounter} sold</span>
+                        {item.notifyCounter > 0 && <span className="text-[#C5A059]" title="Notify-me signups">{item.notifyCounter} waiting</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Category breakdown */}
+            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 size={14} className="text-[#C5A059]" />
+                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Demand by Category</p>
+              </div>
+              {summary.byCategory.length === 0 ? (
+                <p className="text-[11px] font-sans text-[#EAE6E1]/30 py-6 text-center">No demand data yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {(() => {
+                    const maxScore = Math.max(...summary.byCategory.map(c => c.combinedScore), 1);
+                    return summary.byCategory.map((cat) => (
+                      <div key={cat._id}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-[10px] uppercase tracking-wider font-sans text-[#EAE6E1]/70">{cat._id || 'Uncategorized'}</span>
+                          <span className="text-[9px] font-mono text-[#EAE6E1]/40">{cat.productCount} product{cat.productCount !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-[#12100C] rounded-full h-1.5">
+                            <div className="bg-[#C5A059] h-full rounded-full transition-all" style={{ width: `${(cat.combinedScore / maxScore) * 100}%` }} />
+                          </div>
+                          <span className="text-[9px] font-mono text-[#EAE6E1]/50 w-16 text-right">{cat.totalDemand} sold / {cat.totalNotify} waiting</span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

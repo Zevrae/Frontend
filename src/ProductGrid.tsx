@@ -169,7 +169,7 @@ export default function ProductGrid({
           className="group relative flex flex-col cursor-pointer"
           onClick={() => navigate(item.path)}
         >
-          <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
+          <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
             <img 
               src={item.image} 
               alt={item.name} 
@@ -178,7 +178,7 @@ export default function ProductGrid({
             />
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase text-center w-full px-2">
+              <h3 className="text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-2">
                 {item.name}
               </h3>
             </div>
@@ -196,7 +196,7 @@ export default function ProductGrid({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 flex items-center justify-center md:justify-start"
+        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
       >
         <button onClick={() => navigate(-1)} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
           <ChevronLeft className="w-4 h-4 mr-2" />
@@ -208,7 +208,7 @@ export default function ProductGrid({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase"
+        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
       >
         {title}
       </motion.h3>
@@ -228,7 +228,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="men" 
-          className="py-[120px] bg-[#12100C] relative z-10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10"
         >
           <SectionHeading eyebrow="LATEST DROPS" title="Men's Collection" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -243,11 +243,11 @@ export default function ProductGrid({
                   className="w-full md:w-[460px] max-w-[460px] group relative flex flex-col cursor-pointer"
                   onClick={() => navigate(item.path)}
                 >
-                  <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
+                  <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">{item.name}</h3>
+                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>
@@ -256,7 +256,7 @@ export default function ProductGrid({
           </div>
           {dbMenProducts.length > 0 && (
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
-              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
               <div className="pinterest-grid">
                 {dbMenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
@@ -274,7 +274,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="gendered-category" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading
             eyebrow={isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
@@ -283,7 +283,7 @@ export default function ProductGrid({
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             {activeSubcategoryProducts.length === 0 ? (
               <div className="w-full flex justify-center py-24">
-                <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">New Collection Coming Soon</h3>
+                <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">New Collection Coming Soon</h3>
               </div>
             ) : (
               <div className="pinterest-grid">
@@ -303,7 +303,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="women" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading eyebrow="NEW ARRIVALS" title="Women's Collection" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -318,11 +318,11 @@ export default function ProductGrid({
                   className="w-full md:w-[460px] max-w-[460px] group relative flex flex-col cursor-pointer"
                   onClick={() => navigate(item.path)}
                 >
-                  <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
+                  <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1] uppercase">{item.name}</h3>
+                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>
@@ -331,7 +331,7 @@ export default function ProductGrid({
           </div>
           {allWomenProducts.length > 0 && (
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
-              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
               <div className="pinterest-grid">
                 {allWomenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
@@ -349,7 +349,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="accessories" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading eyebrow="NEW ARRIVALS" title="ACCESSORIES COLLECTION" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -364,11 +364,11 @@ export default function ProductGrid({
                   className="group relative flex flex-col cursor-pointer"
                   onClick={() => navigate(item.path)}
                 >
-                  <div className="relative aspect-[3/4] mb-6 bg-[#111111] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(197,160,89,0.25)]" data-cursor-image>
+                  <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[#FFE55A]' : 'text-[#EAE6E1]'}`}>{item.name}</h3>
+                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-text)]'}`}>{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>
@@ -388,7 +388,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="jewellery-men" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading eyebrow="JEWELLERY" title="MEN'S JEWELLERY" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -396,7 +396,7 @@ export default function ProductGrid({
           </div>
           {dbJewelleryMenProducts.length > 0 && (
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
-              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
               <div className="pinterest-grid">
                 {dbJewelleryMenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
@@ -414,7 +414,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="jewellery-women" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading eyebrow="JEWELLERY" title="WOMEN'S JEWELLERY" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -422,7 +422,7 @@ export default function ProductGrid({
           </div>
           {dbJewelleryWomenProducts.length > 0 && (
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
-              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }} className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-8 text-center md:text-left">FROM OUR CATALOG</motion.h2>
               <div className="pinterest-grid">
                 {dbJewelleryWomenProducts.map((item, i) => <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />)}
               </div>
@@ -440,7 +440,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="gendered-jewellery-sub" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading
             eyebrow={categoryFilter.startsWith('men-') ? "MEN'S JEWELLERY" : "WOMEN'S JEWELLERY"}
@@ -451,7 +451,7 @@ export default function ProductGrid({
               const filtered = getGenderedJewelleryProducts();
               return filtered.length === 0 ? (
                 <div className="w-full flex justify-center py-24">
-                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">New Collection Coming Soon</h3>
+                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">New Collection Coming Soon</h3>
                 </div>
               ) : (
                 <div className="pinterest-grid">
@@ -472,7 +472,7 @@ export default function ProductGrid({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.5 }}
           id="accessories-category" 
-          className="py-[120px] bg-[#12100C] relative z-10 border-t border-[#C5A059]/10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
         >
           <SectionHeading
             eyebrow="ACCESSORIES"
@@ -484,7 +484,7 @@ export default function ProductGrid({
               const filtered = dbAccessoriesProducts.filter(p => p.category === normalizedFilter);
               return filtered.length === 0 ? (
                 <div className="w-full flex justify-center py-24">
-                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[#EAE6E1]/50 uppercase">New Collection Coming Soon</h3>
+                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">New Collection Coming Soon</h3>
                 </div>
               ) : (
                 <div className="pinterest-grid">

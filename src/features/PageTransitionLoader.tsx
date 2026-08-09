@@ -187,13 +187,13 @@ export function PageTransitionLoader() {
       }}
       aria-hidden="true"
     >
-      {/* Gold curtain */}
+      {/* Curtain — tracks whichever category theme is active */}
       <div
         ref={curtainRef}
         style={{
           position: "absolute",
           inset: 0,
-          backgroundColor: "#C5A059",
+          backgroundColor: "var(--theme-accent)",
           willChange: "transform",
           backfaceVisibility: "hidden",
           transform: "translateZ(0)",
@@ -229,7 +229,7 @@ export function PageTransitionLoader() {
                   fontWeight: 700,
                   fontStretch: "125%",
                   letterSpacing: "0.03em",
-                  color: "#12100C",
+                  color: "var(--theme-bg)",
                   lineHeight: 1,
                   textTransform: "uppercase",
                   willChange: "transform",
@@ -248,7 +248,7 @@ export function PageTransitionLoader() {
               fontFamily: "'Archivo', sans-serif",
               fontSize: "clamp(0.45rem, 1.2vw, 0.75rem)",
               fontWeight: 500,
-              color: "#12100C",
+              color: "var(--theme-bg)",
               letterSpacing: "0.05em",
               lineHeight: 1,
               opacity: 0.6,

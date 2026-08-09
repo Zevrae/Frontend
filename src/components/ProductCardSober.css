@@ -16,7 +16,7 @@
   position: relative;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: #111111;
+  background: var(--theme-surface);
   border-radius: 2px;
   margin-bottom: 1rem;
 }
@@ -72,7 +72,7 @@
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(234, 230, 225, 0.15);
+  color: rgba(var(--theme-text-rgb), 0.15);
 }
 
 /* ── Product Info Section ── */
@@ -94,7 +94,7 @@
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.03em;
-  color: #EAE6E1;
+  color: var(--theme-text);
   text-transform: none;
   line-height: 1.35;
   padding-right: 16px;
@@ -103,7 +103,7 @@
 }
 
 .product-card-sober:hover .product-card-sober__name {
-  color: #ffffff;
+  color: var(--theme-accent);
 }
 
 .product-card-sober__price {
@@ -111,7 +111,7 @@
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.02em;
-  color: #EAE6E1;
+  color: var(--theme-text);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -120,7 +120,7 @@
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
-  color: rgba(234, 230, 225, 0.35);
+  color: rgba(var(--theme-text-rgb), 0.35);
   text-decoration: line-through;
   margin-top: 2px;
   text-align: right;
@@ -137,7 +137,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #EAE6E1;
+  background: var(--theme-text);
   flex-shrink: 0;
 }
 
@@ -147,7 +147,7 @@
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(234, 230, 225, 0.45);
+  color: rgba(var(--theme-text-rgb), 0.45);
 }
 
 /* ── Discount Badge (subtle, top-right of image) ── */
@@ -156,7 +156,7 @@
   top: 10px;
   right: 10px;
   z-index: 4;
-  background: rgba(197, 160, 89, 0.9);
+  background: rgba(var(--theme-accent-rgb), 0.9);
   padding: 3px 8px;
   border-radius: 2px;
 }

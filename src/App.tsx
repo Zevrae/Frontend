@@ -207,7 +207,7 @@ export default function App() {
   const displayName = getDisplayName();
 
 return (
-  <div data-page-content className="min-h-screen bg-[#12100C] text-[#EAE6E1] selection:bg-[#C5A059]/30 selection:text-[#EAE6E1] relative overflow-x-hidden font-sans">
+  <div data-page-content className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans">
     {/* Premium custom cursor — hidden on touch devices */}
     <CustomCursor />
     {/* Preloader Overlay — self-manages slide-up exit, never re-renders after completion */}
@@ -225,11 +225,11 @@ return (
       {!location.pathname.startsWith('/admin') && (
       <nav 
         className={`fixed top-0 w-full z-40 transition-all duration-1000 ${
-          isScrolled ? 'bg-[#12100C]/95 backdrop-blur-md py-6 border-b border-[#C5A059]/10' : 'bg-transparent py-10'
+          isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6 border-b border-[rgba(var(--theme-accent-rgb),0.1)]' : 'bg-transparent py-10'
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
-          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
+          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
             <div 
               className="relative" 
               ref={clothingDropdownRef}
@@ -237,10 +237,10 @@ return (
               onMouseLeave={() => setIsClothingOpen(false)}
             >
               <button 
-                className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700"
+                className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
               >
                 CLOTHING
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
 
               <AnimatePresence>
@@ -250,14 +250,14 @@ return (
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                   >
                     <button 
                       onClick={() => {
                         setIsClothingOpen(false);
                         navTransition(() => navigate('/men'));
                       }}
-                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       MEN
                     </button>
@@ -266,7 +266,7 @@ return (
                         setIsClothingOpen(false);
                         navTransition(() => navigate('/women'));
                       }}
-                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       WOMEN
                     </button>
@@ -281,10 +281,10 @@ return (
               onMouseLeave={() => setIsJewelleryOpen(false)}
             >
               <button
-                className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700"
+                className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
               >
                 JEWELLERY
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
 
               <AnimatePresence>
@@ -294,14 +294,14 @@ return (
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                   >
                     <button
                       onClick={() => {
                         setIsJewelleryOpen(false);
                         navTransition(() => navigate('/jewellery/men'));
                       }}
-                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       MEN
                     </button>
@@ -310,7 +310,7 @@ return (
                         setIsJewelleryOpen(false);
                         navTransition(() => navigate('/jewellery/women'));
                       }}
-                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       WOMEN
                     </button>
@@ -324,9 +324,9 @@ return (
               onMouseEnter={() => setIsAccessoriesOpen(true)}
               onMouseLeave={() => setIsAccessoriesOpen(false)}
             >
-              <button className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+              <button className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
                 ACCESSORIES
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
 
               <AnimatePresence>
@@ -336,14 +336,14 @@ return (
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                    className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                   >
                     <button
                       onClick={() => {
                         setIsAccessoriesOpen(false);
                         navTransition(() => navigate('/accessories/keychains'));
                       }}
-                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       KEYCHAINS
                     </button>
@@ -352,7 +352,7 @@ return (
                         setIsAccessoriesOpen(false);
                         navTransition(() => navigate('/accessories/soft-toys'));
                       }}
-                      className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em]"
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       SOFT TOYS
                     </button>
@@ -367,33 +367,33 @@ return (
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 2, delay: 0.2 }}
-            className="text-xl md:text-3xl font-archivo font-bold tracking-[0.1em] absolute left-1/2 transform -translate-x-1/2 text-[#EAE6E1] cursor-pointer"
+            className="text-xl md:text-3xl font-archivo font-bold tracking-[0.1em] absolute left-1/2 transform -translate-x-1/2 text-[var(--theme-text)] cursor-pointer"
             style={{ fontStretch: '125%' }}
           >
             ZEVRAE
           </motion.button>
 
-          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70">
+          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
             {isAdmin && (
-              <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[#C5A059] text-[10px] font-bold transition-colors duration-700">
+              <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] text-[10px] font-bold transition-colors duration-700">
                 ADMIN PANEL
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[var(--theme-accent)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             )}
             {!isAdmin && (
               <button
                 type="button"
-                className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[#EAE6E1]"
+                className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[var(--theme-text)]"
                 onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
               >
                 <ShinyText
                   text="AI WARDROBE"
                   speed={2.2}
                   className="text-[10px] uppercase tracking-[0.3em] font-plex-mono"
-                  color="#C5A059"
+                  color="var(--theme-accent)"
                   shineColor="#FFFFFF"
                 />
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             )}
             {user ? (
@@ -404,10 +404,10 @@ return (
                 onMouseLeave={() => setIsProfileOpen(false)}
               >
                 <button 
-                  className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700 uppercase"
+                  className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 uppercase"
                 >
                   {displayName}
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
                 </button>
                 <AnimatePresence>
                   {isProfileOpen && (
@@ -416,14 +416,14 @@ return (
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.3 }}
-                      className="absolute top-[calc(100%+1.5rem)] right-0 w-48 bg-[#12100C]/95 backdrop-blur-md border border-[#C5A059]/10 py-4 flex flex-col gap-4 shadow-2xl z-50"
+                      className="absolute top-[calc(100%+1.5rem)] right-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                     >
                       <button 
                         onClick={() => {
                           setIsProfileOpen(false);
                           navTransition(() => navigate('/profile'));
                         }}
-                        className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em] uppercase"
+                        className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
                       >
                         PROFILE
                       </button>
@@ -432,7 +432,7 @@ return (
                           setIsProfileOpen(false);
                           logout();
                         }}
-                        className="text-left px-6 py-2 hover:text-[#C5A059] hover:bg-[#C5A059]/5 transition-all duration-300 w-full tracking-[0.3em] uppercase"
+                        className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
                       >
                         LOGOUT
                       </button>
@@ -441,19 +441,19 @@ return (
                 </AnimatePresence>
               </div>
             ) : (
-              <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+              <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
                 LOGIN
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
             )}
-            <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative overflow-hidden pb-1 hover:text-[#EAE6E1] transition-colors duration-700">
+            <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
               BAG({items.reduce((total, item) => total + item.quantity, 0)})
-              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
             </button>
           </div>
 
           <button 
-            className="md:hidden z-40 relative text-[#EAE6E1] hover:text-[#C5A059] transition-colors duration-300"
+            className="md:hidden z-40 relative text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300"
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu size={28} strokeWidth={1} />
@@ -470,11 +470,11 @@ return (
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-[#12100C] z-50 flex flex-col items-center justify-center space-y-12"
+            className="fixed inset-0 bg-[var(--theme-bg)] z-50 flex flex-col items-center justify-center space-y-12"
           >
             <button 
               onClick={() => setIsMenuOpen(false)}
-              className="absolute top-10 right-6 md:right-12 text-[#EAE6E1] hover:text-[#C5A059] transition-colors duration-300"
+              className="absolute top-10 right-6 md:right-12 text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300"
             >
               <X size={28} strokeWidth={1} />
             </button>
@@ -516,7 +516,7 @@ return (
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: i * 0.05, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                className={`text-3xl md:text-5xl font-plex-mono tracking-[0.2em] text-[#EAE6E1] hover:text-[#C5A059] transition-colors duration-300 uppercase ${item.isSubItem ? 'text-xl md:text-3xl my-2' : ''}`}
+                className={`text-3xl md:text-5xl font-plex-mono tracking-[0.2em] text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300 uppercase ${item.isSubItem ? 'text-xl md:text-3xl my-2' : ''}`}
                 onClick={(e) => {
                   if (item.onClick) {
                     e.preventDefault();
@@ -538,7 +538,7 @@ return (
         <>
           <section
             ref={heroRef}
-            className="relative bg-[#12100C] overflow-hidden min-h-screen flex flex-col items-center justify-center"
+            className="relative bg-[var(--theme-bg)] overflow-hidden min-h-screen flex flex-col items-center justify-center"
           >
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
@@ -551,14 +551,14 @@ return (
             {/* Warm amber vignette to enhance yellow-black feel */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(197,160,89,0.08) 0%, rgba(10,10,10,0.75) 70%)' }}
+              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,0.75) 70%)' }}
             />
 
             {/* All hero text — sits above background layers */}
             <div className="relative z-10 flex flex-col items-center">
 
             {/* Season label */}
-            <p className="text-[10px] uppercase tracking-[0.4em] text-[#EAE6E1]/60 font-plex-mono mb-8">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-[rgba(var(--theme-text-rgb),0.6)] font-plex-mono mb-8">
               AUTUMN / WINTER 2026
             </p>
 
@@ -567,7 +567,7 @@ return (
 
               {/* Giant ZEVRAE — letters slide up via GSAP */}
               <h1
-                className="font-archivo font-extrabold uppercase text-[#EAE6E1] text-center"
+                className="font-archivo font-extrabold uppercase text-[var(--theme-text)] text-center"
                 style={{
                   fontSize: 'clamp(3rem, 14vw, 18rem)',
                   fontStretch: '125%',
@@ -594,7 +594,7 @@ return (
                 className="hero-divider-line"
                 style={{
                   height: '1.5px',
-                  background: '#EAE6E1',
+                  background: 'var(--theme-text)',
                   width: '100%',
                   marginTop: '0.6rem',
                 }}
@@ -602,7 +602,7 @@ return (
 
               {/* Tagline — centered inside text width */}
               <p
-                className="font-sans italic text-[#EAE6E1]/60 text-center"
+                className="font-sans italic text-[rgba(var(--theme-text-rgb),0.6)] text-center"
                 style={{ fontSize: '0.9rem', marginTop: '1.4rem', letterSpacing: '0.01em' }}
               >
                 Luxury is a Matter of Choice
@@ -628,8 +628,8 @@ return (
 
       <Suspense
         fallback={
-          <div className="min-h-screen bg-[#12100C] flex items-center justify-center">
-            <div className="w-6 h-6 border border-[#C5A059]/30 border-t-[#C5A059] rounded-full animate-spin" />
+          <div className="min-h-screen bg-[var(--theme-bg)] flex items-center justify-center">
+            <div className="w-6 h-6 border border-[rgba(var(--theme-accent-rgb),0.3)] border-t-[var(--theme-accent)] rounded-full animate-spin" />
           </div>
         }
       >
@@ -669,6 +669,7 @@ return (
         <Route path="/admin/collections" element={<AdminGate />} />
         <Route path="/admin/categories" element={<AdminGate />} />
         <Route path="/admin/discounts" element={<AdminGate />} />
+        <Route path="/admin/analysis" element={<AdminGate />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />

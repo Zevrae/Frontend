@@ -3,6 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
+import { useSetTheme } from '../theme/ThemeProvider';
+import type { ThemeName } from '../theme/themeConfig';
 import clothingDefault from '../assets/static/image1.jpg';
 import menClothing from '../assets/static/zoom.jpg';
 import womenClothing from '../assets/static/front.jpeg';
@@ -24,7 +26,6 @@ interface Collection {
   sub: string;
   menRoute: string;
   womenRoute: string;
-  bgColor: string;
   image: string;
   menImage: string;
   womenImage: string;
@@ -40,7 +41,6 @@ const collections: Collection[] = [
     sub: 'Refined tailoring and elevated essentials — crafted for those who wear intention.',
     menRoute: '/men',
     womenRoute: '/women',
-    bgColor: '#0e0e0e',
     image: clothingDefault,
     menImage: menClothing,
     womenImage: womenClothing,
@@ -53,7 +53,6 @@ const collections: Collection[] = [
     sub: 'Handcrafted with precision and care. Each piece tells a story of dedication and artistry.',
     menRoute: '/jewellery',
     womenRoute: '/jewellery',
-    bgColor: '#0c0c10',
     image: jewelleryCover,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
@@ -66,7 +65,6 @@ const collections: Collection[] = [
     sub: 'Each piece is crafted to be a statement of identity. Details that define the silhouette.',
     menRoute: '/accessories',
     womenRoute: '/accessories',
-    bgColor: '#0a0a0d',
     image: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
     menImage: 'https://i.ibb.co/k6VLyf0x/CARNAGE-FRONT.png',
     womenImage: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
@@ -92,7 +90,6 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
   return (
     <div
       className={`cs-card ${isActive ? 'cs-card--active' : ''} cs-card--dist-${Math.min(dist, 3)}`}
-      style={{ '--bg': col.bgColor } as React.CSSProperties}
       onClick={() => { if (!isActive) onClickInactive(); }}
     >
       <span className="cs-card__number">{col.number}</span>
@@ -176,6 +173,14 @@ export function CollectionScroller() {
   const stickyRef  = useRef<HTMLDivElement>(null);
   const trackRef   = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const setTheme = useSetTheme();
+
+  // Keep the site's color theme in lockstep with whichever collection card
+  // is centered as the user scrubs through this pinned slider — no route
+  // change involved, just a live palette swap synced to scroll position.
+  useEffect(() => {
+    setTheme(collections[activeIdx].id as ThemeName);
+  }, [activeIdx, setTheme]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -203,12 +208,16 @@ export function CollectionScroller() {
             const idx = Math.round(self.progress * (count - 1));
             setActiveIdx(Math.min(Math.max(idx, 0), count - 1));
           },
+          // Scrolling back up above the slider (towards the hero) hands the
+          // theme back to the site default rather than leaving it stuck on
+          // whatever card was last centered.
+          onLeaveBack: () => setTheme('clothing'),
         },
       });
     }, wrapper);
 
     return () => ctx.revert();
-  }, []);
+  }, [setTheme]);
 
   const scrollToCard = (idx: number) => {
     const wrapper = wrapperRef.current;

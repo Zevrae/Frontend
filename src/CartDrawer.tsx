@@ -36,16 +36,16 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#050505] border-l border-white/10 z-[70] flex flex-col text-white"
+            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[var(--theme-bg)] border-l border-[rgba(var(--theme-text-rgb),0.1)] z-[70] flex flex-col text-[var(--theme-text)]"
           >
-            <div className="p-6 border-b border-white/10 flex justify-between items-center">
-              <h2 className="text-lg font-archivo font-bold tracking-[0.1em] uppercase flex items-center gap-3 text-[#EAE6E1]" style={{ fontStretch: '125%' }}>
+            <div className="p-6 border-b border-[rgba(var(--theme-text-rgb),0.1)] flex justify-between items-center">
+              <h2 className="text-lg font-archivo font-bold tracking-[0.1em] uppercase flex items-center gap-3 text-[var(--theme-text)]" style={{ fontStretch: '125%' }}>
                 <ShoppingBag size={18} />
                 BAG ({items.length})
               </h2>
               <button
                 onClick={() => setIsCartOpen(false)}
-                className="text-gray-500 hover:text-white transition-colors"
+                className="text-gray-500 hover:text-[var(--theme-text)] transition-colors"
               >
                 <X size={20} />
               </button>
@@ -60,7 +60,7 @@ export default function CartDrawer() {
               ) : (
                 items.map((item) => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-4">
-                    <div className="w-20 aspect-[3/4] bg-[#111] overflow-hidden flex-shrink-0">
+                    <div className="w-20 aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden flex-shrink-0">
                       {item.image && (
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       )}
@@ -73,7 +73,7 @@ export default function CartDrawer() {
                           </h3>
                           <button
                             onClick={() => removeFromCart(item.id, item.size)}
-                            className="text-gray-500 hover:text-white transition-colors"
+                            className="text-gray-500 hover:text-[var(--theme-text)] transition-colors"
                           >
                             <X size={14} />
                           </button>
@@ -97,7 +97,7 @@ export default function CartDrawer() {
             </div>
 
             {items.length > 0 && (
-              <div className="p-6 border-t border-white/10 bg-[#050505]">
+              <div className="p-6 border-t border-[rgba(var(--theme-text-rgb),0.1)] bg-[var(--theme-bg)]">
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-xs uppercase tracking-widest text-gray-400">Total</span>
                   <span className="text-lg font-light">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(cartTotal)}</span>

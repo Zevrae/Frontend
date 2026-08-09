@@ -172,36 +172,36 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative w-full max-w-[500px] bg-[#12100C] border border-[#C5A059]/40 rounded-[16px] shadow-[0_0_40px_rgba(212,175,55,0.1)] p-8 md:p-10 max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-[500px] bg-[var(--theme-bg)] border border-[rgba(var(--theme-accent-rgb),0.4)] rounded-[16px] shadow-[0_0_40px_rgba(212,175,55,0.1)] p-8 md:p-10 max-h-[90vh] overflow-y-auto"
           >
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 text-[#EAE6E1]/50 hover:text-[#C5A059] transition-colors focus:outline-none z-10"
+              className="absolute top-6 right-6 text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors focus:outline-none z-10"
             >
               <X size={24} strokeWidth={1} />
             </button>
 
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-sm font-plex-mono font-light tracking-[0.4em] text-[#C5A059] mb-4 uppercase">
+              <h1 className="text-sm font-plex-mono font-light tracking-[0.4em] text-[var(--theme-accent)] mb-4 uppercase">
                 ZEVRAE
               </h1>
               <div className="flex justify-center gap-6 mb-2">
                 <button
                   onClick={() => setMode('signIn')}
-                  className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signIn' ? 'text-[#EAE6E1]' : 'text-[#EAE6E1]/40 hover:text-[#EAE6E1]/70'}`}
+                  className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signIn' ? 'text-[var(--theme-text)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
                 >
                   SIGN IN
                 </button>
-                <span className="text-[#C5A059]/40 text-2xl font-light">|</span>
+                <span className="text-[var(--theme-accent)]/40 text-2xl font-light">|</span>
                 <button
                   onClick={() => setMode('signUp')}
-                  className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signUp' ? 'text-[#EAE6E1]' : 'text-[#EAE6E1]/40 hover:text-[#EAE6E1]/70'}`}
+                  className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signUp' ? 'text-[var(--theme-text)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
                 >
                   SIGN UP
                 </button>
               </div>
-              <p className="text-[12px] font-plex-mono tracking-[0.05em] text-[#EAE6E1]/50 mt-4">
+              <p className="text-[12px] font-plex-mono tracking-[0.05em] text-[rgba(var(--theme-text-rgb),0.5)] mt-4">
                 {mode === 'signIn' ? 'Access your personal account' : 'Create your personal account'}
               </p>
             </div>
@@ -213,10 +213,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="flex items-start gap-3 mb-5 p-4 border border-[#C5A059]/30 rounded-sm bg-[#C5A059]/5"
+                  className="flex items-start gap-3 mb-5 p-4 border border-[rgba(var(--theme-accent-rgb),0.3)] rounded-sm bg-[rgba(var(--theme-accent-rgb),0.05)]"
                 >
-                  <CheckCircle size={16} className="text-[#C5A059] mt-[2px] shrink-0" />
-                  <p className="text-[11px] font-plex-mono text-[#EAE6E1]/80 leading-relaxed tracking-wide">
+                  <CheckCircle size={16} className="text-[var(--theme-accent)] mt-[2px] shrink-0" />
+                  <p className="text-[11px] font-plex-mono text-[var(--theme-text)]/80 leading-relaxed tracking-wide">
                     {successMessage}
                   </p>
                 </motion.div>
@@ -251,7 +251,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     className="space-y-4"
                   >
                     <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A059]/50" size={18} />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--theme-accent)]/50" size={18} />
                       <input
                         type="text"
                         name="name"
@@ -260,11 +260,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         onChange={handleInputChange}
                         required
                         disabled={isLoading}
-                        className="w-full bg-[#1A1814] border border-[#C5A059]/20 rounded-sm py-3 px-12 text-[#EAE6E1] text-[13px] font-plex-mono focus:outline-none focus:border-[#C5A059]/60 transition-colors placeholder:text-[#EAE6E1]/30 disabled:opacity-50"
+                        className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm py-3 px-12 text-[var(--theme-text)] text-[13px] font-plex-mono focus:outline-none focus:border-[var(--theme-accent)]/60 transition-colors placeholder:text-[rgba(var(--theme-text-rgb),0.3)] disabled:opacity-50"
                       />
                     </div>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A059]/50" size={18} />
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--theme-accent)]/50" size={18} />
                       <input
                         type="tel"
                         name="phone"
@@ -273,11 +273,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         onChange={handleInputChange}
                         required
                         disabled={isLoading}
-                        className="w-full bg-[#1A1814] border border-[#C5A059]/20 rounded-sm py-3 px-12 text-[#EAE6E1] text-[13px] font-plex-mono focus:outline-none focus:border-[#C5A059]/60 transition-colors placeholder:text-[#EAE6E1]/30 disabled:opacity-50"
+                        className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm py-3 px-12 text-[var(--theme-text)] text-[13px] font-plex-mono focus:outline-none focus:border-[var(--theme-accent)]/60 transition-colors placeholder:text-[rgba(var(--theme-text-rgb),0.3)] disabled:opacity-50"
                       />
                     </div>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A059]/50" size={18} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--theme-accent)]/50" size={18} />
                       <input
                         type="email"
                         name="email"
@@ -286,7 +286,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         onChange={handleInputChange}
                         required
                         disabled={isLoading}
-                        className="w-full bg-[#1A1814] border border-[#C5A059]/20 rounded-sm py-3 px-12 text-[#EAE6E1] text-[13px] font-plex-mono focus:outline-none focus:border-[#C5A059]/60 transition-colors placeholder:text-[#EAE6E1]/30 disabled:opacity-50"
+                        className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm py-3 px-12 text-[var(--theme-text)] text-[13px] font-plex-mono focus:outline-none focus:border-[var(--theme-accent)]/60 transition-colors placeholder:text-[rgba(var(--theme-text-rgb),0.3)] disabled:opacity-50"
                       />
                     </div>
                   </motion.div>
@@ -300,7 +300,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     transition={{ duration: 0.2 }}
                   >
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A059]/50" size={18} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--theme-accent)]/50" size={18} />
                       <input
                         type="email"
                         name="email"
@@ -309,7 +309,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         onChange={handleInputChange}
                         required
                         disabled={isLoading}
-                        className="w-full bg-[#1A1814] border border-[#C5A059]/20 rounded-sm py-3 px-12 text-[#EAE6E1] text-[13px] font-plex-mono focus:outline-none focus:border-[#C5A059]/60 transition-colors placeholder:text-[#EAE6E1]/30 disabled:opacity-50"
+                        className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm py-3 px-12 text-[var(--theme-text)] text-[13px] font-plex-mono focus:outline-none focus:border-[var(--theme-accent)]/60 transition-colors placeholder:text-[rgba(var(--theme-text-rgb),0.3)] disabled:opacity-50"
                       />
                     </div>
                   </motion.div>
@@ -317,7 +317,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </AnimatePresence>
 
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A059]/50" size={18} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--theme-accent)]/50" size={18} />
                 <input
                   type="password"
                   name="password"
@@ -326,13 +326,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   onChange={handleInputChange}
                   required
                   disabled={isLoading}
-                  className="w-full bg-[#1A1814] border border-[#C5A059]/20 rounded-sm py-3 px-12 text-[#EAE6E1] text-[13px] font-plex-mono focus:outline-none focus:border-[#C5A059]/60 transition-colors placeholder:text-[#EAE6E1]/30 disabled:opacity-50"
+                  className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm py-3 px-12 text-[var(--theme-text)] text-[13px] font-plex-mono focus:outline-none focus:border-[var(--theme-accent)]/60 transition-colors placeholder:text-[rgba(var(--theme-text-rgb),0.3)] disabled:opacity-50"
                 />
               </div>
 
               {mode === 'signIn' && (
                 <div className="flex justify-end">
-                  <button type="button" className="text-[#C5A059] text-[11px] font-plex-mono hover:underline tracking-wider">
+                  <button type="button" className="text-[var(--theme-accent)] text-[11px] font-plex-mono hover:underline tracking-wider">
                     Forgot Password?
                   </button>
                 </div>
@@ -341,7 +341,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 mt-2 bg-[#C5A059] text-[#12100C] text-[12px] font-bold tracking-[0.2em] font-plex-mono hover:bg-[#d4af37] transition-all duration-300 rounded-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-4 mt-2 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] font-bold tracking-[0.2em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading
                   ? 'PROCESSING...'
@@ -354,9 +354,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             {/* Divider */}
             <div className="relative flex items-center justify-center my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#C5A059]/20"></div>
+                <div className="w-full border-t border-[rgba(var(--theme-accent-rgb),0.2)]"></div>
               </div>
-              <span className="relative bg-[#12100C] px-4 text-[10px] font-plex-mono tracking-[0.2em] text-[#EAE6E1]/40 uppercase">
+              <span className="relative bg-[var(--theme-bg)] px-4 text-[10px] font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.4)] uppercase">
                 Or Continue With
               </span>
             </div>
@@ -367,7 +367,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 {/* Removed [&>div]:!w-full so the inner iframe can naturally center */}
                 <div ref={googleBtnRef} className="w-full flex justify-center" />
                 {!googleReady && (
-                  <p className="text-[10px] font-plex-mono text-[#EAE6E1]/30 tracking-wider">Loading Google Sign-In…</p>
+                  <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] tracking-wider">Loading Google Sign-In…</p>
                 )}
               </div>
             ) : (
@@ -375,7 +375,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 type="button"
                 disabled
                 title="Google sign-in is not configured"
-                className="w-full py-4 px-6 bg-transparent border border-[#C5A059]/20 text-[#EAE6E1]/30 text-[12px] tracking-[0.1em] font-plex-mono cursor-not-allowed flex items-center justify-center gap-4 rounded-sm"
+                className="w-full py-4 px-6 bg-transparent border border-[rgba(var(--theme-accent-rgb),0.2)] text-[rgba(var(--theme-text-rgb),0.3)] text-[12px] tracking-[0.1em] font-plex-mono cursor-not-allowed flex items-center justify-center gap-4 rounded-sm"
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
                   <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -390,7 +390,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             )}
 
             <div className="mt-8 text-center">
-              <p className="text-[10px] font-plex-mono uppercase tracking-[0.1em] text-[#EAE6E1]/30">
+              <p className="text-[10px] font-plex-mono uppercase tracking-[0.1em] text-[rgba(var(--theme-text-rgb),0.3)]">
                 By continuing you agree to our Terms & Privacy Policy
               </p>
             </div>

@@ -39,7 +39,7 @@ export default function VerifyEmail() {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex items-center justify-center p-6 font-sans">
       {/* Film grain */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-50 mix-blend-difference"
@@ -53,9 +53,9 @@ export default function VerifyEmail() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="w-full max-w-[480px] bg-[#12100C] border border-[#C5A059]/40 rounded-[16px] shadow-[0_0_60px_rgba(212,175,55,0.08)] p-10 text-center"
+        className="w-full max-w-[480px] bg-[var(--theme-bg)] border border-[rgba(var(--theme-accent-rgb),0.4)] rounded-[16px] shadow-[0_0_60px_rgba(212,175,55,0.08)] p-10 text-center"
       >
-        <p className="text-[11px] font-plex-mono font-light tracking-[0.5em] text-[#C5A059] mb-10 uppercase">
+        <p className="text-[11px] font-plex-mono font-light tracking-[0.5em] text-[var(--theme-accent)] mb-10 uppercase">
           ZEVRAE
         </p>
 
@@ -70,9 +70,9 @@ export default function VerifyEmail() {
               animate={{ rotate: 360 }}
               transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
             >
-              <Loader size={36} className="text-[#C5A059]/60" strokeWidth={1} />
+              <Loader size={36} className="text-[var(--theme-accent)]/60" strokeWidth={1} />
             </motion.div>
-            <p className="text-[13px] font-plex-mono text-[#EAE6E1]/50 tracking-wider">
+            <p className="text-[13px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-wider">
               Verifying your email...
             </p>
           </motion.div>
@@ -86,14 +86,14 @@ export default function VerifyEmail() {
             transition={{ duration: 0.4 }}
             className="flex flex-col items-center gap-6"
           >
-            <div className="w-16 h-16 rounded-full border border-[#C5A059]/30 flex items-center justify-center">
-              <CheckCircle size={32} className="text-[#C5A059]" strokeWidth={1} />
+            <div className="w-16 h-16 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] flex items-center justify-center">
+              <CheckCircle size={32} className="text-[var(--theme-accent)]" strokeWidth={1} />
             </div>
             <div>
-              <h2 className="text-xl font-archivo font-bold tracking-[0.15em] text-[#EAE6E1] uppercase mb-3">
+              <h2 className="text-xl font-archivo font-bold tracking-[0.15em] text-[var(--theme-text)] uppercase mb-3">
                 Email Verified
               </h2>
-              <p className="text-[12px] font-plex-mono text-[#EAE6E1]/50 leading-relaxed tracking-wide">
+              <p className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] leading-relaxed tracking-wide">
                 {message}
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function VerifyEmail() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/')}
-              className="mt-2 w-full py-4 bg-[#C5A059] text-[#12100C] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[#d4af37] transition-all duration-300 rounded-sm"
+              className="mt-2 w-full py-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-sm"
             >
               SIGN IN TO YOUR ACCOUNT
             </motion.button>
@@ -120,7 +120,7 @@ export default function VerifyEmail() {
               <AlertCircle size={32} className="text-red-400" strokeWidth={1} />
             </div>
             <div>
-              <h2 className="text-xl font-archivo font-bold tracking-[0.15em] text-[#EAE6E1] uppercase mb-3">
+              <h2 className="text-xl font-archivo font-bold tracking-[0.15em] text-[var(--theme-text)] uppercase mb-3">
                 Verification Failed
               </h2>
               <p className="text-[12px] font-plex-mono text-red-400/80 leading-relaxed tracking-wide">
@@ -131,14 +131,14 @@ export default function VerifyEmail() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/')}
-              className="mt-2 w-full py-4 bg-transparent border border-[#C5A059]/40 hover:border-[#C5A059] text-[#EAE6E1] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[#C5A059]/5 transition-all duration-300 rounded-sm"
+              className="mt-2 w-full py-4 bg-transparent border border-[rgba(var(--theme-accent-rgb),0.4)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 rounded-sm"
             >
               RETURN TO HOME
             </motion.button>
           </motion.div>
         )}
 
-        <p className="mt-10 text-[10px] font-plex-mono uppercase tracking-[0.1em] text-[#EAE6E1]/20">
+        <p className="mt-10 text-[10px] font-plex-mono uppercase tracking-[0.1em] text-[rgba(var(--theme-text-rgb),0.2)]">
           ZEVRAE — Luxury is a Matter of Choice
         </p>
       </motion.div>

@@ -45,14 +45,14 @@ export function TrustSection() {
   };
 
   return (
-    <section className="relative bg-[#12100C] py-24 md:py-32 px-6 md:px-12 border-t border-[#C5A059]/10">
+    <section className="relative bg-[var(--theme-bg)] py-24 md:py-32 px-6 md:px-12 border-t border-[rgba(var(--theme-accent-rgb),0.1)]">
       <div className="max-w-[1400px] mx-auto">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[#C5A059] mb-4 text-center md:text-left"
+          className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 text-center md:text-left"
         >
           Why Zevrae
         </motion.h2>
@@ -61,7 +61,7 @@ export function TrustSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 1.5, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] text-center md:text-left uppercase mb-16 md:mb-20 max-w-3xl"
+          className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase mb-16 md:mb-20 max-w-3xl"
         >
           A Faster, Safer Way to Shop
         </motion.h3>
@@ -76,13 +76,13 @@ export function TrustSection() {
               transition={{ duration: 0.8, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
               className="flex flex-col items-start"
             >
-              <div className="w-10 h-10 rounded-full border border-[#C5A059]/30 flex items-center justify-center mb-6">
-                <pillar.icon size={16} strokeWidth={1.5} className="text-[#C5A059]" />
+              <div className="w-10 h-10 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] flex items-center justify-center mb-6">
+                <pillar.icon size={16} strokeWidth={1.5} className="text-[var(--theme-accent)]" />
               </div>
-              <h4 className="font-archivo font-semibold tracking-[0.05em] text-[#EAE6E1] uppercase text-sm mb-3">
+              <h4 className="font-archivo font-semibold tracking-[0.05em] text-[var(--theme-text)] uppercase text-sm mb-3">
                 {pillar.title}
               </h4>
-              <p className="font-plex-mono text-[13px] leading-relaxed text-[#EAE6E1]/60">
+              <p className="font-plex-mono text-[13px] leading-relaxed text-[rgba(var(--theme-text-rgb),0.6)]">
                 {pillar.body}
               </p>
             </motion.div>
@@ -94,13 +94,13 @@ export function TrustSection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="font-plex-mono text-[11px] text-[#EAE6E1]/40 tracking-[0.02em] leading-relaxed max-w-2xl"
+          className="font-plex-mono text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] tracking-[0.02em] leading-relaxed max-w-2xl"
         >
           By continuing with Google, you agree to Zevrae's{' '}
           <a
             href="/terms-of-service"
             onClick={goTo('/terms-of-service')}
-            className="text-[#C5A059]/80 hover:text-[#C5A059] underline underline-offset-4 transition-colors duration-300"
+            className="text-[var(--theme-accent)]/80 hover:text-[var(--theme-accent)] underline underline-offset-4 transition-colors duration-300"
           >
             Terms of Service
           </a>{' '}
@@ -108,7 +108,7 @@ export function TrustSection() {
           <a
             href="/privacy-policy"
             onClick={goTo('/privacy-policy')}
-            className="text-[#C5A059]/80 hover:text-[#C5A059] underline underline-offset-4 transition-colors duration-300"
+            className="text-[var(--theme-accent)]/80 hover:text-[var(--theme-accent)] underline underline-offset-4 transition-colors duration-300"
           >
             Privacy Policy
           </a>

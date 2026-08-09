@@ -1,5 +1,5 @@
 .policy-container {
-  color: #EAE6E1;
+  color: var(--theme-text);
   font-family: 'IBM Plex Mono', monospace;
   padding-bottom: 8rem;
 }
@@ -15,7 +15,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   margin-bottom: 2rem;
-  color: #C5A059;
+  color: var(--theme-accent);
   text-transform: uppercase;
 }
 
@@ -26,7 +26,7 @@
   letter-spacing: 0.05em;
   margin-top: 3rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(234, 230, 225, 0.1);
+  border-bottom: 1px solid rgba(var(--theme-text-rgb),0.1);
   padding-bottom: 0.5rem;
 }
 
@@ -36,7 +36,7 @@
   font-weight: 500;
   margin-top: 2rem;
   margin-bottom: 1rem;
-  color: #D4AE68;
+  color: var(--theme-accent);
 }
 
 .policy-content h4 {
@@ -50,14 +50,14 @@
   margin-bottom: 1.25rem;
   line-height: 1.7;
   font-size: 0.95rem;
-  color: rgba(234, 230, 225, 0.8);
+  color: rgba(var(--theme-text-rgb),0.8);
 }
 
 .policy-content ul, .policy-content ol {
   margin-bottom: 1.5rem;
   padding-left: 1.5rem;
   line-height: 1.7;
-  color: rgba(234, 230, 225, 0.8);
+  color: rgba(var(--theme-text-rgb),0.8);
   font-size: 0.95rem;
 }
 
@@ -74,19 +74,19 @@
 }
 
 .policy-content strong {
-  color: #EAE6E1;
+  color: var(--theme-text);
   font-weight: 600;
 }
 
 .policy-content a {
-  color: #C5A059;
+  color: var(--theme-accent);
   text-decoration: underline;
   text-underline-offset: 4px;
   transition: color 0.3s ease;
 }
 
 .policy-content a:hover {
-  color: #EAE6E1;
+  color: var(--theme-text);
 }
 
 .policy-content table {
@@ -97,17 +97,17 @@
 }
 
 .policy-content th, .policy-content td {
-  border: 1px solid rgba(234, 230, 225, 0.2);
+  border: 1px solid rgba(var(--theme-text-rgb),0.2);
   padding: 1rem;
   text-align: left;
 }
 
 .policy-content th {
-  background-color: rgba(197, 160, 89, 0.1);
-  color: #C5A059;
+  background-color: rgba(var(--theme-accent-rgb),0.1);
+  color: var(--theme-accent);
   font-weight: 600;
 }
 
 .policy-content tr:nth-child(even) {
-  background-color: rgba(234, 230, 225, 0.02);
+  background-color: rgba(var(--theme-text-rgb),0.02);
 }

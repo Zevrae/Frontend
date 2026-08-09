@@ -153,10 +153,10 @@ function FooterNavLink({ label, to }: NavLink) {
     <li>
       <button
         onClick={() => trigger(() => navigate(to))}
-        className="group relative pb-1 hover:text-[#EAE6E1] transition-colors duration-700 zf-nav-link"
+        className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 zf-nav-link"
       >
         {label}
-        <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C5A059]/40 transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+        <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
       </button>
     </li>
   );
