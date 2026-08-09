@@ -11,20 +11,28 @@ const LETTER_ORDER = [3, 0, 5, 1, 4, 2];
 
 /**
  * PageTransitionLoader — Luxury gold curtain transition.
- *
- * Animation sequence:
- *  1. ENTER: #C5A059 curtain slides up from bottom, pushing page content
- *     up & shrinking it. When curtain is ~70% covering, ZEVRAE text
- *     slides in letter-by-letter (preloader style).
- *  2. HOLD: Brief pause with full gold curtain + text.
- *  3. EXIT: Curtain slides up and out (bottom edge lifts towards top),
- *     letters exit upward, revealing the new page beneath.
+ * Handles both page-to-page navigation and theme change transitions.
  */
 export function PageTransitionLoader() {
   const { phase, setPhase } = usePageTransition();
   const rootRef = useRef<HTMLDivElement>(null);
   const curtainRef = useRef<HTMLDivElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // ─── LISTEN FOR THEME CHANGE EVENTS ───
+  useEffect(() => {
+    const handleThemeChangeTrigger = () => {
+      // Only trigger if currently idle
+      if (phase === "idle") {
+        setPhase("entering");
+      }
+    };
+
+    window.addEventListener("zevrae:theme-change", handleThemeChangeTrigger);
+    return () => {
+      window.removeEventListener("zevrae:theme-change", handleThemeChangeTrigger);
+    };
+  }, [phase, setPhase]);
 
   useIsoLayoutEffect(() => {
     if (phase === "idle" || !rootRef.current || !curtainRef.current) return;
@@ -56,7 +64,7 @@ export function PageTransitionLoader() {
           force3D: true,
         });
 
-        // Simultaneously push page content up + fade (no scale — avoids full-page repaint)
+        // Simultaneously push page content up + fade
         if (pageContent) {
           tl.to(
             pageContent,
@@ -67,7 +75,7 @@ export function PageTransitionLoader() {
               ease: "power2.inOut",
               force3D: true,
             },
-            0, // start at the same time
+            0,
           );
         }
 
@@ -87,7 +95,6 @@ export function PageTransitionLoader() {
       }
 
       if (phase === "holding") {
-        // Brief hold, then exit
         tlRef.current?.kill();
 
         const tl = gsap.timeline({
@@ -102,7 +109,6 @@ export function PageTransitionLoader() {
 
         const tl = gsap.timeline({
           onComplete: () => {
-            // Reset page content
             if (pageContent) {
               gsap.set(pageContent, {
                 clearProps: "y,opacity,transform",
@@ -128,8 +134,7 @@ export function PageTransitionLoader() {
           );
         });
 
-        // Curtain exits upward — bottom edge lifts to top
-        // This creates the "peeling away upward" feeling
+        // Curtain exits upward
         tl.to(
           curtainRef.current,
           {
@@ -138,13 +143,7 @@ export function PageTransitionLoader() {
             ease: "power2.inOut",
             force3D: true,
             onStart: () => {
-              // Signal hero to animate in if navigating to home
               window.dispatchEvent(new CustomEvent("hero-reveal"));
-              // Generic signal: the curtain is now peeling away and the page
-              // beneath is becoming visible. Any page can listen for this to
-              // time its own entrance animation off actual visibility instead
-              // of its own mount time (which happens earlier, while still
-              // fully hidden behind the curtain).
               window.dispatchEvent(new CustomEvent("zevrae:page-reveal"));
             },
           },
@@ -172,7 +171,6 @@ export function PageTransitionLoader() {
     return () => ctx.revert();
   }, [phase, setPhase]);
 
-  // Always render the portal DOM (hidden when idle via opacity/pointer-events)
   const isVisible = phase !== "idle";
 
   return createPortal(
@@ -187,7 +185,6 @@ export function PageTransitionLoader() {
       }}
       aria-hidden="true"
     >
-      {/* Curtain — tracks whichever category theme is active */}
       <div
         ref={curtainRef}
         style={{
@@ -202,7 +199,6 @@ export function PageTransitionLoader() {
           justifyContent: "center",
         }}
       >
-        {/* Brand text — letter-by-letter animation (preloader style) */}
         <div
           style={{
             display: "flex",
@@ -239,7 +235,6 @@ export function PageTransitionLoader() {
               </span>
             </span>
           ))}
-          {/* TM superscript */}
           <span
             style={{
               position: "absolute",
