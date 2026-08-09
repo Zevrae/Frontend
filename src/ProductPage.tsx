@@ -142,7 +142,7 @@ export default function ProductPage() {
       if (!params.id) return;
       try {
         const { data } = await productsApi.list({ limit: 500 });
-        const p: any = (data as any[]).find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
+        const p: any = (Array.isArray(data) ? data : []).find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
         
         if (p) {
           let parsedImages: string[] = [];
@@ -158,7 +158,7 @@ export default function ProductPage() {
 
           setProduct(prev => ({
             ...prev,
-            id: p.id || p.$id || params.id,
+            id: p.id || p.$id || params.id || '',
             name: p.name || prev?.name || '',
             price: p.price || prev?.price || 0,
             originalPrice: p.compare_price || prev?.originalPrice,
@@ -250,37 +250,53 @@ export default function ProductPage() {
     setSelectedSize(isNonApparel ? 'One Size' : '');
   }, [params.id, isNonApparel]);
 
-  // Fetch related products
+  // Fetch related products safely
   useEffect(() => {
     if (!product) return;
     const fetchRelated = async () => {
       try {
         const { data } = await productsApi.list({ status: 'active', limit: 100 });
-        const related = (data || [])
+        const related = (Array.isArray(data) ? data : [])
           .filter(
             (p: any) =>
-              p.id !== product.id &&
+              p &&
+              String(p.id || p.$id) !== String(product.id) &&
               (p.category?.toLowerCase() === product.category ||
                 p.subcategory?.toLowerCase() === product.type)
           )
           .slice(0, 4)
-          .map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            originalPrice: p.compare_price,
-            label: `${p.category} Premium`,
-            category: p.category?.toLowerCase(),
-            type: p.subcategory?.toLowerCase(),
-            sizes: p.sizes,
-            discount: p.discount ?? (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
-            frontImg: p.images?.[0] || '',
-            backImg: p.images?.[1] || p.images?.[0] || '',
-            images: p.images || [],
-            description: p.description
-          }));
+          .map((p: any) => {
+            let pImages: string[] = [];
+            if (Array.isArray(p.images)) {
+              pImages = p.images;
+            } else if (typeof p.images === 'string') {
+              try {
+                pImages = JSON.parse(p.images);
+              } catch {
+                pImages = p.images.split(',').map((s: string) => s.trim());
+              }
+            }
+
+            return {
+              id: p.id || p.$id || '',
+              name: p.name || '',
+              price: p.price || 0,
+              originalPrice: p.compare_price,
+              label: `${p.category || 'Collection'} Premium`,
+              category: p.category?.toLowerCase(),
+              type: p.subcategory?.toLowerCase(),
+              sizes: Array.isArray(p.sizes) ? p.sizes : [],
+              discount: p.discount ?? (p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : undefined),
+              frontImg: pImages[0] || '',
+              backImg: pImages[1] || pImages[0] || '',
+              images: pImages,
+              description: p.description || ''
+            };
+          });
         setRelatedProducts(related);
-      } catch {}
+      } catch (err) {
+        console.error("Failed to fetch related products", err);
+      }
     };
     fetchRelated();
   }, [product]);
@@ -329,7 +345,7 @@ export default function ProductPage() {
       price: product.price,
       size: selectedSize || 'One Size',
       quantity,
-      image: product.frontImg,
+      image: images[0] || product.frontImg || '',
       category: product.category || 'unknown',
     });
     setAdded(true);
@@ -373,8 +389,6 @@ export default function ProductPage() {
   const showNotifyMe = isNoSizeProduct
     ? !overallInStock
     : !!selectedSize && isSizeOutOfStock(selectedSize);
-
-    console.log("Product Response", product);
 
   return (
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
@@ -424,20 +438,22 @@ export default function ProductPage() {
                 )}
 
                 {/* Main image with fade */}
-                <img
-                  key={activeImg}
-                  src={images[activeImg]}
-                  alt={product.name}
-                  referrerPolicy="no-referrer"
-                  loading="eager"
-                  decoding="async"
-                  onLoad={() => setImgLoaded(true)}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{
-                    opacity: imgLoaded ? 1 : 0,
-                    transition: 'opacity 400ms ease',
-                  }}
-                />
+                {images.length > 0 && images[activeImg] && (
+                  <img
+                    key={activeImg}
+                    src={images[activeImg]}
+                    alt={product.name}
+                    referrerPolicy="no-referrer"
+                    loading="eager"
+                    decoding="async"
+                    onLoad={() => setImgLoaded(true)}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{
+                      opacity: imgLoaded ? 1 : 0,
+                      transition: 'opacity 400ms ease',
+                    }}
+                  />
+                )}
 
                 {/* Subtle vignette */}
                 <div
@@ -732,104 +748,30 @@ export default function ProductPage() {
                       </AnimatePresence>
                     </button>
 
-                    {/* Buy now */}
+                    {/* Buy Now */}
                     <button
                       id="buy-now"
                       onClick={handleBuyNow}
                       disabled={!selectedSize && !isNonApparel}
-                      className={`w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold transition-all duration-300 border border-[rgba(var(--theme-text-rgb),0.2)] ${
+                      className={`w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
                         (selectedSize || isNonApparel)
-                          ? 'hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] cursor-pointer'
-                          : 'opacity-40 cursor-not-allowed'
+                          ? 'border-[var(--theme-text)] text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] cursor-pointer'
+                          : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
                       }`}
                     >
-                      <span>Buy Now</span>
+                      Buy Now
                       <ArrowRight size={14} strokeWidth={1.5} />
                     </button>
                   </>
                 )}
               </motion.div>
 
-              {/* Product description & accordions */}
-              <div className="space-y-4 pt-4 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
-                {parsedDescriptionSections ? (
-                  parsedDescriptionSections.map((sec, idx) => (
-                    <AccordionSection key={idx} title={sec.title} defaultOpen={idx === 0}>
-                      <div 
-                        className="text-[13px] text-[rgba(var(--theme-text-rgb),0.7)] leading-relaxed space-y-3 font-sans"
-                        dangerouslySetInnerHTML={{ __html: sec.content }}
-                      />
-                    </AccordionSection>
-                  ))
-                ) : product.description ? (
-                  <AccordionSection title="Description" defaultOpen={true}>
-                    <div 
-                      className="text-[13px] text-[rgba(var(--theme-text-rgb),0.7)] leading-relaxed space-y-3 font-sans"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                  </AccordionSection>
-                ) : null}
-
-                <AccordionSection title="Materials & Production">
-                  <ul className="space-y-2 text-[13px] text-[rgba(var(--theme-text-rgb),0.7)]">
-                    {MATERIALS.map((m, idx) => (
-                      <li key={idx} className="flex justify-between">
-                        <span className="font-plex-mono text-[11px] uppercase tracking-[0.2em]">{m.label}</span>
-                        <span>{m.value}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionSection>
-
-                <AccordionSection title="Fit Notes">
-                  <ul className="list-disc list-inside space-y-1.5 text-[13px] text-[rgba(var(--theme-text-rgb),0.7)]">
-                    {FIT_NOTES.map((note, idx) => (
-                      <li key={idx}>{note}</li>
-                    ))}
-                  </ul>
-                </AccordionSection>
-
-                <AccordionSection title="Care Instructions">
-                  <ul className="list-disc list-inside space-y-1.5 text-[13px] text-[rgba(var(--theme-text-rgb),0.7)]">
-                    {CARE.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </AccordionSection>
-              </div>
-
             </div>
 
           </div>
-
-          {/* Reviews Section */}
-          <div className="mt-24 pt-16 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
-            <ReviewSection productId={product.id} />
-          </div>
-
-          {/* Related Products */}
-          {relatedProducts.length > 0 && (
-            <div className="mt-24 pb-24 pt-16 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
-              <h3 className="text-[11px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] mb-8">
-                You May Also Like
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProducts.map((rel) => (
-                  <PinterestCard key={rel.id} product={rel} />
-                ))}
-              </div>
-            </div>
-          )}
 
         </div>
       </main>
-
-      {/* Virtual Try-On Modal */}
-      <TryOnModal
-        isOpen={tryOnOpen}
-        onClose={() => setTryOnOpen(false)}
-        product={product}
-      />
     </div>
   );
 }
