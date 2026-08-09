@@ -35,8 +35,9 @@
    can tint the palette without hardcoding a color.
    ═══════════════════════════════════════════════ */
 :root,
+:root,
 html[data-theme="clothing"] {
-  /* Original brand palette — untouched per spec */
+  /* Original brand palette — Dark Luxury */
   --theme-bg: #12100C;
   --theme-bg-rgb: 18, 16, 12;
   --theme-surface: #111111;
@@ -48,27 +49,27 @@ html[data-theme="clothing"] {
 }
 
 html[data-theme="accessories"] {
-  /* Soft Toys & Leather Goods — Warm Cream / Deep Walnut Accent */
-  --theme-bg: #F9F5EE;
-  --theme-bg-rgb: 249, 245, 238;
-  --theme-surface: #EFE6D8;
-  --theme-surface-rgb: 239, 230, 216;
-  --theme-text: #2C2218;
-  --theme-text-rgb: 44, 34, 24;
-  --theme-accent: #9E7444;
-  --theme-accent-rgb: 158, 116, 68;
+  /* Cool Aqua & Crimson Accent */
+  --theme-bg: #F5F5F5;
+  --theme-bg-rgb: 245, 245, 245;
+  --theme-surface: #DFF1F1;
+  --theme-surface-rgb: 223, 241, 241;
+  --theme-text: #17282D;
+  --theme-text-rgb: 23, 40, 45;
+  --theme-accent: #E10600;
+  --theme-accent-rgb: 225, 6, 0;
 }
 
 html[data-theme="jewellery"] {
-  /* Jewellery — Obsidian Velvet / Champagne Gold Accent */
-  --theme-bg: #0C0B0A;
-  --theme-bg-rgb: 12, 11, 10;
-  --theme-surface: #1A1815;
-  --theme-surface-rgb: 26, 24, 21;
-  --theme-text: #F4EFE6;
-  --theme-text-rgb: 244, 239, 230;
-  --theme-accent: #E2B963;
-  --theme-accent-rgb: 226, 185, 99;
+  /* Champagne Warmth & Deep Teal Accent */
+  --theme-bg: #FAF8F1;
+  --theme-bg-rgb: 250, 248, 241;
+  --theme-surface: #FAEAB1;
+  --theme-surface-rgb: 250, 234, 177;
+  --theme-text: #334443;
+  --theme-text-rgb: 51, 68, 67;
+  --theme-accent: #34656D;
+  --theme-accent-rgb: 52, 101, 109;
 }
 html {
   /* Crossfade whenever data-theme changes. Kept slow enough to still be
