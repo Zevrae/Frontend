@@ -48,27 +48,27 @@ html[data-theme="clothing"] {
 }
 
 html[data-theme="accessories"] {
-  /* Soft Toys — Warm Beige / Cream palette */
-  --theme-bg: #F3E8D5;
-  --theme-bg-rgb: 243, 232, 213;
-  --theme-surface: #E5D2B8;
-  --theme-surface-rgb: 229, 210, 184;
-  --theme-text: #4A3A2A;
-  --theme-text-rgb: 74, 58, 42;
-  --theme-accent: #B8956A;
-  --theme-accent-rgb: 184, 149, 106;
+  /* Soft Toys & Leather Goods — Warm Cream / Deep Walnut Accent */
+  --theme-bg: #F9F5EE;
+  --theme-bg-rgb: 249, 245, 238;
+  --theme-surface: #EFE6D8;
+  --theme-surface-rgb: 239, 230, 216;
+  --theme-text: #2C2218;
+  --theme-text-rgb: 44, 34, 24;
+  --theme-accent: #9E7444;
+  --theme-accent-rgb: 158, 116, 68;
 }
 
 html[data-theme="jewellery"] {
-  /* Jewellery — Ivory / Champagne / Gold palette */
-  --theme-bg: #FBF5E6;
-  --theme-bg-rgb: 251, 245, 230;
-  --theme-surface: #E8D29A;
-  --theme-surface-rgb: 232, 210, 154;
-  --theme-text: #3D3020;
-  --theme-text-rgb: 61, 48, 32;
-  --theme-accent: #C9A227;
-  --theme-accent-rgb: 201, 162, 39;
+  /* Jewellery — Obsidian Velvet / Champagne Gold Accent */
+  --theme-bg: #0C0B0A;
+  --theme-bg-rgb: 12, 11, 10;
+  --theme-surface: #1A1815;
+  --theme-surface-rgb: 26, 24, 21;
+  --theme-text: #F4EFE6;
+  --theme-text-rgb: 244, 239, 230;
+  --theme-accent: #E2B963;
+  --theme-accent-rgb: 226, 185, 99;
 }
 html {
   /* Crossfade whenever data-theme changes. Kept slow enough to still be
