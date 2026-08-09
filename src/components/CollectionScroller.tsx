@@ -26,7 +26,6 @@ interface Collection {
   sub: string;
   menRoute: string;
   womenRoute: string;
-  bgColor: string;
   image: string;
   menImage: string;
   womenImage: string;
@@ -42,7 +41,6 @@ const collections: Collection[] = [
     sub: 'Refined tailoring and elevated essentials — crafted for those who wear intention.',
     menRoute: '/men',
     womenRoute: '/women',
-    bgColor: '#0e0e0e',
     image: clothingDefault,
     menImage: menClothing,
     womenImage: womenClothing,
@@ -55,7 +53,6 @@ const collections: Collection[] = [
     sub: 'Handcrafted with precision and care. Each piece tells a story of dedication and artistry.',
     menRoute: '/jewellery',
     womenRoute: '/jewellery',
-    bgColor: '#0c0c10',
     image: jewelleryCover,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
@@ -68,7 +65,6 @@ const collections: Collection[] = [
     sub: 'Each piece is crafted to be a statement of identity. Details that define the silhouette.',
     menRoute: '/accessories',
     womenRoute: '/accessories',
-    bgColor: '#0a0a0d',
     image: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
     menImage: 'https://i.ibb.co/k6VLyf0x/CARNAGE-FRONT.png',
     womenImage: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
@@ -94,7 +90,6 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
   return (
     <div
       className={`cs-card ${isActive ? 'cs-card--active' : ''} cs-card--dist-${Math.min(dist, 3)}`}
-      style={{ '--bg': col.bgColor } as React.CSSProperties}
       onClick={() => { if (!isActive) onClickInactive(); }}
     >
       <span className="cs-card__number">{col.number}</span>

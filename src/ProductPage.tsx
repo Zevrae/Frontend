@@ -504,12 +504,18 @@ export default function ProductPage() {
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 className="space-y-5"
               >
-                {/* Category label + TryOn row */}
+                {/* Category label + TryOn row (Try It On is clothing-only — jewellery/accessories aren't worn the same way) */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0' }}>
                   <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]" style={{ margin: 0 }}>
                     {product.label || "Men's Collection"}
                   </p>
-                  <TryOn onClick={() => setTryOnOpen(true)} />
+                  {(() => {
+                    const cat = (product.category || '').toLowerCase();
+                    const isNonApparel = cat === 'jewellery' || cat === 'accessories' ||
+                      ['rings','pendants','ears','bracelets','keychains','soft toys'].includes(cat);
+                    if (isNonApparel) return null;
+                    return <TryOn onClick={() => setTryOnOpen(true)} />;
+                  })()}
                 </div>
 
                 <h1

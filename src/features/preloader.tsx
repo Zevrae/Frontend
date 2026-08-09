@@ -216,7 +216,7 @@ export function Preloader() {
     >
       <div
         className="absolute inset-0"
-        style={{ backgroundColor: "#0d0d0d" }}
+        style={{ backgroundColor: "var(--theme-bg)" }}
       >
         {/* ── Central stage ── */}
         <div className="absolute inset-0 flex items-center justify-center">
@@ -253,7 +253,7 @@ export function Preloader() {
                       fontSize: "clamp(3.5rem, 11vw, 9rem)",
                       fontWeight: 800,
                       letterSpacing: "-0.02em",
-                      color: "#ffffff",
+                      color: "var(--theme-text)",
                       lineHeight: 1,
                       textTransform: "uppercase",
                       willChange: "transform",
@@ -280,7 +280,7 @@ export function Preloader() {
               className="tabular-nums text-[12px] tracking-[0.25em]"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                color: "rgba(255,255,255,0.5)",
+                color: "rgba(var(--theme-text-rgb),0.5)",
               }}
             >
               000

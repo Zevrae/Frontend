@@ -110,7 +110,7 @@
   width: 920px;
   height: 560px;
   border-radius: 2px;
-  background: var(--bg, #111);
+  background: var(--theme-surface);
   display: flex;
   flex-direction: row;
   overflow: hidden;
@@ -183,7 +183,7 @@
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
-  background: #0d0d0d;
+  background: var(--theme-bg);
 }
 
 .cs-card__img-wrap--contain {
@@ -314,14 +314,14 @@
 }
 
 .cs-card--active .cs-card__cta--women {
-  color: rgba(234, 210, 200, 0.7);
-  border-color: rgba(234, 210, 200, 0.2);
+  color: rgba(var(--theme-text-rgb), 0.7);
+  border-color: rgba(var(--theme-text-rgb), 0.25);
 }
 
 .cs-card--active .cs-card__cta--women:hover {
-  color: rgba(234, 210, 200, 1);
-  border-color: rgba(234, 210, 200, 0.5);
-  background: rgba(234, 210, 200, 0.04);
+  color: rgba(var(--theme-text-rgb), 1);
+  border-color: rgba(var(--theme-text-rgb), 0.6);
+  background: rgba(var(--theme-text-rgb), 0.06);
 }
 
 .cs-card--active .cs-card__cta:hover svg {

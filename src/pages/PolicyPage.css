@@ -36,7 +36,7 @@
   font-weight: 500;
   margin-top: 2rem;
   margin-bottom: 1rem;
-  color: #D4AE68;
+  color: var(--theme-accent);
 }
 
 .policy-content h4 {
