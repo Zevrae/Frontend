@@ -204,7 +204,7 @@ export default function CheckoutPage() {
             contact: shippingData.phone
           },
           theme: {
-            color: "#C5A059"
+            color: "var(--theme-accent)"
           }
         };
 
@@ -251,31 +251,31 @@ export default function CheckoutPage() {
       options: ["UPI", "Cards", "Netbanking", "Wallets"],
       recommended: true,
       tag: "Fast & Secure",
-      icon: <Smartphone size={20} className="text-[#EAE6E1]" />
+      icon: <Smartphone size={20} className="text-[var(--theme-text)]" />
     },
     {
       id: "COD",
       name: "Cash on Delivery",
       tag: "Pay at Doorstep",
-      icon: <Truck size={20} className="text-[#EAE6E1]" />
+      icon: <Truck size={20} className="text-[var(--theme-text)]" />
     }
   ];
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#12100C] flex items-center justify-center">
-        <div className="text-[#C5A059] animate-pulse">Checking authentication...</div>
+      <div className="min-h-screen bg-[var(--theme-bg)] flex items-center justify-center">
+        <div className="text-[var(--theme-accent)] animate-pulse">Checking authentication...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans selection:bg-[#C5A059]/30 pt-[100px] pb-24 relative z-10">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-[100px] pb-24 relative z-10">
       {/* Header */}
       <div className="max-w-[1200px] mx-auto px-6 mb-12 flex items-center justify-between">
         <button 
           onClick={() => step > 2 ? setStep((prev) => (prev - 1) as 2 | 3 | 4) : navigate('/')}
-          className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[#EAE6E1]/50 hover:text-[#C5A059] transition-colors"
+          className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors"
         >
           <ChevronLeft size={16} className="mr-2" />
           {step === 4 ? "Back to Home" : "Back"}
@@ -286,22 +286,22 @@ export default function CheckoutPage() {
       {step !== 4 && (
         <div className="max-w-[800px] mx-auto mb-16 px-6 relative">
           <div className="flex justify-between items-center relative z-10">
-            <div className={`flex flex-col items-center gap-2 ${step >= 2 ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}>
-              <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-[#C5A059]' : 'bg-[#EAE6E1]/30'}`} />
+            <div className={`flex flex-col items-center gap-2 ${step >= 2 ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.3)]'}`}>
+              <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-[var(--theme-accent)]' : 'bg-[rgba(var(--theme-text-rgb),0.3)]'}`} />
               <span className="text-[10px] uppercase font-plex-mono tracking-[0.2em]">Shipping</span>
             </div>
-            <div className={`flex flex-col items-center gap-2 ${step >= 3 ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}>
-              <div className={`w-3 h-3 rounded-full ${step >= 3 ? 'bg-[#C5A059]' : 'bg-[#EAE6E1]/30'}`} />
+            <div className={`flex flex-col items-center gap-2 ${step >= 3 ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.3)]'}`}>
+              <div className={`w-3 h-3 rounded-full ${step >= 3 ? 'bg-[var(--theme-accent)]' : 'bg-[rgba(var(--theme-text-rgb),0.3)]'}`} />
               <span className="text-[10px] uppercase font-plex-mono tracking-[0.2em]">Payment</span>
             </div>
-            <div className={`flex flex-col items-center gap-2 ${step >= 4 ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}>
-              <div className={`w-3 h-3 rounded-full ${step >= 4 ? 'bg-[#C5A059]' : 'bg-[#EAE6E1]/30'}`} />
+            <div className={`flex flex-col items-center gap-2 ${step >= 4 ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.3)]'}`}>
+              <div className={`w-3 h-3 rounded-full ${step >= 4 ? 'bg-[var(--theme-accent)]' : 'bg-[rgba(var(--theme-text-rgb),0.3)]'}`} />
               <span className="text-[10px] uppercase font-plex-mono tracking-[0.2em]">Confirm</span>
             </div>
           </div>
-          <div className="absolute top-1.5 left-[10%] right-[10%] h-[1px] bg-[#EAE6E1]/10 -z-0">
+          <div className="absolute top-1.5 left-[10%] right-[10%] h-[1px] bg-[rgba(var(--theme-text-rgb),0.1)] -z-0">
             <motion.div 
-              className="h-full bg-[#C5A059]"
+              className="h-full bg-[var(--theme-accent)]"
               initial={{ width: '0%' }}
               animate={{ width: step === 2 ? '0%' : step === 3 ? '50%' : '100%' }}
               transition={{ duration: 0.5 }}
@@ -324,8 +324,8 @@ export default function CheckoutPage() {
                 transition={{ duration: 0.4 }}
               >
                 <div className="mb-10">
-                  <h2 className="text-2xl font-archivo font-bold tracking-[0.1em] text-[#C5A059] mb-2 uppercase">Shipping Details</h2>
-                  <p className="text-[12px] text-[#EAE6E1]/50 uppercase tracking-[0.1em] font-plex-mono">Enter your delivery address</p>
+                  <h2 className="text-2xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-accent)] mb-2 uppercase">Shipping Details</h2>
+                  <p className="text-[12px] text-[rgba(var(--theme-text-rgb),0.5)] uppercase tracking-[0.1em] font-plex-mono">Enter your delivery address</p>
                 </div>
 
                 <form className="space-y-6" onSubmit={(e) => { 
@@ -340,28 +340,28 @@ export default function CheckoutPage() {
                 }}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">First Name</label>
+                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">First Name</label>
                       <input 
                         type="text" 
                         name="firstName" 
                         value={shippingData.firstName} 
                         onChange={handleChange}
                         onBlur={() => handleBlur('firstName')}
-                        className={`w-full bg-[#111] border ${touched.firstName && errors.firstName ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[#111] border ${touched.firstName && errors.firstName ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.firstName && errors.firstName && (
                         <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">Last Name</label>
+                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">Last Name</label>
                       <input 
                         type="text" 
                         name="lastName" 
                         value={shippingData.lastName} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('lastName')}
-                        className={`w-full bg-[#111] border ${touched.lastName && errors.lastName ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[#111] border ${touched.lastName && errors.lastName ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.lastName && errors.lastName && (
                         <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
@@ -370,28 +370,28 @@ export default function CheckoutPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">Email Address</label>
+                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">Email Address</label>
                       <input 
                         type="email" 
                         name="email" 
                         value={shippingData.email} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('email')}
-                        className={`w-full bg-[#111] border ${touched.email && errors.email ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[#111] border ${touched.email && errors.email ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.email && errors.email && (
                         <p className="text-red-500 text-xs mt-1">{errors.email}</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">Phone Number</label>
+                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">Phone Number</label>
                       <input 
                         type="tel" 
                         name="phone" 
                         value={shippingData.phone} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('phone')}
-                        className={`w-full bg-[#111] border ${touched.phone && errors.phone ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[#111] border ${touched.phone && errors.phone ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.phone && errors.phone && (
                         <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
@@ -399,14 +399,14 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">Address</label>
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">Address</label>
                     <input 
                       type="text" 
                       name="address" 
                       value={shippingData.address} 
                       onChange={handleChange} 
                       onBlur={() => handleBlur('address')}
-                      className={`w-full bg-[#111] border ${touched.address && errors.address ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                      className={`w-full bg-[#111] border ${touched.address && errors.address ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                     />
                     {touched.address && errors.address && (
                       <p className="text-red-500 text-xs mt-1">{errors.address}</p>
@@ -414,28 +414,28 @@ export default function CheckoutPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">City</label>
+                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">City</label>
                       <input 
                         type="text" 
                         name="city" 
                         value={shippingData.city} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('city')}
-                        className={`w-full bg-[#111] border ${touched.city && errors.city ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[#111] border ${touched.city && errors.city ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.city && errors.city && (
                         <p className="text-red-500 text-xs mt-1">{errors.city}</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/70 mb-2">Postal Code</label>
+                      <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">Postal Code</label>
                       <input 
                         type="text" 
                         name="postalCode" 
                         value={shippingData.postalCode} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('postalCode')}
-                        className={`w-full bg-[#111] border ${touched.postalCode && errors.postalCode ? 'border-red-500' : 'border-[#EAE6E1]/10'} text-[#EAE6E1] px-4 py-3 text-sm focus:border-[#C5A059] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[#111] border ${touched.postalCode && errors.postalCode ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.postalCode && errors.postalCode && (
                         <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>
@@ -448,8 +448,8 @@ export default function CheckoutPage() {
                     disabled={!isFormValid}
                     className={`w-full py-4 mt-8 flex justify-center items-center gap-2 rounded-sm group transition-colors ${
                       isFormValid 
-                        ? 'bg-[#C5A059] hover:bg-[#b08d4b] text-black cursor-pointer' 
-                        : 'bg-[#111] text-[#EAE6E1]/30 border border-[#EAE6E1]/10 cursor-not-allowed'
+                        ? 'bg-[var(--theme-accent)] hover:brightness-90 text-black cursor-pointer' 
+                        : 'bg-[#111] text-[rgba(var(--theme-text-rgb),0.3)] border border-[rgba(var(--theme-text-rgb),0.1)] cursor-not-allowed'
                     }`}
                   >
                     <span className="text-[12px] uppercase font-bold tracking-[0.2em]">Continue to Payment</span>
@@ -468,8 +468,8 @@ export default function CheckoutPage() {
                 transition={{ duration: 0.4 }}
               >
                 <div className="mb-10">
-                  <h2 className="text-3xl font-archivo font-bold tracking-[0.1em] text-[#C5A059] mb-2 uppercase">Secure Checkout</h2>
-                  <p className="text-[12px] text-[#EAE6E1]/50 uppercase tracking-[0.1em] font-plex-mono">Choose Your Payment Method</p>
+                  <h2 className="text-3xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-accent)] mb-2 uppercase">Secure Checkout</h2>
+                  <p className="text-[12px] text-[rgba(var(--theme-text-rgb),0.5)] uppercase tracking-[0.1em] font-plex-mono">Choose Your Payment Method</p>
                 </div>
 
                 <form onSubmit={handlePaymentSubmit}>
@@ -477,25 +477,25 @@ export default function CheckoutPage() {
                     {paymentMethods.map(method => (
                       <div 
                         key={method.id} 
-                        className={`border rounded-sm transition-all duration-300 overflow-hidden cursor-pointer ${selectedMethod === method.id ? 'border-[#C5A059] bg-[#C5A059]/5' : 'border-[#EAE6E1]/20 hover:border-[#EAE6E1]/50 bg-[#111]'}`}
+                        className={`border rounded-sm transition-all duration-300 overflow-hidden cursor-pointer ${selectedMethod === method.id ? 'border-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]' : 'border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[rgba(var(--theme-text-rgb),0.5)] bg-[#111]'}`}
                         onClick={() => setSelectedMethod(method.id)}
                       >
                         <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                           <div className="flex items-center gap-3 sm:gap-4">
-                            <div className={`w-5 h-5 flex-shrink-0 rounded-full border flex items-center justify-center ${selectedMethod === method.id ? 'border-[#C5A059]' : 'border-[#EAE6E1]/40'}`}>
-                              {selectedMethod === method.id && <div className="w-2.5 h-2.5 bg-[#C5A059] rounded-full" />}
+                            <div className={`w-5 h-5 flex-shrink-0 rounded-full border flex items-center justify-center ${selectedMethod === method.id ? 'border-[var(--theme-accent)]' : 'border-[rgba(var(--theme-text-rgb),0.4)]'}`}>
+                              {selectedMethod === method.id && <div className="w-2.5 h-2.5 bg-[var(--theme-accent)] rounded-full" />}
                             </div>
                             <div className="flex items-center gap-3">
                               {method.icon}
-                              <span className="text-[12px] sm:text-[14px] uppercase tracking-[0.1em] font-plex-mono text-[#EAE6E1]">{method.name}</span>
+                              <span className="text-[12px] sm:text-[14px] uppercase tracking-[0.1em] font-plex-mono text-[var(--theme-text)]">{method.name}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-3 pl-8 sm:pl-0">
                             {method.recommended && (
-                              <span className="text-[9px] uppercase tracking-wider font-bold bg-[#C5A059]/20 text-[#C5A059] px-2 py-1 rounded-sm border border-[#C5A059]/30">Recommended</span>
+                              <span className="text-[9px] uppercase tracking-wider font-bold bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] px-2 py-1 rounded-sm border border-[rgba(var(--theme-accent-rgb),0.3)]">Recommended</span>
                             )}
                             {method.tag && !method.recommended && (
-                              <span className="text-[9px] uppercase tracking-wider font-mono text-[#EAE6E1]/50">{method.tag}</span>
+                              <span className="text-[9px] uppercase tracking-wider font-mono text-[rgba(var(--theme-text-rgb),0.5)]">{method.tag}</span>
                             )}
                           </div>
                         </div>
@@ -508,17 +508,17 @@ export default function CheckoutPage() {
                               exit={{ height: 0, opacity: 0 }}
                               className="px-5 pb-5 pt-0 overflow-hidden"
                             >
-                              <div className="pt-4 border-t border-[#EAE6E1]/10">
+                              <div className="pt-4 border-t border-[rgba(var(--theme-text-rgb),0.1)]">
                                 {method.id === 'RAZORPAY' && (
                                   <div className="space-y-4">
-                                    <p className="text-[12px] font-mono text-[#EAE6E1]/70">
+                                    <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
                                       Pay securely via Cards, UPI, Netbanking, or Wallets using Razorpay.
                                     </p>
                                   </div>
                                 )}
 
                                 {method.id === 'COD' && (
-                                  <p className="text-[12px] font-mono text-[#EAE6E1]/70">
+                                  <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
                                     Pay {formatVal(grandTotal)} with cash or UPI at the time of delivery.
                                   </p>
                                 )}
@@ -535,8 +535,8 @@ export default function CheckoutPage() {
                     disabled={!selectedMethod || isProcessing}
                     className={`w-full py-4 mt-4 flex justify-center items-center gap-2 rounded-sm group transition-all duration-300 ${
                       selectedMethod && !isProcessing
-                        ? 'bg-[#C5A059] hover:bg-[#b08d4b] text-[#12100C] shadow-[0_4px_20px_-5px_rgba(197,160,89,0.4)]' 
-                        : 'bg-[#111] text-[#EAE6E1]/30 cursor-not-allowed border border-[#EAE6E1]/10'
+                        ? 'bg-[var(--theme-accent)] hover:brightness-90 text-[var(--theme-bg)] shadow-[0_4px_20px_-5px_rgba(var(--theme-accent-rgb),0.4)]' 
+                        : 'bg-[#111] text-[rgba(var(--theme-text-rgb),0.3)] cursor-not-allowed border border-[rgba(var(--theme-text-rgb),0.1)]'
                     }`}
                   >
                     <Lock size={16} className={selectedMethod ? '' : 'opacity-50'} />
@@ -546,12 +546,12 @@ export default function CheckoutPage() {
                   </button>
                 </form>
 
-                <div className="mt-12 flex items-center justify-center gap-8 py-6 border-t border-[#EAE6E1]/10">
-                  <div className="flex items-center gap-2 text-[#EAE6E1]/40">
+                <div className="mt-12 flex items-center justify-center gap-8 py-6 border-t border-[rgba(var(--theme-text-rgb),0.1)]">
+                  <div className="flex items-center gap-2 text-[rgba(var(--theme-text-rgb),0.4)]">
                     <ShieldCheck size={18} />
                     <span className="text-[9px] uppercase tracking-[0.1em]">100% Secure Payments</span>
                   </div>
-                  <div className="flex items-center gap-2 text-[#EAE6E1]/40">
+                  <div className="flex items-center gap-2 text-[rgba(var(--theme-text-rgb),0.4)]">
                     <Lock size={18} />
                     <span className="text-[9px] uppercase tracking-[0.1em]">Encrypted Checkout</span>
                   </div>
@@ -566,19 +566,19 @@ export default function CheckoutPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center text-center py-20"
               >
-                <div className="w-24 h-24 rounded-full border border-[#C5A059] flex items-center justify-center mb-8 relative">
-                  <div className="absolute inset-0 bg-[#C5A059]/10 rounded-full animate-pulse" />
-                  <CheckCircle2 size={40} className="text-[#C5A059]" />
+                <div className="w-24 h-24 rounded-full border border-[var(--theme-accent)] flex items-center justify-center mb-8 relative">
+                  <div className="absolute inset-0 bg-[rgba(var(--theme-accent-rgb),0.1)] rounded-full animate-pulse" />
+                  <CheckCircle2 size={40} className="text-[var(--theme-accent)]" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-archivo font-bold tracking-[0.1em] text-[#EAE6E1] mb-4 uppercase">
+                <h2 className="text-3xl md:text-4xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] mb-4 uppercase">
                   Your Order Has Been Placed Successfully
                 </h2>
-                <p className="text-[14px] text-[#C5A059] uppercase tracking-[0.2em] font-plex-mono mb-12">
+                <p className="text-[14px] text-[var(--theme-accent)] uppercase tracking-[0.2em] font-plex-mono mb-12">
                   Thank you for shopping with ZEVRAE
                 </p>
                 <button 
                   onClick={() => navigate('/')}
-                  className="bg-[#111] border border-[#C5A059]/30 hover:border-[#C5A059] text-[#EAE6E1] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
+                  className="bg-[#111] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
                 >
                   Continue Browsing
                 </button>
@@ -590,22 +590,22 @@ export default function CheckoutPage() {
         {/* Right Column: Order Summary */}
         {step !== 4 && (
           <div className="lg:col-span-5">
-            <div className="bg-[#111] border border-[#C5A059]/20 p-8 rounded-sm sticky top-32">
-              <h3 className="text-[13px] uppercase tracking-[0.3em] font-plex-mono text-[#C5A059] mb-8">Order Summary</h3>
+            <div className="bg-[#111] border border-[rgba(var(--theme-accent-rgb),0.2)] p-8 rounded-sm sticky top-32">
+              <h3 className="text-[13px] uppercase tracking-[0.3em] font-plex-mono text-[var(--theme-accent)] mb-8">Order Summary</h3>
               
               <div className="space-y-4 mb-8 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {items.map(item => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-4 group">
-                    <div className="w-16 h-20 bg-[#12100C] rounded-sm overflow-hidden border border-[#EAE6E1]/5 relative flex-shrink-0">
+                    <div className="w-16 h-20 bg-[var(--theme-bg)] rounded-sm overflow-hidden border border-[rgba(var(--theme-text-rgb),0.05)] relative flex-shrink-0">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
-                      <div className="absolute top-0 right-0 bg-[#C5A059] text-black text-[9px] w-4 h-4 flex items-center justify-center font-bold">
+                      <div className="absolute top-0 right-0 bg-[var(--theme-accent)] text-black text-[9px] w-4 h-4 flex items-center justify-center font-bold">
                         {item.quantity}
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col justify-center">
-                      <h4 className="text-[12px] uppercase font-plex-mono tracking-[0.1em] text-[#EAE6E1] mb-1 line-clamp-1">{item.name}</h4>
-                      <div className="text-[10px] uppercase font-mono text-[#EAE6E1]/50 mb-1">Size: {item.size}</div>
-                      <div className="text-[12px] font-mono text-[#EAE6E1]">{formatVal(item.price * item.quantity)}</div>
+                      <h4 className="text-[12px] uppercase font-plex-mono tracking-[0.1em] text-[var(--theme-text)] mb-1 line-clamp-1">{item.name}</h4>
+                      <div className="text-[10px] uppercase font-mono text-[rgba(var(--theme-text-rgb),0.5)] mb-1">Size: {item.size}</div>
+                      <div className="text-[12px] font-mono text-[var(--theme-text)]">{formatVal(item.price * item.quantity)}</div>
                     </div>
                   </div>
                 ))}
@@ -614,12 +614,12 @@ export default function CheckoutPage() {
               {/* Coupon Code */}
               <div className="mb-6">
                 {appliedDiscount ? (
-                  <div className="flex items-center justify-between bg-[#C5A059]/10 border border-[#C5A059]/30 rounded-sm px-4 py-3">
-                    <div className="flex items-center gap-2 text-[11px] font-plex-mono text-[#C5A059]">
+                  <div className="flex items-center justify-between bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.3)] rounded-sm px-4 py-3">
+                    <div className="flex items-center gap-2 text-[11px] font-plex-mono text-[var(--theme-accent)]">
                       <Tag size={13} />
                       <span className="tracking-wider">{appliedDiscount.code} applied</span>
                     </div>
-                    <button onClick={handleRemoveCoupon} className="text-[#EAE6E1]/40 hover:text-[#EAE6E1] transition-colors">
+                    <button onClick={handleRemoveCoupon} className="text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-text)] transition-colors">
                       <XIcon size={14} />
                     </button>
                   </div>
@@ -632,12 +632,12 @@ export default function CheckoutPage() {
                         onChange={e => { setCouponInput(e.target.value.toUpperCase()); if (couponStatus === 'error') setCouponStatus('idle'); }}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
                         placeholder="Coupon code"
-                        className="flex-1 bg-[#12100C] border border-[#EAE6E1]/15 px-4 py-2.5 text-[11px] font-plex-mono tracking-wider text-[#EAE6E1] placeholder:text-[#EAE6E1]/30 focus:border-[#C5A059]/50 focus:outline-none rounded-sm"
+                        className="flex-1 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.15)] px-4 py-2.5 text-[11px] font-plex-mono tracking-wider text-[var(--theme-text)] placeholder:text-[rgba(var(--theme-text-rgb),0.3)] focus:border-[var(--theme-accent)]/50 focus:outline-none rounded-sm"
                       />
                       <button
                         onClick={handleApplyCoupon}
                         disabled={!couponInput.trim() || couponStatus === 'checking'}
-                        className="px-5 py-2.5 border border-[#C5A059]/40 text-[#C5A059] text-[10px] uppercase tracking-[0.15em] font-plex-mono rounded-sm hover:bg-[#C5A059]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                        className="px-5 py-2.5 border border-[rgba(var(--theme-accent-rgb),0.4)] text-[var(--theme-accent)] text-[10px] uppercase tracking-[0.15em] font-plex-mono rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
                       >
                         {couponStatus === 'checking' ? 'Checking...' : 'Apply'}
                       </button>
@@ -649,22 +649,22 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              <div className="space-y-4 border-t border-[#EAE6E1]/10 pt-6">
-                <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[#EAE6E1]/70">
+              <div className="space-y-4 border-t border-[rgba(var(--theme-text-rgb),0.1)] pt-6">
+                <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
                   <span>Subtotal</span>
-                  <span className="font-mono text-[#EAE6E1]">{formatVal(subtotal)}</span>
+                  <span className="font-mono text-[var(--theme-text)]">{formatVal(subtotal)}</span>
                 </div>
-                <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[#EAE6E1]/70">
+                <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
                   <span>Shipping</span>
-                  <span className="font-mono text-[#EAE6E1]">{shipping === 0 ? 'Free' : formatVal(shipping)}</span>
+                  <span className="font-mono text-[var(--theme-text)]">{shipping === 0 ? 'Free' : formatVal(shipping)}</span>
                 </div>
                 {appliedDiscount && (
-                  <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[#C5A059]">
+                  <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[var(--theme-accent)]">
                     <span>Discount ({appliedDiscount.code})</span>
                     <span className="font-mono">−{formatVal(discountAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center text-[14px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] pt-4 border-t border-[#C5A059]/20 mt-4">
+                <div className="flex justify-between items-center text-[14px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] pt-4 border-t border-[rgba(var(--theme-accent-rgb),0.2)] mt-4">
                   <span>Total</span>
                   <span className="font-mono">{formatVal(grandTotal)}</span>
                 </div>

@@ -1,22 +1,28 @@
 /**
  * Category → theme mapping.
  *
- * Only the *top-level* category segment of the path matters — whatever
- * comes after it (subcategory, product id, etc.) is ignored. e.g.
+ * Only routes that actually *define* a category set the theme. Everything
+ * else — a product detail page, the cart, checkout, profile, policy pages,
+ * etc. — has no category of its own, so it must NOT reset the palette.
+ * `getThemeForPath` returns `null` for those routes, and `ThemeProvider`
+ * simply leaves whatever theme is already active in place. The palette
+ * only ever changes when the person actually lands on (or scrolls into,
+ * via the homepage slider) a different category.
+ *
+ * Matching is on the top-level path segment only, so anything nested under
+ * a category root still counts as that category, no matter what follows:
  *   /accessories/keychains  -> "accessories"
  *   /accessories/soft-toys  -> "accessories"
  *   /jewellery/men/rings    -> "jewellery"
  *   /men/tshirts            -> "clothing"
- *
- * Routes with no category in the URL (home, product page, bag, checkout,
- * profile, admin, policy pages, etc.) fall back to "clothing", which is
- * the site's original, unthemed look — nothing changes for them.
+ *   /product/64f2c1         -> null (persist current theme)
+ *   /bag, /checkout, /profile, /admin/*, policy pages, etc. -> null
  */
 export type ThemeName = 'clothing' | 'jewellery' | 'accessories';
 
 export const DEFAULT_THEME: ThemeName = 'clothing';
 
-export function getThemeForPath(pathname: string): ThemeName {
+export function getThemeForPath(pathname: string): ThemeName | null {
   const segment = pathname.split('/').filter(Boolean)[0]?.toLowerCase();
 
   switch (segment) {
@@ -24,7 +30,15 @@ export function getThemeForPath(pathname: string): ThemeName {
       return 'jewellery';
     case 'accessories':
       return 'accessories';
+    case undefined: // "/"
+    case 'men':
+    case 'women':
+      return 'clothing';
     default:
-      return DEFAULT_THEME;
+      // product/:id, bag, checkout, profile, admin*, ai-wardrobe, policy
+      // pages, verify-email, etc. — none of these belong to a category,
+      // so don't touch the currently active theme.
+      return null;
   }
 }
+

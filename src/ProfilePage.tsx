@@ -33,15 +33,15 @@ function OrderTrackingCard({ order }: { order: Order }) {
   const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
 
   return (
-    <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
-      <button onClick={() => setExpanded(e => !e)} className="w-full p-5 flex items-center justify-between text-left hover:bg-[#12100C]/40 transition-colors">
+    <div className="bg-[#111] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden">
+      <button onClick={() => setExpanded(e => !e)} className="w-full p-5 flex items-center justify-between text-left hover:bg-[var(--theme-bg)]/40 transition-colors">
         <div>
-          <p className="text-[11px] font-mono text-[#EAE6E1]">Order #{order.id.slice(-8).toUpperCase()}</p>
-          <p className="text-[10px] font-sans text-[#EAE6E1]/40 mt-1">{formatDate(order.created_at)} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
+          <p className="text-[11px] font-mono text-[var(--theme-text)]">Order #{order.id.slice(-8).toUpperCase()}</p>
+          <p className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-1">{formatDate(order.created_at)} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="text-right">
-          <p className="text-[12px] font-mono text-[#C5A059]">{formatVal(order.total)}</p>
-          <p className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mt-1">{expanded ? 'Hide details' : 'View details'}</p>
+          <p className="text-[12px] font-mono text-[var(--theme-accent)]">{formatVal(order.total)}</p>
+          <p className="text-[9px] uppercase tracking-wider font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-1">{expanded ? 'Hide details' : 'View details'}</p>
         </div>
       </button>
 
@@ -56,13 +56,13 @@ function OrderTrackingCard({ order }: { order: Order }) {
             {TRACK_STEPS.map((step, i) => (
               <React.Fragment key={step.key}>
                 <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${i <= currentIndex ? 'bg-[#C5A059] border-[#C5A059] text-black' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/25'}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${i <= currentIndex ? 'bg-[var(--theme-accent)] border-[var(--theme-accent)] text-black' : 'border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.25)]'}`}>
                     {step.icon}
                   </div>
-                  <span className={`text-[8px] uppercase tracking-wider font-sans ${i <= currentIndex ? 'text-[#C5A059]' : 'text-[#EAE6E1]/25'}`}>{step.label}</span>
+                  <span className={`text-[8px] uppercase tracking-wider font-sans ${i <= currentIndex ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.25)]'}`}>{step.label}</span>
                 </div>
                 {i < TRACK_STEPS.length - 1 && (
-                  <div className={`flex-1 h-[1px] mx-1 mb-4 ${i < currentIndex ? 'bg-[#C5A059]' : 'bg-[#EAE6E1]/10'}`} />
+                  <div className={`flex-1 h-[1px] mx-1 mb-4 ${i < currentIndex ? 'bg-[var(--theme-accent)]' : 'bg-[rgba(var(--theme-text-rgb),0.1)]'}`} />
                 )}
               </React.Fragment>
             ))}
@@ -77,14 +77,14 @@ function OrderTrackingCard({ order }: { order: Order }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="overflow-hidden border-t border-[#EAE6E1]/10"
+            className="overflow-hidden border-t border-[rgba(var(--theme-text-rgb),0.1)]"
           >
             <div className="p-5 space-y-4">
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-2">Items</p>
+                <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-2">Items</p>
                 <div className="space-y-2">
                   {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[11px] font-sans text-[#EAE6E1]/70">
+                    <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.7)]">
                       <span>{item.name} {item.size ? `(${item.size})` : ''} × {item.quantity}</span>
                       <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
                     </div>
@@ -92,12 +92,12 @@ function OrderTrackingCard({ order }: { order: Order }) {
                 </div>
               </div>
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-2">Shipping Address</p>
-                <p className="text-[11px] font-sans text-[#EAE6E1]/70">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-2">Shipping Address</p>
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.7)]">
                   {[order.shipping_address.line1, order.shipping_address.line2, order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code, order.shipping_address.country].filter(Boolean).join(', ')}
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-sans text-[#EAE6E1]/40 pt-2 border-t border-[#EAE6E1]/5">
+              <div className="flex items-center gap-2 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] pt-2 border-t border-[rgba(var(--theme-text-rgb),0.05)]">
                 <span>Payment: {order.payment_method === 'cod' ? 'Cash on Delivery' : 'Paid Online'}</span>
                 <span>·</span>
                 <span className="capitalize">{order.payment_status}</span>
@@ -202,41 +202,41 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#12100C] flex items-center justify-center">
-        <div className="text-[#C5A059] animate-pulse text-[11px] uppercase tracking-[0.2em] font-plex-mono">Loading...</div>
+      <div className="min-h-screen bg-[var(--theme-bg)] flex items-center justify-center">
+        <div className="text-[var(--theme-accent)] animate-pulse text-[11px] uppercase tracking-[0.2em] font-plex-mono">Loading...</div>
       </div>
     );
   }
 
-  const inputCls = "w-full bg-[#12100C] border border-[#EAE6E1]/10 px-4 py-2.5 text-[12px] font-sans text-[#EAE6E1] placeholder:text-[#EAE6E1]/25 focus:border-[#C5A059]/50 focus:outline-none rounded-sm";
+  const inputCls = "w-full bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] px-4 py-2.5 text-[12px] font-sans text-[var(--theme-text)] placeholder:text-[rgba(var(--theme-text-rgb),0.25)] focus:border-[var(--theme-accent)]/50 focus:outline-none rounded-sm";
 
   return (
-    <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans pt-[100px] pb-24 px-6">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans pt-[100px] pb-24 px-6">
       <div className="max-w-[900px] mx-auto">
-        <button onClick={() => navigate('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[#EAE6E1]/50 hover:text-[#C5A059] transition-colors mb-10">
+        <button onClick={() => navigate('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors mb-10">
           <ChevronLeft size={16} className="mr-2" /> Back to Home
         </button>
 
-        <h1 className="text-[13px] uppercase tracking-[0.3em] font-plex-mono text-[#C5A059] mb-2">My Account</h1>
-        <p className="text-[12px] font-sans text-[#EAE6E1]/40 mb-8">{user.name} · {user.email}</p>
+        <h1 className="text-[13px] uppercase tracking-[0.3em] font-plex-mono text-[var(--theme-accent)] mb-2">My Account</h1>
+        <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-8">{user.name} · {user.email}</p>
 
         {/* Tabs */}
-        <div className="flex gap-6 border-b border-[#EAE6E1]/10 mb-8">
+        <div className="flex gap-6 border-b border-[rgba(var(--theme-text-rgb),0.1)] mb-8">
           <button
             onClick={() => setTab('profile')}
-            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'profile' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'profile' ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] border-transparent hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
           >
             <UserIcon size={13} /> Profile
           </button>
           <button
             onClick={() => setTab('orders')}
-            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'orders' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'orders' ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] border-transparent hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
           >
             <Package size={13} /> Orders
           </button>
           <button
             onClick={() => setTab('tryons')}
-            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'tryons' ? 'text-[#C5A059] border-[#C5A059]' : 'text-[#EAE6E1]/40 border-transparent hover:text-[#EAE6E1]/70'}`}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'tryons' ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] border-transparent hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
           >
             <Sparkles size={13} /> Try-Ons
           </button>
@@ -244,56 +244,56 @@ export default function ProfilePage() {
 
         {tab === 'profile' ? (
           <div className="space-y-8">
-            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-6">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] mb-5">Personal Details</p>
+            <div className="bg-[#111] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-6">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] mb-5">Personal Details</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mb-1.5 block">Name</label>
+                  <label className="text-[9px] uppercase tracking-wider font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-1.5 block">Name</label>
                   <input value={name} onChange={e => setName(e.target.value)} className={inputCls} />
                 </div>
                 <div>
-                  <label className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mb-1.5 block">Phone</label>
+                  <label className="text-[9px] uppercase tracking-wider font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-1.5 block">Phone</label>
                   <input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls} placeholder="10-digit mobile number" />
                 </div>
               </div>
               <div className="mb-2">
-                <label className="text-[9px] uppercase tracking-wider font-sans text-[#EAE6E1]/40 mb-1.5 block">Email</label>
+                <label className="text-[9px] uppercase tracking-wider font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-1.5 block">Email</label>
                 <input value={user.email} disabled className={`${inputCls} opacity-50 cursor-not-allowed`} />
               </div>
-              {saveMsg && <p className="text-[10px] font-sans text-[#C5A059] mt-3">{saveMsg}</p>}
-              <button onClick={handleSaveProfile} disabled={saving} className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors disabled:opacity-50">
+              {saveMsg && <p className="text-[10px] font-sans text-[var(--theme-accent)] mt-3">{saveMsg}</p>}
+              <button onClick={handleSaveProfile} disabled={saving} className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-accent)] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors disabled:opacity-50">
                 <Save size={12} /> {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
 
-            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-6">
+            <div className="bg-[#111] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-6">
               <div className="flex items-center justify-between mb-5">
-                <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] flex items-center gap-2"><MapPin size={13} /> Saved Addresses</p>
-                <button onClick={openAddAddress} className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-sans text-[#C5A059] hover:text-[#D4AE68] transition-colors">
+                <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] flex items-center gap-2"><MapPin size={13} /> Saved Addresses</p>
+                <button onClick={openAddAddress} className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-sans text-[var(--theme-accent)] hover:text-[#D4AE68] transition-colors">
                   <Plus size={12} /> Add Address
                 </button>
               </div>
               {addresses.length === 0 ? (
-                <p className="text-[11px] font-sans text-[#EAE6E1]/30">No saved addresses yet.</p>
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No saved addresses yet.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {addresses.map((addr, idx) => (
-                    <div key={idx} className="border border-[#EAE6E1]/10 rounded-sm p-4 relative">
+                    <div key={idx} className="border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-4 relative">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] uppercase tracking-wider font-sans text-[#C5A059]">{addr.label || 'Address'} {addr.is_default && '· Default'}</span>
+                        <span className="text-[10px] uppercase tracking-wider font-sans text-[var(--theme-accent)]">{addr.label || 'Address'} {addr.is_default && '· Default'}</span>
                         <div className="flex items-center gap-1.5">
-                          <button onClick={() => openEditAddress(idx)} className="text-[#EAE6E1]/30 hover:text-[#C5A059]"><Edit2 size={11} /></button>
-                          <button onClick={() => removeAddress(idx)} className="text-[#EAE6E1]/30 hover:text-red-400"><Trash2 size={11} /></button>
+                          <button onClick={() => openEditAddress(idx)} className="text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)]"><Edit2 size={11} /></button>
+                          <button onClick={() => removeAddress(idx)} className="text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400"><Trash2 size={11} /></button>
                         </div>
                       </div>
-                      <p className="text-[11px] font-sans text-[#EAE6E1]/60 leading-relaxed">
+                      <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
                         {[addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country].filter(Boolean).join(', ')}
                       </p>
                     </div>
                   ))}
                 </div>
               )}
-              <p className="text-[9px] font-sans text-[#EAE6E1]/25 mt-4">Address changes are saved together with "Save Changes" above.</p>
+              <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.25)] mt-4">Address changes are saved together with "Save Changes" above.</p>
             </div>
           </div>
         ) : tab === 'orders' ? (
@@ -302,11 +302,11 @@ export default function ProfilePage() {
               <p className="text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm px-4 py-3">{ordersError}</p>
             )}
             {ordersLoading ? (
-              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] animate-pulse text-center py-16">Loading orders...</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] animate-pulse text-center py-16">Loading orders...</p>
             ) : orders.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-[12px] font-sans text-[#EAE6E1]/40 mb-4">You haven't placed any orders yet.</p>
-                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] hover:text-[#D4AE68] transition-colors">Start Shopping</button>
+                <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-4">You haven't placed any orders yet.</p>
+                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:text-[#D4AE68] transition-colors">Start Shopping</button>
               </div>
             ) : (
               orders.map(order => <OrderTrackingCard key={order.id} order={order} />)
@@ -318,24 +318,24 @@ export default function ProfilePage() {
               <p className="text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm px-4 py-3 mb-4">{tryonsError}</p>
             )}
             {tryonsLoading ? (
-              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] animate-pulse text-center py-16">Loading try-ons...</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] animate-pulse text-center py-16">Loading try-ons...</p>
             ) : tryons.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-[12px] font-sans text-[#EAE6E1]/40 mb-4">You haven't generated any try-ons yet.</p>
-                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059] hover:text-[#D4AE68] transition-colors">Browse Products</button>
+                <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-4">You haven't generated any try-ons yet.</p>
+                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:text-[#D4AE68] transition-colors">Browse Products</button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {tryons.filter(t => t.status === 'completed' && t.imageUrl).map(t => {
                   const productInfo = typeof t.product === 'object' ? t.product : null;
                   return (
-                    <div key={t.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden group">
-                      <div className="aspect-[3/4] bg-[#1A1814] overflow-hidden">
+                    <div key={t.id} className="bg-[#111] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden group">
+                      <div className="aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden">
                         <img src={t.imageUrl} alt={productInfo?.name || 'Try-on result'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
                       <div className="p-3">
-                        <p className="text-[10px] font-sans text-[#EAE6E1]/70 truncate">{productInfo?.name || 'Product'}</p>
-                        <p className="text-[9px] font-sans text-[#EAE6E1]/30 mt-0.5">{formatDate(t.created_at)}</p>
+                        <p className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.7)] truncate">{productInfo?.name || 'Product'}</p>
+                        <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] mt-0.5">{formatDate(t.created_at)}</p>
                       </div>
                     </div>
                   );
@@ -361,11 +361,11 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
               onClick={e => e.stopPropagation()}
-              className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-6 w-full max-w-md"
+              className="bg-[#111] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-6 w-full max-w-md"
             >
               <div className="flex items-center justify-between mb-5">
-                <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#C5A059]">{editingAddrIdx !== null ? 'Edit Address' : 'Add Address'}</p>
-                <button onClick={() => setAddrModalOpen(false)} className="text-[#EAE6E1]/40 hover:text-[#EAE6E1]"><XIcon size={16} /></button>
+                <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)]">{editingAddrIdx !== null ? 'Edit Address' : 'Add Address'}</p>
+                <button onClick={() => setAddrModalOpen(false)} className="text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-text)]"><XIcon size={16} /></button>
               </div>
               <div className="space-y-3">
                 <input value={addrForm.label || ''} onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))} placeholder="Label (e.g. Home, Work)" className={inputCls} />
@@ -379,16 +379,16 @@ export default function ProfilePage() {
                   <input value={addrForm.postal_code} onChange={e => setAddrForm(f => ({ ...f, postal_code: e.target.value }))} placeholder="Postal code *" className={inputCls} />
                   <input value={addrForm.country} onChange={e => setAddrForm(f => ({ ...f, country: e.target.value }))} placeholder="Country" className={inputCls} />
                 </div>
-                <label className="flex items-center gap-2 text-[10px] font-sans text-[#EAE6E1]/50 pt-1">
+                <label className="flex items-center gap-2 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)] pt-1">
                   <input type="checkbox" checked={!!addrForm.is_default} onChange={e => setAddrForm(f => ({ ...f, is_default: e.target.checked }))} />
                   Set as default address
                 </label>
               </div>
               <div className="flex gap-3 mt-6">
-                <button onClick={saveAddress} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors">
+                <button onClick={saveAddress} className="flex-1 py-2.5 bg-[var(--theme-accent)] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors">
                   {editingAddrIdx !== null ? 'Save Address' : 'Add Address'}
                 </button>
-                <button onClick={() => setAddrModalOpen(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
+                <button onClick={() => setAddrModalOpen(false)} className="px-4 py-2.5 border border-[rgba(var(--theme-text-rgb),0.1)] text-[10px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
                   Cancel
                 </button>
               </div>

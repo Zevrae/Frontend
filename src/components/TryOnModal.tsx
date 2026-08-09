@@ -221,29 +221,29 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 14 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative w-full max-w-[500px] bg-[#12100C] border border-[#C5A059]/35 rounded-[18px] shadow-[0_0_60px_rgba(197,160,89,0.12),0_24px_60px_rgba(0,0,0,0.55)] max-h-[92vh] overflow-y-auto"
+            className="relative w-full max-w-[500px] bg-[var(--theme-bg)] border border-[var(--theme-accent)]/35 rounded-[18px] shadow-[0_0_60px_rgba(var(--theme-accent-rgb),0.12),0_24px_60px_rgba(0,0,0,0.55)] max-h-[92vh] overflow-y-auto"
           >
             {/* Top accent line */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C5A059]/55 to-transparent rounded-t-[18px]" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(var(--theme-accent-rgb),0.55)] to-transparent rounded-t-[18px]" />
 
             <div className="p-8 md:p-10">
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute top-6 right-6 text-[#EAE6E1]/40 hover:text-[#C5A059] transition-colors focus:outline-none z-10"
+                className="absolute top-6 right-6 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors focus:outline-none z-10"
               >
                 <X size={22} strokeWidth={1} />
               </button>
 
               {/* Header */}
               <div className="text-center mb-8">
-                <p className="text-[10px] font-plex-mono font-light tracking-[0.45em] text-[#C5A059] mb-3 uppercase">
+                <p className="text-[10px] font-plex-mono font-light tracking-[0.45em] text-[var(--theme-accent)] mb-3 uppercase">
                   Virtual Try-On
                 </p>
-                <h2 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.08em] uppercase text-[#EAE6E1]">
+                <h2 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.08em] uppercase text-[var(--theme-text)]">
                   See It On You
                 </h2>
-                <p className="text-[11px] font-plex-mono tracking-[0.05em] text-[#EAE6E1]/40 mt-3">
+                <p className="text-[11px] font-plex-mono tracking-[0.05em] text-[rgba(var(--theme-text-rgb),0.4)] mt-3">
                   {stage === 'result'
                     ? 'Your AI-generated try-on is ready.'
                     : stage === 'error'
@@ -268,10 +268,10 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     {clothImages.length > 1 && (
                       <div className="mb-6">
                         <div className="flex items-center justify-between mb-2.5">
-                          <span className="text-[10px] font-plex-mono text-[#EAE6E1]/45 tracking-[0.2em] uppercase">
+                          <span className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.45)] tracking-[0.2em] uppercase">
                             Choose garment photos
                           </span>
-                          <span className="text-[10px] font-plex-mono text-[#C5A059]/70 tracking-[0.1em]">
+                          <span className="text-[10px] font-plex-mono text-[var(--theme-accent)]/70 tracking-[0.1em]">
                             {selectedCloths.length}/{MAX_CLOTH_IMAGES}
                           </span>
                         </div>
@@ -285,14 +285,14 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                 onClick={() => toggleCloth(url)}
                                 className={`relative aspect-square rounded-lg overflow-hidden border transition-all duration-200 ${
                                   isSelected
-                                    ? 'border-[#C5A059] ring-1 ring-[#C5A059]/60'
-                                    : 'border-[#EAE6E1]/12 hover:border-[#C5A059]/40'
+                                    ? 'border-[var(--theme-accent)] ring-1 ring-[rgba(var(--theme-accent-rgb),0.6)]'
+                                    : 'border-[rgba(var(--theme-text-rgb),0.12)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]'
                                 }`}
                               >
                                 <img src={url} alt="Garment option" className="w-full h-full object-cover" />
                                 {isSelected && (
-                                  <div className="absolute top-1 right-1 bg-[#C5A059] rounded-full p-0.5">
-                                    <Check size={10} strokeWidth={3} className="text-[#12100C]" />
+                                  <div className="absolute top-1 right-1 bg-[var(--theme-accent)] rounded-full p-0.5">
+                                    <Check size={10} strokeWidth={3} className="text-[var(--theme-bg)]" />
                                   </div>
                                 )}
                               </button>
@@ -306,20 +306,20 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       {!selectedImage ? (
                         <div
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-full h-64 border-2 border-dashed border-[#C5A059]/25 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[#C5A059]/55 hover:bg-[#C5A059]/[0.03] transition-all duration-300 bg-[#1A1814]"
+                          className="w-full h-64 border-2 border-dashed border-[var(--theme-accent)]/25 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[var(--theme-accent)]/55 hover:bg-[var(--theme-accent)]/[0.03] transition-all duration-300 bg-[var(--theme-surface)]"
                         >
-                          <div className="w-14 h-14 rounded-full bg-[#C5A059]/10 flex items-center justify-center mb-4">
-                            <UploadCloud size={26} className="text-[#C5A059]/65" strokeWidth={1.2} />
+                          <div className="w-14 h-14 rounded-full bg-[rgba(var(--theme-accent-rgb),0.1)] flex items-center justify-center mb-4">
+                            <UploadCloud size={26} className="text-[var(--theme-accent)]/65" strokeWidth={1.2} />
                           </div>
-                          <span className="text-[12px] font-plex-mono text-[#EAE6E1]/60 tracking-[0.15em] uppercase">
+                          <span className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] tracking-[0.15em] uppercase">
                             Click to upload your photo
                           </span>
-                          <span className="text-[10px] font-plex-mono text-[#EAE6E1]/30 mt-2 tracking-wide">
+                          <span className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] mt-2 tracking-wide">
                             JPG, PNG up to 5MB
                           </span>
                         </div>
                       ) : (
-                        <div className="w-full h-64 rounded-xl overflow-hidden relative border border-[#C5A059]/30 bg-[#1A1814] flex items-center justify-center">
+                        <div className="w-full h-64 rounded-xl overflow-hidden relative border border-[rgba(var(--theme-accent-rgb),0.3)] bg-[var(--theme-surface)] flex items-center justify-center">
                           <img
                             src={selectedImage}
                             alt="Preview"
@@ -327,13 +327,13 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                           />
                           <button
                             onClick={() => { setSelectedImage(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                            className="absolute top-3 right-3 bg-[#12100C]/80 hover:bg-[#12100C] p-1.5 rounded-full text-[#EAE6E1]/60 hover:text-[#EAE6E1] transition-all border border-[#EAE6E1]/10"
+                            className="absolute top-3 right-3 bg-[var(--theme-bg)]/80 hover:bg-[var(--theme-bg)] p-1.5 rounded-full text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-text)] transition-all border border-[rgba(var(--theme-text-rgb),0.1)]"
                           >
                             <X size={14} strokeWidth={1.5} />
                           </button>
                           <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#12100C]/70 backdrop-blur-sm text-[#C5A059] text-[10px] font-plex-mono tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[#C5A059]/30 hover:bg-[#C5A059]/10 transition-all"
+                            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--theme-bg)]/70 backdrop-blur-sm text-[var(--theme-accent)] text-[10px] font-plex-mono tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-all"
                           >
                             Change Photo
                           </button>
@@ -352,7 +352,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       type="button"
                       disabled={!selectedImage || selectedCloths.length === 0}
                       onClick={handleGenerate}
-                      className="w-full py-4 bg-[#C5A059] text-[#12100C] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[#d4af37] transition-all duration-300 rounded-md disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 uppercase"
+                      className="w-full py-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-md disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 uppercase"
                     >
                       <Sparkles size={14} strokeWidth={2} />
                       Generate Preview
@@ -371,7 +371,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     className="flex flex-col items-center"
                   >
                     {/* Preview + shimmer overlay */}
-                    <div className="relative w-full h-72 rounded-xl overflow-hidden bg-[#1A1814] border border-[#C5A059]/20 mb-7">
+                    <div className="relative w-full h-72 rounded-xl overflow-hidden bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] mb-7">
                       {selectedImage && (
                         <img
                           src={selectedImage}
@@ -384,18 +384,18 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                         <motion.div
                           animate={{ x: ['-100%', '220%'] }}
                           transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.5 }}
-                          className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-[#C5A059]/10 to-transparent -skew-x-12"
+                          className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-[rgba(var(--theme-accent-rgb),0.1)] to-transparent -skew-x-12"
                         />
                       </div>
                       {/* Progress ring */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                         <div className="relative w-16 h-16">
                           <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
-                            <circle cx="32" cy="32" r="28" fill="none" stroke="#C5A059" strokeOpacity="0.12" strokeWidth="2.5" />
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="var(--theme-accent)" strokeOpacity="0.12" strokeWidth="2.5" />
                             <motion.circle
                               cx="32" cy="32" r="28"
                               fill="none"
-                              stroke="#C5A059"
+                              stroke="var(--theme-accent)"
                               strokeWidth="2.5"
                               strokeLinecap="round"
                               strokeDasharray={`${2 * Math.PI * 28}`}
@@ -403,25 +403,25 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                               transition={{ ease: 'easeOut', duration: 0.25 }}
                             />
                           </svg>
-                          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-plex-mono text-[#C5A059] font-bold">
+                          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-plex-mono text-[var(--theme-accent)] font-bold">
                             {clampedProgress}%
                           </span>
                         </div>
-                        <p className="text-[11px] font-plex-mono text-[#EAE6E1]/45 tracking-[0.2em] uppercase">
+                        <p className="text-[11px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.45)] tracking-[0.2em] uppercase">
                           Crafting your look…
                         </p>
                       </div>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="w-full h-[1.5px] bg-[#EAE6E1]/8 rounded-full overflow-hidden mb-3">
+                    <div className="w-full h-[1.5px] bg-[rgba(var(--theme-text-rgb),0.08)] rounded-full overflow-hidden mb-3">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-[#C5A059]/50 to-[#C5A059]"
+                        className="h-full bg-gradient-to-r from-[rgba(var(--theme-accent-rgb),0.5)] to-[var(--theme-accent)]"
                         style={{ width: `${clampedProgress}%` }}
                         transition={{ ease: 'easeOut', duration: 0.25 }}
                       />
                     </div>
-                    <p className="text-[10px] font-plex-mono text-[#EAE6E1]/28 tracking-[0.15em] uppercase text-center">
+                    <p className="text-[10px] font-plex-mono text-[var(--theme-text)]/28 tracking-[0.15em] uppercase text-center">
                       AI is styling you — this takes a few seconds
                     </p>
                   </motion.div>
@@ -440,13 +440,13 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mb-5">
                       <AlertCircle size={26} className="text-red-400" strokeWidth={1.2} />
                     </div>
-                    <p className="text-[12px] font-plex-mono text-[#EAE6E1]/70 text-center leading-relaxed mb-7 max-w-[340px]">
+                    <p className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] text-center leading-relaxed mb-7 max-w-[340px]">
                       {errorMessage}
                     </p>
                     <button
                       type="button"
                       onClick={() => setStage('upload')}
-                      className="w-full py-4 bg-[#C5A059] text-[#12100C] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[#d4af37] transition-all duration-300 rounded-md flex items-center justify-center gap-2.5 uppercase"
+                      className="w-full py-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-md flex items-center justify-center gap-2.5 uppercase"
                     >
                       <RefreshCw size={14} strokeWidth={2} />
                       Try Again
@@ -483,25 +483,25 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       initial={{ opacity: 0, scale: 0.97 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.5, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-                      className="relative w-full rounded-xl overflow-hidden border border-[#C5A059]/22 bg-[#1A1814] mb-2"
-                      style={{ boxShadow: '0 0 44px rgba(197,160,89,0.07), 0 16px 36px rgba(0,0,0,0.45)' }}
+                      className="relative w-full rounded-xl overflow-hidden border border-[var(--theme-accent)]/22 bg-[var(--theme-surface)] mb-2"
+                      style={{ boxShadow: '0 0 44px rgba(var(--theme-accent-rgb),0.07), 0 16px 36px rgba(0,0,0,0.45)' }}
                     >
                       {/* Corner accents */}
                       <div className="absolute top-0 left-0 w-12 h-12 pointer-events-none z-10">
-                        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-[#C5A059]/60 to-transparent" />
-                        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-[#C5A059]/60 to-transparent" />
+                        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-[rgba(var(--theme-accent-rgb),0.6)] to-transparent" />
+                        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-[rgba(var(--theme-accent-rgb),0.6)] to-transparent" />
                       </div>
                       <div className="absolute top-0 right-0 w-12 h-12 pointer-events-none z-10">
-                        <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-l from-[#C5A059]/60 to-transparent" />
-                        <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-[#C5A059]/60 to-transparent" />
+                        <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-l from-[rgba(var(--theme-accent-rgb),0.6)] to-transparent" />
+                        <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-[rgba(var(--theme-accent-rgb),0.6)] to-transparent" />
                       </div>
                       <div className="absolute bottom-0 left-0 w-12 h-12 pointer-events-none z-10">
-                        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-[#C5A059]/40 to-transparent" />
-                        <div className="absolute bottom-0 left-0 h-full w-px bg-gradient-to-t from-[#C5A059]/40 to-transparent" />
+                        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-[rgba(var(--theme-accent-rgb),0.4)] to-transparent" />
+                        <div className="absolute bottom-0 left-0 h-full w-px bg-gradient-to-t from-[rgba(var(--theme-accent-rgb),0.4)] to-transparent" />
                       </div>
                       <div className="absolute bottom-0 right-0 w-12 h-12 pointer-events-none z-10">
-                        <div className="absolute bottom-0 right-0 w-full h-px bg-gradient-to-l from-[#C5A059]/40 to-transparent" />
-                        <div className="absolute bottom-0 right-0 h-full w-px bg-gradient-to-t from-[#C5A059]/40 to-transparent" />
+                        <div className="absolute bottom-0 right-0 w-full h-px bg-gradient-to-l from-[rgba(var(--theme-accent-rgb),0.4)] to-transparent" />
+                        <div className="absolute bottom-0 right-0 h-full w-px bg-gradient-to-t from-[rgba(var(--theme-accent-rgb),0.4)] to-transparent" />
                       </div>
 
                       <img
@@ -511,12 +511,12 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       />
 
                       {/* Bottom gradient overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#12100C]/50 to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[rgba(var(--theme-bg-rgb),0.5)] to-transparent pointer-events-none" />
 
                       {/* Download button */}
                       <button
                         onClick={handleDownload}
-                        className="absolute bottom-4 right-4 z-10 bg-[#12100C]/75 backdrop-blur-sm border border-[#C5A059]/30 text-[#C5A059] p-2.5 rounded-full hover:bg-[#C5A059]/15 hover:border-[#C5A059]/60 transition-all duration-200"
+                        className="absolute bottom-4 right-4 z-10 bg-[var(--theme-bg)]/75 backdrop-blur-sm border border-[rgba(var(--theme-accent-rgb),0.3)] text-[var(--theme-accent)] p-2.5 rounded-full hover:bg-[var(--theme-accent)]/15 hover:border-[var(--theme-accent)]/60 transition-all duration-200"
                         title="Download"
                       >
                         <Download size={14} strokeWidth={1.5} />
@@ -524,18 +524,18 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     </motion.div>
 
                     {/* Disclaimer */}
-                    <p className="text-center text-[10px] font-plex-mono text-[#EAE6E1]/22 tracking-[0.12em] uppercase mb-6 mt-2">
+                    <p className="text-center text-[10px] font-plex-mono text-[var(--theme-text)]/22 tracking-[0.12em] uppercase mb-6 mt-2">
                       AI-generated preview — actual fit may vary
                     </p>
 
                     {/* Divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-[#EAE6E1]/8 to-transparent mb-5" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-[rgba(var(--theme-text-rgb),0.08)] to-transparent mb-5" />
 
                     {/* Regenerate button */}
                     <button
                       type="button"
                       onClick={handleRegenerate}
-                      className="w-full py-3.5 border border-[#C5A059]/32 text-[#C5A059] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[#C5A059]/7 hover:border-[#C5A059]/55 transition-all duration-300 rounded-md flex items-center justify-center gap-2.5 uppercase group"
+                      className="w-full py-3.5 border border-[var(--theme-accent)]/32 text-[var(--theme-accent)] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[var(--theme-accent)]/7 hover:border-[var(--theme-accent)]/55 transition-all duration-300 rounded-md flex items-center justify-center gap-2.5 uppercase group"
                     >
                       <RefreshCw
                         size={13}

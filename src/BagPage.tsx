@@ -272,7 +272,7 @@ export default function BagPage() {
       {/* ── Back Navigation ── */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center text-[10px] uppercase font-mono tracking-[0.2em] text-[#EAE6E1]/50 hover:text-[#C5A059] transition-colors duration-300 mb-8"
+        className="flex items-center text-[10px] uppercase font-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors duration-300 mb-8"
       >
         <ChevronLeft size={16} className="mr-2" /> Back
       </button>

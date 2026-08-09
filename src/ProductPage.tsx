@@ -64,18 +64,18 @@ function AccordionSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-t border-[#EAE6E1]/10">
+    <div className="border-t border-[rgba(var(--theme-text-rgb),0.1)]">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between py-5 text-left group"
       >
-        <span className="text-[11px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/70 group-hover:text-[#C8A96A] transition-colors duration-300">
+        <span className="text-[11px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] group-hover:text-[var(--theme-accent)] transition-colors duration-300">
           {title}
         </span>
         <motion.span
           animate={{ rotate: open ? 45 : 0 }}
           transition={{ duration: 0.25 }}
-          className="text-[#EAE6E1]/40 group-hover:text-[#C8A96A] transition-colors duration-300"
+          className="text-[rgba(var(--theme-text-rgb),0.4)] group-hover:text-[var(--theme-accent)] transition-colors duration-300"
         >
           <Plus size={14} strokeWidth={1.5} />
         </motion.span>
@@ -362,9 +362,9 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex items-center justify-center px-6">
         <div className="max-w-lg text-center space-y-6">
-          <p className="text-[10px] uppercase tracking-[0.4em] text-[#C8A96A]">Loading product...</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[var(--theme-accent)]">Loading product...</p>
         </div>
       </div>
     );
@@ -384,7 +384,7 @@ export default function ProductPage() {
     : !!selectedSize && isSizeOutOfStock(selectedSize);
 
   return (
-    <div className="min-h-screen bg-[#12100C] text-[#EAE6E1] font-sans selection:bg-[#C8A96A]/30 selection:text-[#EAE6E1]">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
       {/* Film grain overlay */}
       <div
         className="fixed inset-0 opacity-[0.018] pointer-events-none z-[1] mix-blend-difference"
@@ -404,7 +404,7 @@ export default function ProductPage() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] font-plex-mono text-[#EAE6E1]/40 hover:text-[#C8A96A] transition-colors duration-300 mb-12 group"
+            className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors duration-300 mb-12 group"
           >
             <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform duration-300" />
             {product.label || 'Back to Collection'}
@@ -425,7 +425,7 @@ export default function ProductPage() {
               >
                 {/* Discount badge */}
                 {product.discount && (
-                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[#C8A96A] text-[#12100C] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
+                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
                     {product.discount}% OFF
                   </div>
                 )}
@@ -457,7 +457,7 @@ export default function ProductPage() {
 
                 {/* Image counter */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-5 right-5 text-[9px] font-plex-mono text-[#EAE6E1]/50 tracking-[0.2em]">
+                  <div className="absolute bottom-5 right-5 text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-[0.2em]">
                     {String(activeImg + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
                   </div>
                 )}
@@ -478,8 +478,8 @@ export default function ProductPage() {
                       onClick={() => switchImage(i)}
                       className={`relative flex-shrink-0 w-[72px] h-[90px] bg-[#0d0d0d] overflow-hidden transition-all duration-300 ${
                         activeImg === i
-                          ? 'ring-1 ring-[#C8A96A] opacity-100'
-                          : 'opacity-50 hover:opacity-80 ring-1 ring-transparent hover:ring-[#EAE6E1]/20'
+                          ? 'ring-1 ring-[var(--theme-accent)] opacity-100'
+                          : 'opacity-50 hover:opacity-80 ring-1 ring-transparent hover:ring-[rgba(var(--theme-text-rgb),0.2)]'
                       }`}
                     >
                       <img
@@ -506,14 +506,14 @@ export default function ProductPage() {
               >
                 {/* Category label + TryOn row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0' }}>
-                  <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[#C8A96A]" style={{ margin: 0 }}>
+                  <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]" style={{ margin: 0 }}>
                     {product.label || "Men's Collection"}
                   </p>
                   <TryOn onClick={() => setTryOnOpen(true)} />
                 </div>
 
                 <h1
-                  className="font-archivo font-extrabold uppercase text-[#EAE6E1] leading-[0.9] tracking-[-0.01em]"
+                  className="font-archivo font-extrabold uppercase text-[var(--theme-text)] leading-[0.9] tracking-[-0.01em]"
                   style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontStretch: '125%' }}
                 >
                   {product.name}
@@ -521,11 +521,11 @@ export default function ProductPage() {
 
                 {/* Price row */}
                 <div className="flex items-baseline gap-4 pt-1">
-                  <span className="text-2xl font-plex-mono text-[#EAE6E1]">
+                  <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
                     {formatPrice(product.price)}
                   </span>
                   {product.originalPrice && (
-                    <span className="text-sm font-plex-mono text-[#EAE6E1]/30 line-through">
+                    <span className="text-sm font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] line-through">
                       {formatPrice(product.originalPrice)}
                     </span>
                   )}
@@ -533,7 +533,7 @@ export default function ProductPage() {
               </motion.div>
 
               {/* Divider */}
-              <div className="h-px bg-[#EAE6E1]/8" />
+              <div className="h-px bg-[rgba(var(--theme-text-rgb),0.08)]" />
 
               {/* Size selector — hidden for jewellery & accessories */}
               {(() => {
@@ -549,11 +549,11 @@ export default function ProductPage() {
                     className="space-y-4"
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/50">
+                      <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)]">
                         Size
                       </span>
                       <button 
-                        className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[#EAE6E1]/30 hover:text-[#C8A96A] transition-colors duration-300 underline underline-offset-4" 
+                        className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4" 
                         onClick={() => navigate('/size-guide')}
                       >
                         Size Guide
@@ -577,15 +577,15 @@ export default function ProductPage() {
                           }}
                           className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
                             selectedSize === size
-                              ? 'border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/8'
+                              ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.08)]'
                               : !isOffered
-                                ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/20 cursor-not-allowed opacity-50'
+                                ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed opacity-50'
                                 : outOfStock
-                                  ? 'border-[#EAE6E1]/12 text-[#EAE6E1]/30 hover:border-[#EAE6E1]/30'
-                                  : 'border-[#EAE6E1]/12 text-[#EAE6E1]/50 hover:border-[#EAE6E1]/35 hover:text-[#EAE6E1]/80'
+                                  ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
+                                  : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
                           }`}
                         >
-                          <span className={outOfStock ? 'line-through decoration-[#EAE6E1]/30' : ''}>{size}</span>
+                          <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>{size}</span>
                         </button>
                         );
                       })}
@@ -608,7 +608,7 @@ export default function ProductPage() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
                           transition={{ duration: 0.2 }}
-                          className="text-[10px] tracking-[0.2em] font-plex-mono text-[#C8A96A]/70"
+                          className="text-[10px] tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-accent-rgb),0.7)]"
                         >
                           Please select a size to continue
                         </motion.p>
@@ -626,24 +626,24 @@ export default function ProductPage() {
                 className="space-y-4"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/50">
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)]">
                     Quantity
                   </span>
-                  <div className="flex items-center border border-[#EAE6E1]/12 h-10">
+                  <div className="flex items-center border border-[rgba(var(--theme-text-rgb),0.12)] h-10">
                     <button
                       id="qty-minus"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      className="w-10 h-full flex items-center justify-center text-[#EAE6E1]/50 hover:text-[#C8A96A] hover:bg-[#C8A96A]/5 transition-all duration-200"
+                      className="w-10 h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-200"
                     >
                       <Minus size={12} strokeWidth={1.5} />
                     </button>
-                    <span className="w-10 text-center font-plex-mono text-[13px] text-[#EAE6E1] select-none">
+                    <span className="w-10 text-center font-plex-mono text-[13px] text-[var(--theme-text)] select-none">
                       {quantity}
                     </span>
                     <button
                       id="qty-plus"
                       onClick={() => setQuantity((q) => q + 1)}
-                      className="w-10 h-full flex items-center justify-center text-[#EAE6E1]/50 hover:text-[#C8A96A] hover:bg-[#C8A96A]/5 transition-all duration-200"
+                      className="w-10 h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-200"
                     >
                       <Plus size={12} strokeWidth={1.5} />
                     </button>
@@ -651,11 +651,11 @@ export default function ProductPage() {
                 </div>
 
                 {/* Total line */}
-                <div className="flex items-center justify-between py-3 border-t border-b border-[#EAE6E1]/8">
-                  <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/40">
+                <div className="flex items-center justify-between py-3 border-t border-b border-[rgba(var(--theme-text-rgb),0.08)]">
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)]">
                     Total
                   </span>
-                  <span className="font-plex-mono text-lg text-[#EAE6E1]">
+                  <span className="font-plex-mono text-lg text-[var(--theme-text)]">
                     {formatPrice(product.price * quantity)}
                   </span>
                 </div>
@@ -669,15 +669,15 @@ export default function ProductPage() {
                 className="flex flex-col gap-3"
               >
                 {showNotifyMe ? (
-                  <div className="border border-[#EAE6E1]/12 p-5">
-                    <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[#EAE6E1]/60 mb-1">
+                  <div className="border border-[rgba(var(--theme-text-rgb),0.12)] p-5">
+                    <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] mb-1">
                       {isNoSizeProduct ? 'Currently Out of Stock' : `Size ${selectedSize} is Out of Stock`}
                     </p>
-                    <p className="text-[11px] font-sans text-[#EAE6E1]/40 mb-4">
+                    <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-4">
                       Enter your email and we'll let you know the moment it's back.
                     </p>
                     {notifyStatus === 'done' ? (
-                      <p className="text-[11px] font-plex-mono text-[#C8A96A] flex items-center gap-2">
+                      <p className="text-[11px] font-plex-mono text-[var(--theme-accent)] flex items-center gap-2">
                         You're on the list — we'll email you when it's back in stock.
                       </p>
                     ) : (
@@ -689,13 +689,13 @@ export default function ProductPage() {
                               value={notifyEmail}
                               onChange={e => setNotifyEmail(e.target.value)}
                               placeholder="you@example.com"
-                              className="flex-1 bg-transparent border border-[#EAE6E1]/15 px-4 py-3 text-[11px] font-plex-mono text-[#EAE6E1] placeholder:text-[#EAE6E1]/25 focus:border-[#C8A96A]/50 focus:outline-none"
+                              className="flex-1 bg-transparent border border-[rgba(var(--theme-text-rgb),0.15)] px-4 py-3 text-[11px] font-plex-mono text-[var(--theme-text)] placeholder:text-[rgba(var(--theme-text-rgb),0.25)] focus:border-[rgba(var(--theme-accent-rgb),0.5)] focus:outline-none"
                             />
                           )}
                           <button
                             onClick={handleNotifyMe}
                             disabled={notifyStatus === 'submitting'}
-                            className="px-6 py-3 bg-[#C8A96A] text-[#12100C] text-[10px] uppercase tracking-[0.2em] font-plex-mono font-bold hover:bg-[#EAE6E1] transition-colors disabled:opacity-50 whitespace-nowrap"
+                            className="px-6 py-3 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-plex-mono font-bold hover:bg-[var(--theme-text)] transition-colors disabled:opacity-50 whitespace-nowrap"
                           >
                             {notifyStatus === 'submitting' ? 'Submitting...' : 'Notify Me'}
                           </button>
@@ -715,8 +715,8 @@ export default function ProductPage() {
                       disabled={!selectedSize}
                       className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${
                         selectedSize
-                          ? 'bg-[#EAE6E1] text-[#12100C] hover:bg-[#C8A96A] cursor-pointer'
-                          : 'bg-[#EAE6E1]/8 text-[#EAE6E1]/25 cursor-not-allowed'
+                          ? 'bg-[var(--theme-text)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent)] cursor-pointer'
+                          : 'bg-[rgba(var(--theme-text-rgb),0.08)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
                       }`}
                     >
                       <AnimatePresence mode="wait">
@@ -754,8 +754,8 @@ export default function ProductPage() {
                       disabled={!selectedSize}
                       className={`w-full h-[54px] flex items-center justify-center text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
                         selectedSize
-                          ? 'border-[#C8A96A]/60 text-[#C8A96A] hover:bg-[#C8A96A] hover:text-[#12100C] cursor-pointer'
-                          : 'border-[#EAE6E1]/10 text-[#EAE6E1]/20 cursor-not-allowed'
+                          ? 'border-[rgba(var(--theme-accent-rgb),0.6)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] cursor-pointer'
+                          : 'border-[rgba(var(--theme-text-rgb),0.1)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed'
                       }`}
                     >
                       Buy It Now
@@ -776,12 +776,12 @@ export default function ProductPage() {
                   parsedDescriptionSections.map((section, idx) => (
                     <AccordionSection key={idx} title={section.title} defaultOpen={idx === 0}>
                       <div 
-                        className="text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed
+                        className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed
                           [&_ul]:space-y-2.5
                           [&_li]:flex [&_li]:items-start [&_li]:gap-3
-                          [&_li::before]:content-['—'] [&_li::before]:text-[#C8A96A] [&_li::before]:shrink-0 [&_li::before]:mt-1.5
+                          [&_li::before]:content-['—'] [&_li::before]:text-[var(--theme-accent)] [&_li::before]:shrink-0 [&_li::before]:mt-1.5
                           [&_p:not(:last-child)]:mb-3
-                          [&_strong]:text-[#EAE6E1]/35 [&_strong]:uppercase [&_strong]:tracking-[0.25em] [&_strong]:text-[10px] [&_strong]:w-28 [&_strong]:shrink-0 [&_strong]:block sm:[&_strong]:inline-block [&_strong]:font-normal"
+                          [&_strong]:text-[rgba(var(--theme-text-rgb),0.35)] [&_strong]:uppercase [&_strong]:tracking-[0.25em] [&_strong]:text-[10px] [&_strong]:w-28 [&_strong]:shrink-0 [&_strong]:block sm:[&_strong]:inline-block [&_strong]:font-normal"
                         dangerouslySetInnerHTML={{ __html: section.content }}
                       />
                     </AccordionSection>
@@ -793,10 +793,10 @@ export default function ProductPage() {
                       <div className="space-y-4">
                         {MATERIALS.map((m) => (
                           <div key={m.label} className="flex gap-6">
-                            <span className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[#EAE6E1]/35 w-28 shrink-0">
+                            <span className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] w-28 shrink-0">
                               {m.label}
                             </span>
-                            <span className="text-[12px] font-plex-mono text-[#EAE6E1]/65 leading-relaxed">
+                            <span className="text-[12px] font-plex-mono text-[var(--theme-text)]/65 leading-relaxed">
                               {m.value}
                             </span>
                           </div>
@@ -807,8 +807,8 @@ export default function ProductPage() {
                     <AccordionSection title="Fit & Sizing">
                       <ul className="space-y-2.5">
                         {FIT_NOTES.map((note) => (
-                          <li key={note} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
-                            <span className="text-[#C8A96A] mt-1.5 shrink-0">—</span>
+                          <li key={note} className="flex items-start gap-3 text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
+                            <span className="text-[var(--theme-accent)] mt-1.5 shrink-0">—</span>
                             {note}
                           </li>
                         ))}
@@ -818,8 +818,8 @@ export default function ProductPage() {
                     <AccordionSection title="Care Instructions">
                       <ul className="space-y-2.5">
                         {CARE.map((c) => (
-                          <li key={c} className="flex items-start gap-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
-                            <span className="text-[#C8A96A] mt-1.5 shrink-0">—</span>
+                          <li key={c} className="flex items-start gap-3 text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
+                            <span className="text-[var(--theme-accent)] mt-1.5 shrink-0">—</span>
                             {c}
                           </li>
                         ))}
@@ -827,7 +827,7 @@ export default function ProductPage() {
                     </AccordionSection>
 
                     <AccordionSection title="Delivery & Returns">
-                      <div className="space-y-3 text-[12px] font-plex-mono text-[#EAE6E1]/60 leading-relaxed">
+                      <div className="space-y-3 text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] leading-relaxed">
                         <p>Free shipping on orders above ₹999.</p>
                         <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
                         <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
@@ -843,15 +843,15 @@ export default function ProductPage() {
 
         {/* ── RELATED PRODUCTS ── */}
         {relatedProducts.length > 0 && (
-          <section className="mt-32 pt-20 border-t border-[#EAE6E1]/8">
+          <section className="mt-32 pt-20 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
               <div className="flex items-end justify-between mb-14">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[#C8A96A] mb-3">
+                  <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-3">
                     You May Also Like
                   </p>
                   <h2
-                    className="font-archivo font-extrabold uppercase text-[#EAE6E1] leading-tight"
+                    className="font-archivo font-extrabold uppercase text-[var(--theme-text)] leading-tight"
                     style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', fontStretch: '125%' }}
                   >
                     Related Pieces
@@ -859,7 +859,7 @@ export default function ProductPage() {
                 </div>
                 <button
                   onClick={() => navigate(-1)}
-                  className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[#EAE6E1]/40 hover:text-[#C8A96A] transition-colors duration-300 group"
+                  className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors duration-300 group"
                 >
                   View All
                   <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform duration-300" />

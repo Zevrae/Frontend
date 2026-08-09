@@ -6,8 +6,8 @@
 /* ── Page container ── */
 .bag-page {
   min-height: 100vh;
-  background: #000;
-  color: #F2ECE6;
+  background: var(--theme-bg);
+  color: var(--theme-text);
   padding: 0 clamp(1.5rem, 5vw, 5rem);
   padding-top: clamp(7rem, 12vh, 10rem);
   padding-bottom: clamp(4rem, 10vh, 8rem);
@@ -33,7 +33,7 @@
   font-size: clamp(4rem, 12.5vw, 16rem);
   line-height: 0.85;
   letter-spacing: -0.02em;
-  color: #F2ECE6;
+  color: var(--theme-text);
   text-transform: uppercase;
   text-align: center;
   margin: 0;
@@ -68,7 +68,7 @@
 .bag-heading-divider {
   width: 100%;
   height: 2px;
-  background: rgba(242, 236, 230, 0.55);
+  background: rgba(var(--theme-text-rgb), 0.55);
   margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
 }
 
@@ -85,7 +85,7 @@
      width and overrides font-size via inline style to actually fill the
      line, since the right size depends on the exact sentence length. */
   font-size: clamp(1.4rem, 8vw, 9rem);
-  color: #F2ECE6;
+  color: var(--theme-text);
   line-height: 1;
   margin: 0 0 0.3em 0;
   letter-spacing: -0.01em;
@@ -97,7 +97,7 @@
   font-weight: 800;
   font-stretch: 125%;
   font-size: clamp(1.2rem, 7vw, 8rem);
-  color: rgba(242, 236, 230, 0.35);
+  color: rgba(var(--theme-text-rgb), 0.35);
   line-height: 1;
   margin: 0 0 clamp(2rem, 5vw, 4rem) 0;
   letter-spacing: -0.01em;
@@ -113,12 +113,12 @@
   font-size: clamp(0.7rem, 1.2vw, 0.85rem);
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: rgba(242, 236, 230, 0.5);
+  color: rgba(var(--theme-text-rgb), 0.5);
   transition: color 0.5s ease;
 }
 
 .bag-empty-cta:hover {
-  color: #F2ECE6;
+  color: var(--theme-text);
 }
 
 /* ── Text reveal masks (item text, subtotal, checkout) ── */
@@ -179,7 +179,7 @@
   font-weight: 700;
   font-stretch: 125%;
   font-size: clamp(1.1rem, 2.5vw, 2rem);
-  color: #F2ECE6;
+  color: var(--theme-text);
   letter-spacing: -0.01em;
   line-height: 1.1;
   text-transform: uppercase;
@@ -190,7 +190,7 @@
   font-size: 0.68rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(242, 236, 230, 0.4);
+  color: rgba(var(--theme-text-rgb), 0.4);
 }
 
 .bag-item-price {
@@ -198,7 +198,7 @@
   font-weight: 700;
   font-stretch: 125%;
   font-size: clamp(1rem, 2vw, 1.6rem);
-  color: #F2ECE6;
+  color: var(--theme-text);
   letter-spacing: -0.01em;
   margin-top: 0.2rem;
 }
@@ -209,7 +209,7 @@
   aspect-ratio: 1 / 1;
   overflow: hidden;
   flex-shrink: 0;
-  background: #111;
+  background: var(--theme-surface);
 }
 
 .bag-item-image {
@@ -228,7 +228,7 @@
 .bag-item-image-placeholder {
   width: 100%;
   height: 100%;
-  background: #1a1a1a;
+  background: var(--theme-surface);
 }
 
 /* Controls — remove + quantity */
@@ -251,7 +251,7 @@
   font-size: clamp(0.65rem, 1vw, 0.8rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(242, 236, 230, 0.6);
+  color: rgba(var(--theme-text-rgb), 0.6);
   transition: color 0.4s ease, opacity 0.4s ease;
   opacity: 0.6;
   text-align: right;
@@ -259,7 +259,7 @@
 }
 
 .bag-item-remove:hover {
-  color: #F2ECE6;
+  color: var(--theme-text);
   opacity: 1;
 }
 
@@ -276,7 +276,7 @@
   cursor: pointer;
   font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(0.85rem, 1.5vw, 1.1rem);
-  color: rgba(242, 236, 230, 0.6);
+  color: rgba(var(--theme-text-rgb), 0.6);
   padding: 0;
   width: 20px;
   height: 20px;
@@ -288,13 +288,13 @@
 }
 
 .bag-qty-btn:hover {
-  color: #F2ECE6;
+  color: var(--theme-text);
 }
 
 .bag-qty-value {
   font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(0.85rem, 1.2vw, 1rem);
-  color: #F2ECE6;
+  color: var(--theme-text);
   min-width: 1.2em;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -307,7 +307,7 @@
   left: 0;
   width: 100%;
   height: 1px;
-  background: rgba(242, 236, 230, 0.12);
+  background: rgba(var(--theme-text-rgb), 0.12);
   /* span full grid width */
   grid-column: 1 / -1;
 }
@@ -333,7 +333,7 @@
   font-size: clamp(0.65rem, 1vw, 0.8rem);
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(242, 236, 230, 0.5);
+  color: rgba(var(--theme-text-rgb), 0.5);
 }
 
 .bag-subtotal-amount {
@@ -341,7 +341,7 @@
   font-weight: 800;
   font-stretch: 125%;
   font-size: clamp(1.5rem, 4vw, 3.5rem);
-  color: #F2ECE6;
+  color: var(--theme-text);
   letter-spacing: -0.02em;
   line-height: 1;
 }
@@ -350,7 +350,7 @@
   font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(0.6rem, 0.85vw, 0.72rem);
   letter-spacing: 0.04em;
-  color: rgba(242, 236, 230, 0.35);
+  color: rgba(var(--theme-text-rgb), 0.35);
   margin: 0.3rem 0 0 0;
   max-width: 340px;
   line-height: 1.5;
@@ -366,7 +366,7 @@
   font-weight: 800;
   font-stretch: 125%;
   font-size: clamp(2.8rem, 7vw, 7rem);
-  color: #F2ECE6;
+  color: var(--theme-text);
   letter-spacing: -0.02em;
   line-height: 1;
   text-transform: uppercase;
@@ -378,7 +378,7 @@
 }
 
 .bag-checkout-cta:hover {
-  color: rgba(242, 236, 230, 0.85);
+  color: rgba(var(--theme-text-rgb), 0.85);
 }
 
 .bag-checkout-arrow {

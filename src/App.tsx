@@ -538,7 +538,7 @@ return (
         <>
           <section
             ref={heroRef}
-            className="relative bg-[#12100C] overflow-hidden min-h-screen flex flex-col items-center justify-center"
+            className="relative bg-[var(--theme-bg)] overflow-hidden min-h-screen flex flex-col items-center justify-center"
           >
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
@@ -551,14 +551,14 @@ return (
             {/* Warm amber vignette to enhance yellow-black feel */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(197,160,89,0.08) 0%, rgba(10,10,10,0.75) 70%)' }}
+              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,0.75) 70%)' }}
             />
 
             {/* All hero text — sits above background layers */}
             <div className="relative z-10 flex flex-col items-center">
 
             {/* Season label */}
-            <p className="text-[10px] uppercase tracking-[0.4em] text-[#EAE6E1]/60 font-plex-mono mb-8">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-[rgba(var(--theme-text-rgb),0.6)] font-plex-mono mb-8">
               AUTUMN / WINTER 2026
             </p>
 
@@ -567,7 +567,7 @@ return (
 
               {/* Giant ZEVRAE — letters slide up via GSAP */}
               <h1
-                className="font-archivo font-extrabold uppercase text-[#EAE6E1] text-center"
+                className="font-archivo font-extrabold uppercase text-[var(--theme-text)] text-center"
                 style={{
                   fontSize: 'clamp(3rem, 14vw, 18rem)',
                   fontStretch: '125%',
@@ -594,7 +594,7 @@ return (
                 className="hero-divider-line"
                 style={{
                   height: '1.5px',
-                  background: '#EAE6E1',
+                  background: 'var(--theme-text)',
                   width: '100%',
                   marginTop: '0.6rem',
                 }}
@@ -602,7 +602,7 @@ return (
 
               {/* Tagline — centered inside text width */}
               <p
-                className="font-sans italic text-[#EAE6E1]/60 text-center"
+                className="font-sans italic text-[rgba(var(--theme-text-rgb),0.6)] text-center"
                 style={{ fontSize: '0.9rem', marginTop: '1.4rem', letterSpacing: '0.01em' }}
               >
                 Luxury is a Matter of Choice

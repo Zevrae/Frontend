@@ -17,7 +17,7 @@
   max-width: 700px;
   max-height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(197, 160, 89, 0.16) 0%, rgba(197, 160, 89, 0.04) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--theme-accent-rgb),0.16) 0%, rgba(var(--theme-accent-rgb),0.04) 45%, transparent 70%);
   pointer-events: none;
   will-change: transform, opacity;
 }
@@ -31,7 +31,7 @@
   gap: 6px;
   background: transparent;
   border: none;
-  color: rgba(234, 230, 225, 0.5);
+  color: rgba(var(--theme-text-rgb),0.5);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.15em;
@@ -42,7 +42,7 @@
 }
 
 .cs-back:hover {
-  color: #C5A059;
+  color: var(--theme-accent);
 }
 
 .cs-content {
@@ -57,7 +57,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #C5A059;
+  color: var(--theme-accent);
   font-size: 10px;
   letter-spacing: 0.4em;
   text-transform: uppercase;
@@ -69,13 +69,13 @@
   font-weight: 800;
   font-size: clamp(2.2rem, 7vw, 4.5rem);
   letter-spacing: 0.05em;
-  color: #EAE6E1;
+  color: var(--theme-text);
   margin: 0 0 20px;
   overflow: hidden;
 }
 
 .cs-sub {
-  color: rgba(234, 230, 225, 0.5);
+  color: rgba(var(--theme-text-rgb),0.5);
   font-size: 13px;
   line-height: 1.7;
   letter-spacing: 0.02em;
@@ -88,8 +88,8 @@
   position: relative;
   overflow: hidden;
   background: transparent;
-  border: 1px solid rgba(197, 160, 89, 0.5);
-  color: #C5A059;
+  border: 1px solid rgba(var(--theme-accent-rgb),0.5);
+  color: var(--theme-accent);
   padding: 16px 40px;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
@@ -102,8 +102,8 @@
 }
 
 .cs-button:hover {
-  border-color: #C5A059;
-  background: rgba(197, 160, 89, 0.06);
+  border-color: var(--theme-accent);
+  background: rgba(var(--theme-accent-rgb),0.06);
 }
 
 .cs-label {
@@ -117,7 +117,7 @@
   left: 0;
   width: 40%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--theme-accent-rgb),0.25), transparent);
   transform: translateX(-120%);
   pointer-events: none;
 }

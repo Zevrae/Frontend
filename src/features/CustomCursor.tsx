@@ -24,7 +24,10 @@ interface CursorVars {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const GOLD = '#C8A96A';
+// A CSS custom property, not a literal color — it resolves against
+// whatever category theme is active and updates automatically when the
+// theme swaps, no re-render or JS needed.
+const GOLD = 'var(--theme-accent)';
 const DOT_SIZE = 10;
 const BUTTON_SIZE = 22;
 const IMAGE_SIZE = 80;

@@ -29,12 +29,18 @@ export function useSetTheme(): (theme: ThemeName) => void {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const [theme, setThemeState] = useState<ThemeName>(() => getThemeForPath(location.pathname));
+  const [theme, setThemeState] = useState<ThemeName>(() => getThemeForPath(location.pathname) ?? 'clothing');
 
-  // Route change always wins — whatever a slider left the theme on gets
-  // overridden the moment the URL actually changes category.
+  // Route change only overrides the palette when the new route actually
+  // belongs to a category. Non-category routes (product detail, cart,
+  // checkout, profile, admin, policy pages...) return `null` and the
+  // currently active theme is left untouched — that's what makes it
+  // "persist" when you open a product instead of a category listing.
   useEffect(() => {
-    setThemeState(getThemeForPath(location.pathname));
+    const next = getThemeForPath(location.pathname);
+    if (next !== null) {
+      setThemeState(next);
+    }
   }, [location.pathname]);
 
   useEffect(() => {
