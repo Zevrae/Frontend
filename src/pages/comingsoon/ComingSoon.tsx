@@ -1,12 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { animate as animeAnimate } from 'animejs';
-import { ChevronLeft, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import './ComingSoon.css';
 
 export default function ComingSoon() {
-  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
@@ -84,10 +82,6 @@ export default function ComingSoon() {
   return (
     <div ref={containerRef} className="coming-soon-page">
       <div ref={glowRef} className="cs-glow" aria-hidden="true" />
-
-      <button onClick={() => navigate(-1)} className="cs-back">
-        <ChevronLeft size={16} /> Back
-      </button>
 
       <div className="cs-content">
         <p className="cs-eyebrow">
