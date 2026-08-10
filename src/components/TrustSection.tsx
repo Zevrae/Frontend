@@ -88,32 +88,6 @@ export function TrustSection() {
             </motion.div>
           ))}
         </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="font-plex-mono text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] tracking-[0.02em] leading-relaxed max-w-2xl"
-        >
-          By continuing with Google, you agree to Zevrae's{' '}
-          <a
-            href="/terms-of-service"
-            onClick={goTo('/terms-of-service')}
-            className="text-[var(--theme-accent)]/80 hover:text-[var(--theme-accent)] underline underline-offset-4 transition-colors duration-300"
-          >
-            Terms of Service
-          </a>{' '}
-          and{' '}
-          <a
-            href="/privacy-policy"
-            onClick={goTo('/privacy-policy')}
-            className="text-[var(--theme-accent)]/80 hover:text-[var(--theme-accent)] underline underline-offset-4 transition-colors duration-300"
-          >
-            Privacy Policy
-          </a>
-          , which explain exactly what we collect and how it's used.
-        </motion.p>
       </div>
     </section>
   );
