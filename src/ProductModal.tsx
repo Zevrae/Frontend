@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Minus, Plus, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from './CartContext';
@@ -95,6 +95,25 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     setActiveImage(availableImages[prevIdx].type);
   };
 
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    if (diff > 50) {
+      handleNextImage();
+    } else if (diff < -50) {
+      handlePrevImage();
+    }
+    touchStartX.current = null;
+  };
+
   return (
     <AnimatePresence>
         <motion.div
@@ -121,7 +140,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
           {/* Image Gallery */}
           <div className="w-full md:w-1/2 flex flex-col bg-[var(--theme-surface)] shrink-0">
-            <div className="relative h-[45vh] md:h-[600px] w-full overflow-hidden shrink-0 group">
+            <div 
+              className="relative h-[45vh] md:h-[600px] w-full overflow-hidden shrink-0 group"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               {currentImg ? (
                 <img 
                   src={currentImg} 
