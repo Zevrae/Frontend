@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Eye, CheckCircle2, Truck, XCircle,
@@ -8,6 +8,12 @@ import {
   Star, AlertCircle, TrendingUp, Users, ArrowUpRight,
   Save, Upload, RefreshCw, Bell, BarChart3,
 } from 'lucide-react';
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from '@tanstack/react-table';
 import { productsApi, Product } from '../api/products';
 import { collectionsApi, Collection } from '../api/collections';
 import { categoriesApi, Category } from '../api/categories';
@@ -230,6 +236,79 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
     }
   };
 
+  const columnHelper = createColumnHelper<Order>();
+  const columns = useMemo(() => [
+    columnHelper.accessor('id', {
+      header: 'Order',
+      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">#{info.getValue().slice(-8)}</span>
+    }),
+    columnHelper.display({
+      id: 'customer',
+      header: 'Customer',
+      cell: info => {
+        const customer = typeof info.row.original.user === 'object' ? info.row.original.user : null;
+        return (
+          <>
+            <p className="text-[11px] text-[var(--theme-text)]">{customer?.name || 'Customer'}</p>
+            <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5">{customer?.email}</p>
+            {customer?.phone && (
+              <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5 flex items-center gap-1">
+                <Smartphone size={9} /> {customer.phone}
+              </p>
+            )}
+          </>
+        );
+      }
+    }),
+    columnHelper.accessor('created_at', {
+      header: 'Date',
+      cell: info => <span className="text-[10px] text-[rgba(var(--theme-text-rgb),0.5)] font-sans">{formatDate(info.getValue())}</span>
+    }),
+    columnHelper.accessor('total', {
+      header: 'Total',
+      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">{formatVal(info.getValue())}</span>
+    }),
+    columnHelper.display({
+      id: 'payment',
+      header: 'Payment',
+      cell: info => {
+        const order = info.row.original;
+        return (
+          <div className="flex flex-col gap-1 items-start">
+            <Badge label={order.payment_method === 'cod' ? 'COD' : 'Online'} variant={order.payment_method === 'cod' ? 'cod' : 'online'} />
+            <Badge label={order.payment_status} variant={order.payment_status === 'paid' ? 'paid' : 'pending'} />
+          </div>
+        );
+      }
+    }),
+    columnHelper.accessor('order_status', {
+      header: 'Status',
+      cell: info => (
+        <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm ${orderStatusColor(info.getValue())}`}>
+          {info.getValue()}
+        </span>
+      )
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: () => <div className="text-right">Actions</div>,
+      cell: info => (
+        <button
+          onClick={() => setExpandedOrder(expandedOrder === info.row.original.id ? null : info.row.original.id)}
+          className="text-[9px] uppercase tracking-[0.1em] font-sans hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.15)] px-3 py-1.5 rounded-sm flex items-center gap-1.5 ml-auto"
+        >
+          <Eye size={11} /> View
+        </button>
+      )
+    })
+  ], [expandedOrder]);
+
+  const table = useReactTable({
+    data: filtered,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <div>
       <SectionHeader title="Orders" />
@@ -268,15 +347,15 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
-                <th className="p-4 font-normal">Order</th>
-                <th className="p-4 font-normal">Customer</th>
-                <th className="p-4 font-normal">Date</th>
-                <th className="p-4 font-normal">Total</th>
-                <th className="p-4 font-normal">Payment</th>
-                <th className="p-4 font-normal">Status</th>
-                <th className="p-4 font-normal text-right">Actions</th>
-              </tr>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id} className="p-4 font-normal">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody>
               {loading ? (
@@ -285,105 +364,80 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                     Loading Orders...
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
+              ) : table.getRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">
                     No orders found.
                   </td>
                 </tr>
               ) : (
-                filtered.map(order => {
+                table.getRowModel().rows.map(row => {
+                  const order = row.original;
                   const customer = typeof order.user === 'object' ? order.user : null;
                   return (
-                  <React.Fragment key={order.id}>
-                    <tr className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
-                      <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">#{order.id.slice(-8)}</td>
-                      <td className="p-4">
-                        <p className="text-[11px] text-[var(--theme-text)]">{customer?.name || 'Customer'}</p>
-                        <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5">{customer?.email}</p>
-                        {customer?.phone && (
-                          <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5 flex items-center gap-1">
-                            <Smartphone size={9} /> {customer.phone}
-                          </p>
-                        )}
-                      </td>
-                      <td className="p-4 text-[10px] text-[rgba(var(--theme-text-rgb),0.5)] font-sans">{formatDate(order.created_at)}</td>
-                      <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">{formatVal(order.total)}</td>
-                      <td className="p-4">
-                        <div className="flex flex-col gap-1 items-start">
-                          <Badge label={order.payment_method === 'cod' ? 'COD' : 'Online'} variant={order.payment_method === 'cod' ? 'cod' : 'online'} />
-                          <Badge label={order.payment_status} variant={order.payment_status === 'paid' ? 'paid' : 'pending'} />
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm ${orderStatusColor(order.order_status)}`}>
-                          {order.order_status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right">
-                        <button
-                          onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                          className="text-[9px] uppercase tracking-[0.1em] font-sans hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.15)] px-3 py-1.5 rounded-sm flex items-center gap-1.5 ml-auto"
-                        >
-                          <Eye size={11} /> View
-                        </button>
-                      </td>
-                    </tr>
-                    <AnimatePresence>
-                      {expandedOrder === order.id && (
-                        <motion.tr
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          <td colSpan={7} className="px-5 pb-5 bg-[rgba(var(--theme-bg-rgb),0.6)] border-b border-[rgba(var(--theme-text-rgb),0.1)]">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                              <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Customer Details</p>
-                                <div className="space-y-1.5 text-[11px] text-[rgba(var(--theme-text-rgb),0.7)] bg-[var(--theme-surface)] p-4 rounded-sm border border-[rgba(var(--theme-text-rgb),0.05)]">
-                                  <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Name:</span> {customer?.name || '—'}</p>
-                                  <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Email:</span> {customer?.email || '—'}</p>
-                                  {customer?.phone && <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Phone:</span> {customer.phone}</p>}
-                                  <p>
-                                    <span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Address:</span>{' '}
-                                    {[order.shipping_address?.line1, order.shipping_address?.line2, order.shipping_address?.city, order.shipping_address?.state, order.shipping_address?.postal_code, order.shipping_address?.country]
-                                      .filter(Boolean).join(', ')}
-                                  </p>
-                                </div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 mt-5">Update Status</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {['processing', 'shipped', 'delivered', 'cancelled'].map(s => (
-                                    <button
-                                      key={s}
-                                      onClick={() => onUpdateStatus(order.id, s)}
-                                      className="px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors capitalize"
-                                    >
-                                      {s}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                              <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Products Ordered</p>
-                                <div className="space-y-2">
-                                  {order.items.map((item, idx) => (
-                                    <div key={idx} className="flex justify-between items-center bg-[var(--theme-surface)] p-3 border border-[rgba(var(--theme-text-rgb),0.05)] rounded-sm">
-                                      <div>
-                                        <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[var(--theme-text)]">{item.name}</p>
-                                        <p className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)] mt-0.5">Size: {item.size || '—'} × {item.quantity}</p>
-                                      </div>
-                                      <span className="text-[11px] font-mono text-[var(--theme-accent)]">{formatVal(item.price * item.quantity)}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
+                    <React.Fragment key={row.id}>
+                      <tr className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
+                        {row.getVisibleCells().map(cell => (
+                          <td key={cell.id} className={cell.column.id === 'actions' ? 'p-4 text-right' : 'p-4'}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
-                        </motion.tr>
-                      )}
-                    </AnimatePresence>
-                  </React.Fragment>
+                        ))}
+                      </tr>
+                      <AnimatePresence>
+                        {expandedOrder === order.id && (
+                          <motion.tr
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            <td colSpan={7} className="px-5 pb-5 bg-[rgba(var(--theme-bg-rgb),0.6)] border-b border-[rgba(var(--theme-text-rgb),0.1)]">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Customer Details</p>
+                                  <div className="space-y-1.5 text-[11px] text-[rgba(var(--theme-text-rgb),0.7)] bg-[var(--theme-surface)] p-4 rounded-sm border border-[rgba(var(--theme-text-rgb),0.05)]">
+                                    <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Name:</span> {customer?.name || '—'}</p>
+                                    <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Email:</span> {customer?.email || '—'}</p>
+                                    {customer?.phone && <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Phone:</span> {customer.phone}</p>}
+                                    <p>
+                                      <span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Address:</span>{' '}
+                                      {[order.shipping_address?.line1, order.shipping_address?.line2, order.shipping_address?.city, order.shipping_address?.state, order.shipping_address?.postal_code, order.shipping_address?.country]
+                                        .filter(Boolean).join(', ')}
+                                    </p>
+                                  </div>
+                                  <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 mt-5">Update Status</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {['processing', 'shipped', 'delivered', 'cancelled'].map(s => (
+                                      <button
+                                        key={s}
+                                        onClick={() => onUpdateStatus(order.id, s)}
+                                        className="px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors capitalize"
+                                      >
+                                        {s}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Products Ordered</p>
+                                  <div className="space-y-2">
+                                    {order.items.map((item, idx) => (
+                                      <div key={idx} className="flex justify-between items-center bg-[var(--theme-surface)] p-3 border border-[rgba(var(--theme-text-rgb),0.05)] rounded-sm">
+                                        <div>
+                                          <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[var(--theme-text)]">{item.name}</p>
+                                          <p className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)] mt-0.5">Size: {item.size || '—'} × {item.quantity}</p>
+                                        </div>
+                                        <span className="text-[11px] font-mono text-[var(--theme-accent)]">{formatVal(item.price * item.quantity)}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        )}
+                      </AnimatePresence>
+                    </React.Fragment>
                   );
                 })
               )}
@@ -686,10 +740,6 @@ export function ProductsSection() {
     }));
   };
 
-  // Switching between "Clothing" (standard sizes) and "Other" (custom,
-  // possibly-unlabeled) inventory clears the existing rows — the two modes
-  // use the size_stock keys completely differently (fixed size codes vs.
-  // free-text labels), so carrying rows across would just be confusing.
   const handleInventoryModeChange = (mode: 'size' | 'nosize') => {
     setForm(f => ({
       ...f,
@@ -698,10 +748,6 @@ export function ProductsSection() {
     }));
   };
 
-  // "Other" mode: a free-form list of {label, quantity} rows. The label
-  // (stored as `size` on StockItem for reuse) can be left blank — it's
-  // just a name shown to the admin, e.g. "One Size" or "Adjustable"; a
-  // ring or keychain with a single stock count needs no label at all.
   const addCustomStockRow = () => {
     setForm(f => ({ ...f, stock_quantity: [...f.stock_quantity, { size: '', quantity: 0, _rowId: nextRowId() }] }));
   };
@@ -726,9 +772,6 @@ export function ProductsSection() {
     }));
   };
 
-  // Tiptap emits either '' (never touched) or something like '<p></p>' /
-  // '<p><br></p>' for a "visually empty" description — none of which is
-  // meaningful content, so strip tags before checking.
   const isDescriptionEmpty = (html: string) => !html.replace(/<[^>]*>/g, '').trim();
 
   const validateForm = (): string | null => {
@@ -813,6 +856,106 @@ export function ProductsSection() {
     !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.subcategory.toLowerCase().includes(search.toLowerCase())
   );
 
+  const columnHelper = createColumnHelper<DbProduct>();
+  const columns = useMemo(() => [
+    columnHelper.display({
+      id: 'product',
+      header: 'Product',
+      cell: info => {
+        const p = info.row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[var(--theme-bg)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
+              {p.images?.[0] ? (
+                <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover opacity-80" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Image size={12} className="text-[rgba(var(--theme-text-rgb),0.2)]" />
+                </div>
+              )}
+            </div>
+            <div>
+              <span className="text-[11px] font-sans text-[var(--theme-text)] uppercase tracking-[0.05em] block">{p.name}</span>
+              {!p.in_stock && <span className="text-[9px] text-red-400 font-sans block">Out of Stock</span>}
+            </div>
+          </div>
+        );
+      }
+    }),
+    columnHelper.accessor('subcategory', {
+      header: 'Subcategory',
+      cell: info => <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{info.getValue()}</span>
+    }),
+    columnHelper.accessor('price', {
+      header: 'Price',
+      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">{formatVal(info.getValue())}</span>
+    }),
+    columnHelper.display({
+      id: 'compare',
+      header: 'Compare',
+      cell: info => {
+        const p = info.row.original;
+        return p.compare_price && p.compare_price > p.price ? (
+          <span className="px-2 py-0.5 text-[9px] font-mono font-semibold rounded-sm bg-emerald-900/20 text-emerald-400 border border-emerald-900/40">
+            -{Math.round(((p.compare_price - p.price) / p.compare_price) * 100)}%
+          </span>
+        ) : (
+          <span className="text-[10px] text-[rgba(var(--theme-text-rgb),0.2)] font-sans">—</span>
+        );
+      }
+    }),
+    columnHelper.display({
+      id: 'stock',
+      header: 'Stock (Sizes)',
+      cell: info => {
+        const p = info.row.original;
+        return (
+          <div className="flex flex-col items-start gap-1">
+            {p.in_stock !== false ? (
+              <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border bg-emerald-900/25 text-emerald-400 border-emerald-900/40">In Stock</span>
+            ) : (
+              <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border bg-red-900/20 text-red-400 border-red-900/30">Out of Stock</span>
+            )}
+            <div className="flex flex-wrap gap-1 mt-1">
+              {(p.stock_quantity || []).map(sq => (
+                <span key={sq.size} className="px-1.5 py-0.5 text-[8px] font-sans border border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm">
+                  {sq.size}: {sq.quantity}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      }
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => <Badge label={info.getValue()} variant={info.getValue() as any} />
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: () => <div className="text-right">Actions</div>,
+      cell: info => {
+        const p = info.row.original;
+        return (
+          <div className="flex items-center gap-2 justify-end">
+            <button onClick={() => openEdit(p)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
+              <Edit2 size={12} />
+            </button>
+            <button onClick={() => handleDelete(p.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/50">
+              <Trash2 size={12} />
+            </button>
+          </div>
+        );
+      }
+    })
+  ], [openEdit, handleDelete]);
+
+  const table = useReactTable({
+    data: filteredDb,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <div>
       <SectionHeader title="Products" action="Add Product" onAction={openAdd} />
@@ -848,88 +991,37 @@ export function ProductsSection() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
-                  <th className="p-4 font-normal">Product</th>
-                  <th className="p-4 font-normal">Subcategory</th>
-                  <th className="p-4 font-normal">Price</th>
-                  <th className="p-4 font-normal">Stock (Sizes)</th>
-                  <th className="p-4 font-normal">Status</th>
-                  <th className="p-4 font-normal text-right">Actions</th>
-                </tr>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
+                    {headerGroup.headers.map(header => (
+                      <th key={header.id} className="p-4 font-normal">
+                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
               </thead>
               <tbody>
                 {dbLoading ? (
                   <tr>
-                    <td colSpan={6} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">
+                    <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">
                       Loading...
                     </td>
                   </tr>
-                ) : filteredDb.length === 0 ? (
+                ) : table.getRowModel().rows.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">
-                      No products yet. Click "Add Product" to create one.
+                    <td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">
+                      {dbError ? 'Table not found.' : 'No products yet. Click "Add Product" to create one.'}
                     </td>
                   </tr>
                 ) : (
-                  filteredDb.map(p => (
-                    <tr key={p.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[var(--theme-bg)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
-                            {p.images?.[0] ? (
-                              <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover opacity-80" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Image size={12} className="text-[rgba(var(--theme-text-rgb),0.2)]" />
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <span className="text-[11px] font-sans text-[var(--theme-text)] uppercase tracking-[0.05em] block">{p.name}</span>
-                            {!p.in_stock && <span className="text-[9px] text-red-400 font-sans block">Out of Stock</span>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{p.subcategory}</td>
-                      <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">{formatVal(p.price)}</td>
-                      <td className="p-4">
-                        {p.compare_price && p.compare_price > p.price ? (
-                          <span className="px-2 py-0.5 text-[9px] font-mono font-semibold rounded-sm bg-emerald-900/20 text-emerald-400 border border-emerald-900/40">
-                            -{Math.round(((p.compare_price - p.price) / p.compare_price) * 100)}%
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-[rgba(var(--theme-text-rgb),0.2)] font-sans">—</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        {p.in_stock !== false ? (
-                          <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border bg-emerald-900/25 text-emerald-400 border-emerald-900/40">In Stock</span>
-                        ) : (
-                          <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border bg-red-900/20 text-red-400 border-red-900/30">Out of Stock</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-1">
-                          {(p.stock_quantity || []).map(sq => (
-                            <span key={sq.size} className="px-1.5 py-0.5 text-[8px] font-sans border border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm">
-                              {sq.size}: {sq.quantity}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <Badge label={p.status} variant={p.status as any} />
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2 justify-end">
-                          <button onClick={() => openEdit(p)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
-                            <Edit2 size={12} />
-                          </button>
-                          <button onClick={() => handleDelete(p.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/50">
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </td>
+                  table.getRowModel().rows.map(row => (
+                    <tr key={row.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id} className={cell.column.id === 'actions' ? 'p-4 text-right' : 'p-4'}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
                     </tr>
                   ))
                 )}
@@ -1677,6 +1769,82 @@ export function DiscountsSection() {
     }
   };
 
+  const discountColumnHelper = createColumnHelper<Discount>();
+  const discountColumns = useMemo(() => [
+    discountColumnHelper.accessor('code', {
+      header: 'Code',
+      cell: info => <span className="text-[12px] font-mono text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] px-2 py-1 rounded-sm">{info.getValue()}</span>
+    }),
+    discountColumnHelper.accessor('type', {
+      header: 'Type',
+      cell: info => <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{info.getValue()}</span>
+    }),
+    discountColumnHelper.display({
+      id: 'value',
+      header: 'Value',
+      cell: info => {
+        const d = info.row.original;
+        return <span className="text-[11px] font-mono text-[var(--theme-text)]">{d.type === 'Percentage' ? `${d.value}%` : formatVal(d.value)}</span>
+      }
+    }),
+    discountColumnHelper.display({
+      id: 'usage',
+      header: 'Usage',
+      cell: info => {
+        const d = info.row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 max-w-[80px] bg-[var(--theme-bg)] rounded-full h-1.5">
+              <div
+                className="bg-[var(--theme-accent)] h-full rounded-full transition-all"
+                style={{ width: `${Math.min(100, (d.usage.used / d.usage.limit) * 100)}%` }}
+              />
+            </div>
+            <span className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)]">{d.usage.used}/{d.usage.limit}</span>
+          </div>
+        );
+      }
+    }),
+    discountColumnHelper.accessor('expiry', {
+      header: 'Expiry',
+      cell: info => <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{info.getValue() ? new Date(info.getValue()!).toLocaleDateString('en-IN') : '—'}</span>
+    }),
+    discountColumnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => <Badge label={info.getValue()} variant={info.getValue() as any} />
+    }),
+    discountColumnHelper.display({
+      id: 'actions',
+      header: () => <div className="text-right">Actions</div>,
+      cell: info => {
+        const d = info.row.original;
+        return (
+          <div className="flex items-center gap-2 justify-end">
+            <button
+              onClick={() => toggleStatus(d)}
+              className={`p-1.5 transition-colors border rounded-sm ${d.status === 'Active' ? 'text-[var(--theme-accent)] border-[rgba(var(--theme-accent-rgb),0.2)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]' : 'text-[rgba(var(--theme-text-rgb),0.3)] border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-text-rgb),0.2)]'}`}
+              title={d.status === 'Active' ? 'Deactivate' : 'Activate'}
+            >
+              {d.status === 'Active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
+            </button>
+            <button onClick={() => openEdit(d)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
+              <Edit2 size={12} />
+            </button>
+            <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/30">
+              <Trash2 size={12} />
+            </button>
+          </div>
+        );
+      }
+    })
+  ], [toggleStatus, openEdit, handleDelete]);
+
+  const table = useReactTable({
+    data: discounts,
+    columns: discountColumns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <div>
       <SectionHeader title="Discounts & Coupons" action="New Coupon" onAction={openAdd} />
@@ -1690,65 +1858,31 @@ export function DiscountsSection() {
 
       <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
-                <th className="p-4 font-normal">Code</th>
-                <th className="p-4 font-normal">Type</th>
-                <th className="p-4 font-normal">Value</th>
-                <th className="p-4 font-normal">Usage</th>
-                <th className="p-4 font-normal">Expiry</th>
-                <th className="p-4 font-normal">Status</th>
-                <th className="p-4 font-normal text-right">Actions</th>
-              </tr>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id} className="p-4 font-normal">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody>
               {loading ? (
                 <tr><td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">Loading...</td></tr>
-              ) : discounts.length === 0 ? (
+              ) : table.getRowModel().rows.length === 0 ? (
                 <tr><td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No coupons yet. Click "New Coupon" to create one.</td></tr>
               ) : (
-                discounts.map(d => (
-                  <tr key={d.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
-                    <td className="p-4">
-                      <span className="text-[12px] font-mono text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] px-2 py-1 rounded-sm">{d.code}</span>
-                    </td>
-                    <td className="p-4 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{d.type}</td>
-                    <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">
-                      {d.type === 'Percentage' ? `${d.value}%` : formatVal(d.value)}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 max-w-[80px] bg-[var(--theme-bg)] rounded-full h-1.5">
-                          <div
-                            className="bg-[var(--theme-accent)] h-full rounded-full transition-all"
-                            style={{ width: `${Math.min(100, (d.usage.used / d.usage.limit) * 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)]">{d.usage.used}/{d.usage.limit}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{d.expiry ? new Date(d.expiry).toLocaleDateString('en-IN') : '—'}</td>
-                    <td className="p-4">
-                      <Badge label={d.status} variant={d.status} />
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2 justify-end">
-                        <button
-                          onClick={() => toggleStatus(d)}
-                          className={`p-1.5 transition-colors border rounded-sm ${d.status === 'Active' ? 'text-[var(--theme-accent)] border-[rgba(var(--theme-accent-rgb),0.2)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]' : 'text-[rgba(var(--theme-text-rgb),0.3)] border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-text-rgb),0.2)]'}`}
-                          title={d.status === 'Active' ? 'Deactivate' : 'Activate'}
-                        >
-                          {d.status === 'Active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
-                        </button>
-                        <button onClick={() => openEdit(d)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
-                          <Edit2 size={12} />
-                        </button>
-                        <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/30">
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    </td>
+                table.getRowModel().rows.map(row => (
+                  <tr key={row.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className={cell.column.id === 'actions' ? 'p-4 text-right' : 'p-4'}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
                   </tr>
                 ))
               )}
