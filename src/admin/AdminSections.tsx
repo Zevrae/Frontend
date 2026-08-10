@@ -138,13 +138,26 @@ export function DashboardSection({ orders }: { orders: Order[] }) {
   const revenue = orders.filter(o => o.payment_status === 'paid').reduce((s, o) => s + o.total, 0);
   const recentOrders = orders.slice(0, 5);
 
+  const [productCount, setProductCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    productsApi
+      .list({ limit: 1 })
+      .then((res: any) => {
+        if (res.pagination) {
+          setProductCount(res.pagination.total);
+        }
+      })
+      .catch(() => setProductCount(null));
+  }, []);
+
   return (
     <div>
       <SectionHeader title="Dashboard" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <MetricCard title="Total Orders" value={totalOrders} icon={<Archive size={16} />} sub="All time" />
         <MetricCard title="Pending" value={pendingOrders} icon={<Clock size={16} />} sub="Requires action" />
-        <MetricCard title="Products" value={6} icon={<ShoppingBag size={16} />} sub="In catalog" />
+        <MetricCard title="Products" value={productCount ?? '—'} icon={<ShoppingBag size={16} />} sub="In catalog" />
         <MetricCard title="Revenue" value={formatVal(revenue)} icon={<TrendingUp size={16} />} sub="Prepaid orders" highlight />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -288,11 +301,17 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                       <td className="p-4">
                         <p className="text-[11px] text-[#EAE6E1]">{customer?.name || 'Customer'}</p>
                         <p className="text-[9px] text-[#EAE6E1]/40 font-mono mt-0.5">{customer?.email}</p>
+                        {customer?.phone && (
+                          <p className="text-[9px] text-[#EAE6E1]/40 font-mono mt-0.5 flex items-center gap-1">
+                            <Smartphone size={9} /> {customer.phone}
+                          </p>
+                        )}
                       </td>
                       <td className="p-4 text-[10px] text-[#EAE6E1]/50 font-sans">{formatDate(order.created_at)}</td>
                       <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">{formatVal(order.total)}</td>
                       <td className="p-4">
                         <div className="flex flex-col gap-1 items-start">
+                          <Badge label={order.payment_method === 'cod' ? 'COD' : 'Online'} variant={order.payment_method === 'cod' ? 'cod' : 'online'} />
                           <Badge label={order.payment_status} variant={order.payment_status === 'paid' ? 'paid' : 'pending'} />
                         </div>
                       </td>
@@ -313,10 +332,53 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                     <AnimatePresence>
                       {expandedOrder === order.id && (
                         <motion.tr
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
                         >
                           <td colSpan={7} className="px-5 pb-5 bg-[#12100C]/60 border-b border-[#EAE6E1]/10">
-                            {/* Order Expansion logic remains identical */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-3">Customer Details</p>
+                                <div className="space-y-1.5 text-[11px] text-[#EAE6E1]/70 bg-[#111] p-4 rounded-sm border border-[#EAE6E1]/5">
+                                  <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Name:</span> {customer?.name || '—'}</p>
+                                  <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Email:</span> {customer?.email || '—'}</p>
+                                  {customer?.phone && <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Phone:</span> {customer.phone}</p>}
+                                  <p>
+                                    <span className="text-[#EAE6E1]/40 w-14 inline-block">Address:</span>{' '}
+                                    {[order.shipping_address?.line1, order.shipping_address?.line2, order.shipping_address?.city, order.shipping_address?.state, order.shipping_address?.postal_code, order.shipping_address?.country]
+                                      .filter(Boolean).join(', ')}
+                                  </p>
+                                </div>
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-3 mt-5">Update Status</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {['processing', 'shipped', 'delivered', 'cancelled'].map(s => (
+                                    <button
+                                      key={s}
+                                      onClick={() => onUpdateStatus(order.id, s)}
+                                      className="px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans bg-[#12100C] border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/40 hover:text-[#C5A059] transition-colors capitalize"
+                                    >
+                                      {s}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-3">Products Ordered</p>
+                                <div className="space-y-2">
+                                  {order.items.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between items-center bg-[#111] p-3 border border-[#EAE6E1]/5 rounded-sm">
+                                      <div>
+                                        <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[#EAE6E1]">{item.name}</p>
+                                        <p className="text-[9px] font-mono text-[#EAE6E1]/40 mt-0.5">Size: {item.size || '—'} × {item.quantity}</p>
+                                      </div>
+                                      <span className="text-[11px] font-mono text-[#C5A059]">{formatVal(item.price * item.quantity)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
                           </td>
                         </motion.tr>
                       )}
@@ -541,8 +603,33 @@ export function ProductsSection() {
     setDbLoading(true);
     setDbError('');
     try {
-      const { data } = await productsApi.list({ limit: 100 });
-      setDbProducts((data || []).map(productToDbProduct));
+      let allProducts: DbProduct[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        // Fetch paginated chunk using backend's expected page logic
+        const response: any = await productsApi.list({ limit: 100, page: currentPage });
+        
+        const items = response.data || [];
+        const pagination = response.pagination;
+
+        if (items.length > 0) {
+          const mappedItems = items.map((item: any) => productToDbProduct(item));
+          allProducts = [...allProducts, ...mappedItems];
+        }
+        
+        // Use pagination state (e.g. matching your backend response.pages) to evaluate if looping should continue
+        if (pagination && currentPage >= pagination.pages) {
+           hasMore = false;
+        } else if (items.length < 100) {
+           hasMore = false;
+        } else {
+           currentPage++;
+        }
+      }
+
+      setDbProducts(allProducts);
     } catch (err: any) {
       setDbError('Could not load products. Make sure the database is connected.');
     } finally {
@@ -1116,8 +1203,6 @@ export function ProductsSection() {
   );
 }
 
-// ─── Categories, Collections, Discounts, Sidebar, Admin remain unchanged ─────
-// (Keep your existing code for CollectionsSection, CategoriesSection, DiscountsSection, Sidebar, and the main Admin component wrapper exactly as they were.)
 // ─── Collections Section ──────────────────────────────────────────────────────
 
 export function CollectionsSection() {
@@ -1728,13 +1813,9 @@ export function DiscountsSection() {
     </div>
   );
 }
+
 // ─── Analysis (Demand Insights) ──────────────────────────────────────────────
-// Two demand signals feed this dashboard:
-//  - demandCounter: units actually ordered (real, fulfilled demand)
-//  - notifyCounter: "notify me when back in stock" signups on out-of-stock
-//    items — unfulfilled demand, arguably the more actionable signal for
-//    restocking decisions since it's demand that COULDN'T be captured as a
-//    sale at all.
+
 export function AnalysisSection() {
   const [summary, setSummary] = useState<AnalysisSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1781,7 +1862,6 @@ export function AnalysisSection() {
 
       {summary && (
         <>
-          {/* The single most actionable list: real demand going unfulfilled right now */}
           <div className="bg-[#111] border border-[#C5A059]/20 rounded-sm p-5 mb-6">
             <div className="flex items-center gap-2 mb-1">
               <Bell size={14} className="text-[#C5A059]" />
@@ -1812,7 +1892,6 @@ export function AnalysisSection() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Top products overall */}
             <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp size={14} className="text-[#C5A059]" />
@@ -1841,7 +1920,6 @@ export function AnalysisSection() {
               )}
             </div>
 
-            {/* Category breakdown */}
             <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
               <div className="flex items-center gap-2 mb-4">
                 <BarChart3 size={14} className="text-[#C5A059]" />
