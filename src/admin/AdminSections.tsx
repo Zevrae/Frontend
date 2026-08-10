@@ -338,7 +338,11 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
 interface StockItem {
   size: string;
   quantity: number;
+  _rowId?: number; // UI-only stable key for "Other" mode rows; never sent to the backend
 }
+
+let rowIdCounter = 0;
+const nextRowId = () => ++rowIdCounter;
 
 interface DbProduct {
   id: string;
@@ -568,7 +572,7 @@ export function ProductsSection() {
       compare_price: p.compare_price,
       discount: p.discount ?? null,
       inventory_mode: p.inventory_mode,
-      stock_quantity: p.stock_quantity || [],
+      stock_quantity: (p.stock_quantity || []).map(row => ({ ...row, _rowId: nextRowId() })),
       in_stock: p.in_stock ?? true,
       images: p.images || [],
       status: p.status,
@@ -603,7 +607,7 @@ export function ProductsSection() {
     setForm(f => ({
       ...f,
       inventory_mode: mode,
-      stock_quantity: mode === 'nosize' ? [{ size: '', quantity: 0 }] : [],
+      stock_quantity: mode === 'nosize' ? [{ size: '', quantity: 0, _rowId: nextRowId() }] : [],
     }));
   };
 
@@ -612,7 +616,7 @@ export function ProductsSection() {
   // just a name shown to the admin, e.g. "One Size" or "Adjustable"; a
   // ring or keychain with a single stock count needs no label at all.
   const addCustomStockRow = () => {
-    setForm(f => ({ ...f, stock_quantity: [...f.stock_quantity, { size: '', quantity: 0 }] }));
+    setForm(f => ({ ...f, stock_quantity: [...f.stock_quantity, { size: '', quantity: 0, _rowId: nextRowId() }] }));
   };
 
   const removeCustomStockRow = (index: number) => {
@@ -999,7 +1003,7 @@ export function ProductsSection() {
                     For items without standard sizing — jewellery, accessories, etc. A label is optional; leave it blank for a single stock count with no variant name.
                   </p>
                   {form.stock_quantity.map((row, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div key={row._rowId ?? i} className="flex items-center gap-2">
                       <input
                         type="text"
                         value={row.size}
