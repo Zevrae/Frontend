@@ -492,15 +492,32 @@ function ProductsSection() {
   // ── Search ─────────────────────────────────────────────────────────────────
   const [search, setSearch] = useState('');
 
-  // ── Fetch products from MongoDB ─────────────────────────────────────
+  // ── Fetch products from MongoDB / Appwrite ─────────────────────────────────
   const fetchDbProducts = async () => {
     setDbLoading(true);
     setDbError('');
     try {
-      const { data } = await productsApi.list({ limit: 117 });
-      console.log('fetched product from the DB: ', data);
-      
-      setDbProducts((data as DbProduct[]) || []);
+      let allProducts: DbProduct[] = [];
+      let offset = 0;
+      const limit = 100;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data } = await productsApi.list({ limit, offset });
+        if (data && data.length > 0) {
+          allProducts = [...allProducts, ...(data as DbProduct[])];
+        }
+        
+        // If we received fewer items than requested, we've reached the end
+        if (!data || data.length < limit) {
+          hasMore = false;
+        } else {
+          offset += limit;
+        }
+      }
+
+      console.log('fetched product from the DB: ', allProducts);
+      setDbProducts(allProducts);
     } catch (err: any) {
       setDbError('Could not load products. Make sure the database is connected.');
     } finally {
@@ -848,8 +865,6 @@ function ProductsSection() {
               />
               <p className="text-[9px] text-[#EAE6E1]/25 font-sans mt-1.5">First image = front, second = back (for product page hover)</p>
             </FormField>
-
-            {/* Legacy Image previews removed */}
 
             <FormField label="Status">
               <select
@@ -1338,8 +1353,26 @@ export default function Admin() {
   const fetchOrders = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const { data } = await ordersApi.list({ limit: 100 });
-      setOrders(data);
+      let allOrders: Order[] = [];
+      let offset = 0;
+      const limit = 100;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data } = await ordersApi.list({ limit, offset });
+        if (data && data.length > 0) {
+          allOrders = [...allOrders, ...(data as Order[])];
+        }
+        
+        // If we received fewer items than requested, we've reached the end
+        if (!data || data.length < limit) {
+          hasMore = false;
+        } else {
+          offset += limit;
+        }
+      }
+      
+      setOrders(allOrders);
       setErrorMsg('');
     } catch (err: any) {
       if (orders.length === 0) setErrorMsg('Could not load orders. Make sure the backend is reachable.');
