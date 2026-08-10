@@ -1,6 +1,5 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
 import { useSetTheme } from '../theme/ThemeProvider';
@@ -12,8 +11,6 @@ import jewelleryCover from '../assets/jewellery cover page .jpeg';
 import jewelleryMen from '../assets/men jewellery.png';
 import jewelleryWomen from '../assets/women jewellery.jpeg';
 
-
-gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------------------------------------------------
    Data
@@ -56,7 +53,7 @@ const collections: Collection[] = [
     image: jewelleryCover,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
-},
+  },
   {
     id: 'accessories',
     number: '03',
@@ -73,7 +70,7 @@ const collections: Collection[] = [
 ];
 
 /* ---------------------------------------------------------
-   CollectionCard — owns per-card hover state
+   CollectionCard
    --------------------------------------------------------- */
 interface CardProps {
   col: Collection;
@@ -169,76 +166,109 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
    Main Component
    --------------------------------------------------------- */
 export function CollectionScroller() {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const stickyRef  = useRef<HTMLDivElement>(null);
-  const trackRef   = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const setTheme = useSetTheme();
+  const isAnimating = useRef(false);
 
-  // Keep the site's color theme in lockstep with whichever collection card
-  // is centered as the user scrubs through this pinned slider — no route
-  // change involved, just a live palette swap synced to scroll position.
+  // Swipe gesture refs
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
   useEffect(() => {
     setTheme(collections[activeIdx].id as ThemeName);
   }, [activeIdx, setTheme]);
 
+  const goTo = useCallback((idx: number) => {
+    if (isAnimating.current) return;
+    const clamped = Math.max(0, Math.min(idx, collections.length - 1));
+    if (clamped === activeIdx) return;
+
+    isAnimating.current = true;
+    setActiveIdx(clamped);
+
+    const track = trackRef.current;
+    if (track) {
+      const cards = track.querySelectorAll<HTMLElement>('.cs-card');
+      const card = cards[clamped];
+      if (card) {
+        const cardRect   = card.getBoundingClientRect();
+        const currentX   = gsap.getProperty(track, 'x') as number;
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const viewCenter = window.innerWidth / 2;
+        const targetX    = currentX + (viewCenter - cardCenter);
+
+        gsap.to(track, {
+          x: targetX,
+          duration: 0.75,
+          ease: 'power3.inOut',
+          onComplete: () => { isAnimating.current = false; },
+        });
+      } else {
+        isAnimating.current = false;
+      }
+    } else {
+      isAnimating.current = false;
+    }
+  }, [activeIdx]);
+
+  // Set initial track position on mount so first card is centered
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    const sticky  = stickyRef.current;
-    const track   = trackRef.current;
-    if (!wrapper || !sticky || !track) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const cards = track.querySelectorAll<HTMLElement>('.cs-card');
+    const card = cards[0];
+    if (!card) return;
+    const cardRect   = card.getBoundingClientRect();
+    const currentX   = gsap.getProperty(track, 'x') as number || 0;
+    const cardCenter = cardRect.left + cardRect.width / 2;
+    const viewCenter = window.innerWidth / 2;
+    const targetX    = currentX + (viewCenter - cardCenter);
+    gsap.set(track, { x: targetX });
+  }, []);
 
-    const cards = gsap.utils.toArray<HTMLElement>('.cs-card');
-    const count  = cards.length;
-    const getScrollWidth = () => track.scrollWidth - window.innerWidth;
+  const goPrev = () => goTo(activeIdx - 1);
+  const goNext = () => goTo(activeIdx + 1);
 
-    const ctx = gsap.context(() => {
-      gsap.to(track, {
-        x: () => -getScrollWidth(),
-        ease: 'none',
-        scrollTrigger: {
-          trigger: wrapper,
-          start: 'top top',
-          end: () => `+=${getScrollWidth() + window.innerHeight}`,
-          scrub: 1,
-          pin: sticky,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            const idx = Math.round(self.progress * (count - 1));
-            setActiveIdx(Math.min(Math.max(idx, 0), count - 1));
-          },
-          // Scrolling back up above the slider (towards the hero) hands the
-          // theme back to the site default rather than leaving it stuck on
-          // whatever card was last centered.
-          onLeaveBack: () => setTheme('clothing'),
-        },
-      });
-    }, wrapper);
+  const canPrev = activeIdx > 0;
+  const canNext = activeIdx < collections.length - 1;
 
-    return () => ctx.revert();
-  }, [setTheme]);
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = null;
+  };
 
-  const scrollToCard = (idx: number) => {
-    const wrapper = wrapperRef.current;
-    const track   = trackRef.current;
-    if (!wrapper || !track) return;
-    const totalH   = track.scrollWidth - window.innerWidth + window.innerHeight;
-    const progress = idx / (collections.length - 1);
-    const top      = wrapper.offsetTop + progress * (totalH - window.innerHeight);
-    window.scrollTo({ top, behavior: 'smooth' });
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const swipeThreshold = 50; // minimum pixels to be considered a swipe
+
+    if (diff > swipeThreshold && canNext) {
+      goNext();
+    } else if (diff < -swipeThreshold && canPrev) {
+      goPrev();
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   return (
-    <div ref={wrapperRef} id="collection" className="cs-wrapper">
-      <div ref={stickyRef} className="cs-sticky">
+    <div id="collection" className="cs-wrapper">
+      <div className="cs-sticky">
+
         <div className="cs-header">
           <p className="cs-header__eyebrow">COLLECTIONS</p>
           <div className="cs-header__dots">
             {collections.map((col, i) => (
               <button
                 key={col.id}
-                onClick={() => scrollToCard(i)}
+                onClick={() => goTo(i)}
                 className={`cs-dot ${i === activeIdx ? 'cs-dot--active' : ''}`}
                 aria-label={`Go to ${col.label}`}
               >
@@ -249,7 +279,41 @@ export function CollectionScroller() {
           </div>
         </div>
 
-        <div className="cs-track-outer">
+        {/* Arrow controls — sit between header and cards */}
+        <div className="cs-arrows">
+          <button
+            className={`cs-arrow cs-arrow--prev ${!canPrev ? 'cs-arrow--disabled' : ''}`}
+            onClick={goPrev}
+            disabled={!canPrev}
+            aria-label="Previous collection"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <span className="cs-arrows__counter">
+            {String(activeIdx + 1).padStart(2, '0')} / {String(collections.length).padStart(2, '0')}
+          </span>
+
+          <button
+            className={`cs-arrow cs-arrow--next ${!canNext ? 'cs-arrow--disabled' : ''}`}
+            onClick={goNext}
+            disabled={!canNext}
+            aria-label="Next collection"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div 
+          className="cs-track-outer"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div ref={trackRef} className="cs-track">
             {collections.map((col, i) => (
               <CollectionCard
@@ -257,17 +321,12 @@ export function CollectionScroller() {
                 col={col}
                 isActive={i === activeIdx}
                 dist={Math.abs(i - activeIdx)}
-                onClickInactive={() => scrollToCard(i)}
+                onClickInactive={() => goTo(i)}
               />
             ))}
           </div>
         </div>
 
-        <div className="cs-scroll-hint">
-          <span className="cs-scroll-hint__line" />
-          <span className="cs-scroll-hint__text">SCROLL</span>
-          <span className="cs-scroll-hint__line" />
-        </div>
       </div>
     </div>
   );
