@@ -4,9 +4,8 @@
    Collection Scroller — GSAP Horizontal Pinned
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Wrapper: provides scroll height for GSAP ─────────── */
+/* ── Wrapper ───────────────────────────────────────────── */
 .cs-wrapper {
-  /* GSAP sets height dynamically via ScrollTrigger end */
   position: relative;
   background: var(--theme-bg);
 }
@@ -332,45 +331,67 @@
   transition: transform 0.35s ease;
 }
 
-/* ── Scroll hint at bottom ────────────────────────────── */
-.cs-scroll-hint {
+/* ── Arrow navigation row ─────────────────────────────── */
+.cs-arrows {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 0 0 28px;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 60px 12px;
   flex-shrink: 0;
 }
 
-.cs-scroll-hint__line {
-  display: block;
-  width: 48px;
-  height: 1px;
-  background: rgba(var(--theme-text-rgb),0.08);
-}
-
-.cs-scroll-hint__text {
+.cs-arrows__counter {
   @apply font-plex-mono;
-  font-size: 8px;
-  letter-spacing: 0.5em;
-  color: rgba(var(--theme-text-rgb),0.15);
-  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: rgba(var(--theme-text-rgb),0.25);
+  min-width: 52px;
+  text-align: center;
 }
 
-/* ── Progress bar along bottom ────────────────────────── */
-.cs-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(var(--theme-text-rgb),0.04);
+.cs-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--theme-text-rgb),0.12);
+  background: none;
+  cursor: pointer;
+  color: rgba(var(--theme-text-rgb),0.5);
+  transition:
+    color 0.35s ease,
+    border-color 0.35s ease,
+    background 0.35s ease,
+    transform 0.25s ease;
 }
 
-.cs-progress__fill {
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(var(--theme-accent-rgb),0.4), transparent);
-  transition: width 0.3s ease;
+.cs-arrow:hover:not(:disabled) {
+  color: rgba(var(--theme-accent-rgb),1);
+  border-color: rgba(var(--theme-accent-rgb),0.5);
+  background: rgba(var(--theme-accent-rgb),0.07);
+  transform: scale(1.08);
+}
+
+.cs-arrow--disabled,
+.cs-arrow:disabled {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cs-arrow--prev:hover:not(:disabled) svg {
+  transform: translateX(-3px);
+}
+
+.cs-arrow--next:hover:not(:disabled) svg {
+  transform: translateX(3px);
+}
+
+.cs-arrow svg {
+  transition: transform 0.3s ease;
 }
 
 /* ── Responsive ───────────────────────────────────────── */
@@ -400,6 +421,10 @@
 
   .cs-header {
     padding: 28px 32px 0;
+  }
+
+  .cs-arrows {
+    padding: 14px 32px 10px;
   }
 }
 
@@ -456,5 +481,14 @@
 
   .cs-dot__label {
     display: none;
+  }
+
+  .cs-arrows {
+    padding: 10px 20px 8px;
+  }
+
+  .cs-arrow {
+    width: 36px;
+    height: 36px;
   }
 }
