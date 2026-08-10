@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -340,6 +340,18 @@ export default function ProductPage() {
     setActiveImg(index);
   };
 
+  const handleNextImage = () => {
+    if (images.length <= 1) return;
+    const nextIdx = (activeImg + 1) % images.length;
+    switchImage(nextIdx);
+  };
+
+  const handlePrevImage = () => {
+    if (images.length <= 1) return;
+    const prevIdx = (activeImg - 1 + images.length) % images.length;
+    switchImage(prevIdx);
+  };
+
   const [notifyEmail, setNotifyEmail] = useState('');
   const [notifyStatus, setNotifyStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
   const [notifyError, setNotifyError] = useState('');
@@ -461,7 +473,7 @@ export default function ProductPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-                className="relative w-full aspect-[4/5] bg-[#0d0d0d] overflow-hidden"
+                className="relative w-full aspect-[4/5] bg-[#0d0d0d] overflow-hidden group"
               >
                 {/* Discount badge */}
                 {product.discount && (
@@ -486,6 +498,26 @@ export default function ProductPage() {
                       transition: 'opacity 400ms ease',
                     }}
                   />
+                )}
+
+                {/* Navigation Arrows */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/40 text-white rounded-full hover:bg-black/70 transition-colors duration-300"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={handleNextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/40 text-white rounded-full hover:bg-black/70 transition-colors duration-300"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
                 )}
 
                 {/* Subtle vignette */}
