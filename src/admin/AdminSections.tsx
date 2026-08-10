@@ -23,7 +23,6 @@ import { analysisApi, AnalysisSummary } from '../api/analysis';
 import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-// Exported so AdminLayout.tsx can type its section-switch state.
 
 export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts' | 'analysis';
 export type { Order };
@@ -133,7 +132,8 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-const inputCls = "w-full bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm px-3 py-2.5 text-[12px] text-[var(--theme-text)] font-mono placeholder:text-[rgba(var(--theme-text-rgb),0.2)] focus:outline-none focus:border-[rgba(var(--theme-accent-rgb),0.4)] transition-colors";
+const baseInputCls = "bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm px-3 text-[12px] text-[var(--theme-text)] font-mono placeholder:text-[rgba(var(--theme-text-rgb),0.2)] focus:outline-none focus:border-[rgba(var(--theme-accent-rgb),0.4)] transition-colors";
+const inputCls = `w-full py-2.5 ${baseInputCls}`;
 const selectCls = `${inputCls} cursor-pointer`;
 
 // ─── Dashboard Section ────────────────────────────────────────────────────────
@@ -266,7 +266,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
     }),
     columnHelper.accessor('total', {
       header: 'Total',
-      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">{formatVal(info.getValue())}</span>
+      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">{formatVal(info.getValue() / 100)}</span>
     }),
     columnHelper.display({
       id: 'payment',
@@ -510,15 +510,7 @@ function productToDbProduct(p: Product): DbProduct {
 }
 
 // Adapts the UI form's StockItem[] back into a payload the productsApi /
-// backend can accept: `sizes` and `size_stock` are both real backend fields;
-// `stock_quantity` is derived server-side from size_stock and shouldn't be
-// sent directly.
-//
-// In 'size' mode, `sizes` is populated (standard clothing sizes, e.g. S/M/L)
-// and every stock_quantity row's `size` is one of those. In 'nosize' mode
-// (jewellery, accessories, anything without standard sizing), `sizes` stays
-// empty — the rows instead hold a free-text, optionally-blank label (e.g.
-// "One Size", "Adjustable", or nothing at all) as the size_stock key.
+// backend can accept
 function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'>): Partial<Product> {
   const sizes = form.inventory_mode === 'size'
     ? form.stock_quantity.filter(s => s.quantity > 0).map(s => s.size)
@@ -543,7 +535,6 @@ function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_delete
 
 const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-// Pre-built template for Product Description
 const PRODUCT_TEMPLATE = `
   <h2>Materials & Construction</h2>
   <ul>
@@ -551,14 +542,12 @@ const PRODUCT_TEMPLATE = `
     <li><strong>Origin:</strong> Ethically produced in limited quantities</li>
     <li><strong>Finish:</strong> Enzyme-washed for a lived-in softness</li>
   </ul>
-
   <h2>Fit & Sizing</h2>
   <ul>
     <li>Oversized silhouette — size down for a relaxed fit</li>
     <li>Drop shoulders, extended hem</li>
     <li>Crew neck collar with double stitching</li>
   </ul>
-
   <h2>Care Instructions</h2>
   <ul>
     <li>Machine wash cold, inside out</li>
@@ -566,7 +555,6 @@ const PRODUCT_TEMPLATE = `
     <li>Iron on low heat, avoid print</li>
     <li>Do not bleach</li>
   </ul>
-
   <h2>Delivery & Returns</h2>
   <p>Free shipping on orders above ₹999.</p>
   <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
@@ -575,7 +563,7 @@ const PRODUCT_TEMPLATE = `
 
 const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
   name: '',
-  description: PRODUCT_TEMPLATE, // Set the default description to the template
+  description: PRODUCT_TEMPLATE, 
   collections: [],
   category: '',
   subcategory: '',
@@ -591,8 +579,6 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
 
 // ─── Products Section ─────────────────────────────────────────────────────────
 
-// Local category→subcategory map so Jewellery & Accessories always appear
-// regardless of what the backend returns.
 const CATEGORY_MAP: Record<string, string[]> = {
   Men:               ['T-Shirts', 'Lowers'],
   Women:             ['T-Shirts', 'Lowers', 'Crop-Tops'],
@@ -625,8 +611,6 @@ export function ProductsSection() {
 
     categoriesApi.list()
       .then(({ data }) => {
-        // Merge backend categories with our local map so locally-defined
-        // categories always appear even if the backend doesn't have them.
         const backendNames = (data || []).filter((c: Category) => !c.parent).map((c: Category) => c.name);
         const localOnly = Object.keys(CATEGORY_MAP).filter(n => !backendNames.includes(n));
         const synthetic: Category[] = localOnly.map((name, i) => ({
@@ -640,7 +624,6 @@ export function ProductsSection() {
         setAvailableCategories([...(data || []), ...synthetic]);
       })
       .catch(() => {
-        // Fallback: show all local categories if API fails completely
         const fallback: Category[] = Object.keys(CATEGORY_MAP).map((name, i) => ({
           id: `local-${i}`,
           name,
@@ -662,7 +645,6 @@ export function ProductsSection() {
       let hasMore = true;
 
       while (hasMore) {
-        // Fetch paginated chunk using backend's expected page logic
         const response: any = await productsApi.list({ limit: 100, page: currentPage });
         
         const items = response.data || [];
@@ -673,7 +655,6 @@ export function ProductsSection() {
           allProducts = [...allProducts, ...mappedItems];
         }
         
-        // Use pagination state (e.g. matching your backend response.pages) to evaluate if looping should continue
         if (pagination && currentPage >= pagination.pages) {
            hasMore = false;
         } else if (items.length < 100) {
@@ -989,7 +970,7 @@ export function ProductsSection() {
 
         <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden mb-2">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left border-collapse">
               <thead>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
@@ -1168,7 +1149,7 @@ export function ProductsSection() {
                             type="number"
                             value={existing.quantity}
                             onChange={e => handleQuantityChange(s, parseInt(e.target.value) || 0)}
-                            className={`${inputCls} w-24 py-1.5`}
+                            className={`w-24 py-1.5 ${baseInputCls}`}
                             placeholder="Qty"
                           />
                         )}
@@ -1188,14 +1169,14 @@ export function ProductsSection() {
                         value={row.size}
                         onChange={e => updateCustomStockRow(i, { size: e.target.value })}
                         placeholder="Label (optional) — e.g. One Size"
-                        className={`${inputCls} flex-1 py-1.5`}
+                        className={`flex-1 min-w-0 py-1.5 ${baseInputCls}`}
                       />
                       <input
                         type="number"
                         value={row.quantity}
                         onChange={e => updateCustomStockRow(i, { quantity: parseInt(e.target.value) || 0 })}
                         placeholder="Qty"
-                        className={`${inputCls} w-24 py-1.5`}
+                        className={`w-24 py-1.5 ${baseInputCls}`}
                       />
                       <button
                         type="button"
