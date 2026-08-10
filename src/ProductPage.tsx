@@ -141,8 +141,41 @@ export default function ProductPage() {
     const hydrateProduct = async () => {
       if (!params.id) return;
       try {
-        const { data } = await productsApi.list({ limit: 500 });
-        const p: any = (Array.isArray(data) ? data : []).find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
+        let p: any = null;
+
+        // Fast Path: Try fetching the single product directly if the API supports it
+        if (typeof (productsApi as any).get === 'function') {
+          const res = await (productsApi as any).get(params.id);
+          p = res.data || res;
+        } else if (typeof (productsApi as any).getById === 'function') {
+          const res = await (productsApi as any).getById(params.id);
+          p = res.data || res;
+        } else {
+          // Fallback: Paginated while-loop to search the entire catalog
+          let currentPage = 1;
+          let hasMore = true;
+
+          while (hasMore) {
+            const response: any = await productsApi.list({ limit: 100, page: currentPage });
+            const items = response.data || [];
+            
+            // Check if our product is in this chunk
+            p = items.find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
+            
+            if (p) {
+              break; // Found it! Stop fetching.
+            }
+
+            const pagination = response.pagination;
+            if (pagination && currentPage >= pagination.pages) {
+              hasMore = false;
+            } else if (items.length < 100) {
+              hasMore = false;
+            } else {
+              currentPage++;
+            }
+          }
+        }
         
         if (p) {
           let parsedImages: string[] = [];
@@ -634,7 +667,7 @@ export default function ProductPage() {
                           }}
                           className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
                             selectedSize === size
-                              ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.08)]'
+                              ? 'border-[var(--theme-accent)] text-[var(--theme-bg)] bg-[var(--theme-accent)]'
                               : !isOffered
                               ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed opacity-50'
                               : outOfStock
@@ -751,7 +784,7 @@ export default function ProductPage() {
                           <button
                             onClick={handleNotifyMe}
                             disabled={notifyStatus === 'submitting'}
-                            className="px-6 py-3 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-plex-mono font-bold hover:bg-[var(--theme-text)] transition-colors disabled:opacity-50 whitespace-nowrap"
+                            className="px-6 py-3 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-plex-mono font-bold hover:brightness-110 transition-colors disabled:opacity-50 whitespace-nowrap"
                           >
                             {notifyStatus === 'submitting' ? 'Submitting...' : 'Notify Me'}
                           </button>
@@ -819,10 +852,7 @@ export default function ProductPage() {
                 )}
               </motion.div>
 
-              {/* ── PRODUCT DETAILS (parsed rich-text description) ──
-                  parsedDescriptionSections was already being computed above
-                  via useMemo, but nothing actually rendered it — this is
-                  the fix for "description not visible on product page". */}
+              {/* ── PRODUCT DETAILS (parsed rich-text description) ── */}
               {parsedDescriptionSections && (
                 <div className="mt-2">
                   {parsedDescriptionSections.map((section, i) => (
@@ -840,16 +870,14 @@ export default function ProductPage() {
 
           </div>
 
-          {/* ── REVIEWS — imported and ready (ReviewSection, productsApi
-              already fetches reviews internally) but was never mounted. ── */}
+          {/* ── REVIEWS ── */}
           {product && (
             <div className="mt-20 pt-16 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
               <ReviewSection productId={product.id} />
             </div>
           )}
 
-          {/* ── RELATED PRODUCTS — relatedProducts was being fetched
-              (fetchRelated) but never rendered either. ── */}
+          {/* ── RELATED PRODUCTS ── */}
           {relatedProducts.length > 0 && (
             <div className="mt-24 pt-16 border-t border-[rgba(var(--theme-text-rgb),0.08)]">
               <h2 className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-8 text-center md:text-left">
