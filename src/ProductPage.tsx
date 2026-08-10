@@ -817,6 +817,16 @@ export default function ProductPage() {
 
         </div>
       </main>
+
+      {/* ── VIRTUAL TRY-ON MODAL ── */}
+      {product && (
+        <TryOnModal
+          isOpen={tryOnOpen}
+          onClose={() => setTryOnOpen(false)}
+          productId={product.id}
+          clothImages={images}
+        />
+      )}
     </div>
   );
 }
