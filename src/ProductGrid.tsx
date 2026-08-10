@@ -27,7 +27,6 @@ const womensCategories = [
   { id: 'lowers',  name: 'LOWERS',  image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' }
 ];
 
-
 // Subcategory cards for Men's Jewellery
 const mensJewelleryCategories = [
   { id: 'rings',     name: 'RINGS',     image: menRingImg,     fit: 'contain', path: '/jewellery/men/rings' },
@@ -67,9 +66,35 @@ export default function ProductGrid({
   useEffect(() => {
     const fetchDbProducts = async () => {
       try {
-        const { data } = await productsApi.list({ status: 'active', limit: 100 });
+        let allData: any[] = [];
+        let currentPage = 1;
+        let hasMore = true;
 
-        const formatted = (data || []).map((p: any) => {
+        // Loop to fetch all pages of active products
+        while (hasMore) {
+          const response: any = await productsApi.list({ 
+            status: 'active', 
+            limit: 100, 
+            page: currentPage 
+          });
+
+          const items = response.data || [];
+          const pagination = response.pagination;
+
+          if (items.length > 0) {
+            allData = [...allData, ...items];
+          }
+
+          if (pagination && currentPage >= pagination.pages) {
+            hasMore = false;
+          } else if (items.length < 100) {
+            hasMore = false;
+          } else {
+            currentPage++;
+          }
+        }
+
+        const formatted = allData.map((p: any) => {
           const catLower = p.category?.toLowerCase() || '';
           const isJewellery   = catLower === 'jewellery' || catLower.startsWith('jewellery/');
           const isAccessories = catLower === 'accessories';
@@ -120,7 +145,6 @@ export default function ProductGrid({
   const dbJewelleryMenProducts   = dbProducts.filter(p => p.gender === 'jewellery-men');
   const dbJewelleryWomenProducts = dbProducts.filter(p => p.gender === 'jewellery-women');
   const dbAccessoriesProducts  = dbProducts.filter(p => p.gender === 'accessories');
-
   const allWomenProducts = dbWomenProducts;
 
   // ─── Apparel subcategory helpers ─────────────────────────────────────────────

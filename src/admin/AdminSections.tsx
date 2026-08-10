@@ -32,13 +32,13 @@ const formatDate = (d: string) =>
 
 function MetricCard({ title, value, icon, sub, highlight = false }: { title: string; value: string | number; icon: React.ReactNode; sub?: string; highlight?: boolean }) {
   return (
-    <div className={`p-5 border rounded-sm flex flex-col gap-3 ${highlight ? 'bg-[#C5A059]/5 border-[#C5A059]/30' : 'bg-[#111] border-[#EAE6E1]/10'}`}>
-      <div className={`flex items-center justify-between ${highlight ? 'text-[#C5A059]' : 'text-[#EAE6E1]/40'}`}>
+    <div className={`p-5 border rounded-sm flex flex-col gap-3 ${highlight ? 'bg-[rgba(var(--theme-accent-rgb),0.05)] border-[rgba(var(--theme-accent-rgb),0.3)]' : 'bg-[var(--theme-surface)] border-[rgba(var(--theme-text-rgb),0.1)]'}`}>
+      <div className={`flex items-center justify-between ${highlight ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.4)]'}`}>
         <span className="text-[10px] uppercase font-sans tracking-[0.12em]">{title}</span>
         {icon}
       </div>
-      <div className={`text-2xl font-light font-mono ${highlight ? 'text-[#C5A059]' : 'text-[#EAE6E1]'}`}>{value}</div>
-      {sub && <p className="text-[10px] text-[#EAE6E1]/40 font-sans">{sub}</p>}
+      <div className={`text-2xl font-light font-mono ${highlight ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-text)]'}`}>{value}</div>
+      {sub && <p className="text-[10px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans">{sub}</p>}
     </div>
   );
 }
@@ -46,11 +46,11 @@ function MetricCard({ title, value, icon, sub, highlight = false }: { title: str
 function SectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <div className="flex items-center justify-between mb-6">
-      <h2 className="text-[13px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]">{title}</h2>
+      <h2 className="text-[13px] uppercase tracking-[0.2em] font-sans text-[var(--theme-text)]">{title}</h2>
       {action && (
         <button
           onClick={onAction}
-          className="flex items-center gap-2 px-4 py-2 text-[10px] uppercase tracking-[0.15em] font-sans bg-[#C5A059] text-black hover:bg-[#D4AE68] transition-colors duration-200 rounded-sm"
+          className="flex items-center gap-2 px-4 py-2 text-[10px] uppercase tracking-[0.15em] font-sans bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:brightness-110 transition-colors duration-200 rounded-sm"
         >
           <Plus size={12} />
           {action}
@@ -64,8 +64,8 @@ function Badge({ label, variant }: { label: string; variant: 'active' | 'inactiv
   const styles = {
     active: 'bg-emerald-900/25 text-emerald-400 border-emerald-900/40',
     Active: 'bg-emerald-900/25 text-emerald-400 border-emerald-900/40',
-    inactive: 'bg-[#1a1a1a] text-[#EAE6E1]/40 border-[#EAE6E1]/10',
-    draft: 'bg-[#1a1a1a] text-[#EAE6E1]/40 border-[#EAE6E1]/10',
+    inactive: 'bg-[var(--theme-surface)] text-[rgba(var(--theme-text-rgb),0.4)] border-[rgba(var(--theme-text-rgb),0.1)]',
+    draft: 'bg-[var(--theme-surface)] text-[rgba(var(--theme-text-rgb),0.4)] border-[rgba(var(--theme-text-rgb),0.1)]',
     expired: 'bg-red-900/20 text-red-400 border-red-900/30',
     Expired: 'bg-red-900/20 text-red-400 border-red-900/30',
     pending: 'bg-amber-900/20 text-amber-400 border-amber-900/30',
@@ -78,7 +78,7 @@ function Badge({ label, variant }: { label: string; variant: 'active' | 'inactiv
     delivered: 'bg-emerald-900/25 text-emerald-400 border-emerald-900/40',
     cancelled: 'bg-red-900/20 text-red-400 border-red-900/30',
     failed: 'bg-red-900/20 text-red-400 border-red-900/30',
-    refunded: 'bg-[#1a1a1a] text-[#EAE6E1]/40 border-[#EAE6E1]/10',
+    refunded: 'bg-[var(--theme-surface)] text-[rgba(var(--theme-text-rgb),0.4)] border-[rgba(var(--theme-text-rgb),0.1)]',
   };
   return (
     <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm border ${styles[variant]}`}>
@@ -103,12 +103,12 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 16 }}
         transition={{ duration: 0.2 }}
-        className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm w-full max-w-lg max-h-full flex flex-col"
+        className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm w-full max-w-lg max-h-full flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE6E1]/10 flex-shrink-0">
-          <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">{title}</h3>
-          <button onClick={onClose} className="text-[#EAE6E1]/40 hover:text-[#EAE6E1] transition-colors">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(var(--theme-text-rgb),0.1)] flex-shrink-0">
+          <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">{title}</h3>
+          <button onClick={onClose} className="text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-text)] transition-colors">
             <X size={16} />
           </button>
         </div>
@@ -121,13 +121,13 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <label className="block text-[10px] uppercase tracking-[0.15em] font-sans text-[#EAE6E1]/50 mb-2">{label}</label>
+      <label className="block text-[10px] uppercase tracking-[0.15em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] mb-2">{label}</label>
       {children}
     </div>
   );
 }
 
-const inputCls = "w-full bg-[#12100C] border border-[#EAE6E1]/10 rounded-sm px-3 py-2.5 text-[12px] text-[#EAE6E1] font-mono placeholder:text-[#EAE6E1]/20 focus:outline-none focus:border-[#C5A059]/40 transition-colors";
+const inputCls = "w-full bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm px-3 py-2.5 text-[12px] text-[var(--theme-text)] font-mono placeholder:text-[rgba(var(--theme-text-rgb),0.2)] focus:outline-none focus:border-[rgba(var(--theme-accent-rgb),0.4)] transition-colors";
 const selectCls = `${inputCls} cursor-pointer`;
 
 // ─── Dashboard Section ────────────────────────────────────────────────────────
@@ -161,25 +161,25 @@ export function DashboardSection({ orders }: { orders: Order[] }) {
         <MetricCard title="Revenue" value={formatVal(revenue)} icon={<TrendingUp size={16} />} sub="Prepaid orders" highlight />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#EAE6E1]/10 flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Recent Orders</span>
-            <span className="text-[10px] text-[#EAE6E1]/30 font-sans">Last 5</span>
+        <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-[rgba(var(--theme-text-rgb),0.1)] flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">Recent Orders</span>
+            <span className="text-[10px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans">Last 5</span>
           </div>
           {recentOrders.length === 0 ? (
-            <p className="p-6 text-[11px] text-[#EAE6E1]/30 font-sans text-center">No orders yet.</p>
+            <p className="p-6 text-[11px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans text-center">No orders yet.</p>
           ) : (
-            <div className="divide-y divide-[#EAE6E1]/5">
+            <div className="divide-y divide-[rgba(var(--theme-text-rgb),0.05)]">
               {recentOrders.map(o => {
                 const customer = typeof o.user === 'object' ? o.user : null;
                 return (
-                  <div key={o.id} className="px-5 py-3 flex items-center justify-between">
+                  <div key={o.id} className="px-5 py-3 flex items-center justify-between hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
                     <div>
-                      <p className="text-[11px] text-[#EAE6E1] font-mono">{customer?.name || 'Customer'}</p>
-                      <p className="text-[9px] text-[#EAE6E1]/40 font-sans mt-0.5">{o.id.slice(-8)}</p>
+                      <p className="text-[11px] text-[var(--theme-text)] font-mono">{customer?.name || 'Customer'}</p>
+                      <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mt-0.5">{o.id.slice(-8)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[11px] font-mono text-[#C5A059]">{formatVal(o.total/100)}</p>
+                      <p className="text-[11px] font-mono text-[var(--theme-accent)] mb-1">{formatVal(o.total/100)}</p>
                       <Badge label={o.order_status} variant={o.order_status as any} />
                     </div>
                   </div>
@@ -226,7 +226,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       case 'shipped': return 'text-blue-400 bg-blue-900/20';
       case 'processing': return 'text-purple-400 bg-purple-900/20';
       case 'cancelled': return 'text-red-400 bg-red-900/20';
-      default: return 'text-[#C5A059] bg-[#C5A059]/10';
+      default: return 'text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)]';
     }
   };
 
@@ -235,12 +235,12 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       <SectionHeader title="Orders" />
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="relative flex-1">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#EAE6E1]/30" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(var(--theme-text-rgb),0.3)]" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search orders, customers..."
-            className="w-full bg-[#111] border border-[#EAE6E1]/10 rounded-sm pl-9 pr-4 py-2.5 text-[12px] text-[#EAE6E1] font-mono placeholder:text-[#EAE6E1]/20 focus:outline-none focus:border-[#C5A059]/30 transition-colors"
+            className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm pl-9 pr-4 py-2.5 text-[12px] text-[var(--theme-text)] font-mono placeholder:text-[rgba(var(--theme-text-rgb),0.2)] focus:outline-none focus:border-[rgba(var(--theme-accent-rgb),0.3)] transition-colors"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -250,8 +250,8 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
               onClick={() => setFilter(f)}
               className={`px-4 py-2 text-[9px] uppercase tracking-[0.15em] font-sans rounded-sm transition-all duration-200 ${
                 filter === f
-                  ? 'bg-[#C5A059] text-black'
-                  : 'bg-[#111] text-[#EAE6E1]/50 border border-[#EAE6E1]/10 hover:border-[#C5A059]/30 hover:text-[#C5A059]'
+                  ? 'bg-[var(--theme-accent)] text-[var(--theme-bg)]'
+                  : 'bg-[var(--theme-surface)] text-[rgba(var(--theme-text-rgb),0.5)] border border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-accent-rgb),0.3)] hover:text-[var(--theme-accent)]'
               }`}
             >
               {f}
@@ -260,15 +260,15 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
         </div>
       </div>
       {errorMsg && (
-        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+        <div className="mb-4 p-3 text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.2)] text-[11px] font-sans rounded-sm flex items-center gap-2">
           <AlertCircle size={14} /> {errorMsg}
         </div>
       )}
-      <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
+      <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] bg-[#12100C]/50">
+              <tr className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
                 <th className="p-4 font-normal">Order</th>
                 <th className="p-4 font-normal">Customer</th>
                 <th className="p-4 font-normal">Date</th>
@@ -281,13 +281,13 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse">
+                  <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">
                     Loading Orders...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/30">
+                  <td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">
                     No orders found.
                   </td>
                 </tr>
@@ -296,19 +296,19 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                   const customer = typeof order.user === 'object' ? order.user : null;
                   return (
                   <React.Fragment key={order.id}>
-                    <tr className="border-b border-[#EAE6E1]/5 hover:bg-[#12100C]/40 transition-colors">
-                      <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">#{order.id.slice(-8)}</td>
+                    <tr className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
+                      <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">#{order.id.slice(-8)}</td>
                       <td className="p-4">
-                        <p className="text-[11px] text-[#EAE6E1]">{customer?.name || 'Customer'}</p>
-                        <p className="text-[9px] text-[#EAE6E1]/40 font-mono mt-0.5">{customer?.email}</p>
+                        <p className="text-[11px] text-[var(--theme-text)]">{customer?.name || 'Customer'}</p>
+                        <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5">{customer?.email}</p>
                         {customer?.phone && (
-                          <p className="text-[9px] text-[#EAE6E1]/40 font-mono mt-0.5 flex items-center gap-1">
+                          <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5 flex items-center gap-1">
                             <Smartphone size={9} /> {customer.phone}
                           </p>
                         )}
                       </td>
-                      <td className="p-4 text-[10px] text-[#EAE6E1]/50 font-sans">{formatDate(order.created_at)}</td>
-                      <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">{formatVal(order.total)}</td>
+                      <td className="p-4 text-[10px] text-[rgba(var(--theme-text-rgb),0.5)] font-sans">{formatDate(order.created_at)}</td>
+                      <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">{formatVal(order.total)}</td>
                       <td className="p-4">
                         <div className="flex flex-col gap-1 items-start">
                           <Badge label={order.payment_method === 'cod' ? 'COD' : 'Online'} variant={order.payment_method === 'cod' ? 'cod' : 'online'} />
@@ -323,7 +323,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                       <td className="p-4 text-right">
                         <button
                           onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                          className="text-[9px] uppercase tracking-[0.1em] font-sans hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/15 px-3 py-1.5 rounded-sm flex items-center gap-1.5 ml-auto"
+                          className="text-[9px] uppercase tracking-[0.1em] font-sans hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.15)] px-3 py-1.5 rounded-sm flex items-center gap-1.5 ml-auto"
                         >
                           <Eye size={11} /> View
                         </button>
@@ -337,27 +337,27 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                         >
-                          <td colSpan={7} className="px-5 pb-5 bg-[#12100C]/60 border-b border-[#EAE6E1]/10">
+                          <td colSpan={7} className="px-5 pb-5 bg-[rgba(var(--theme-bg-rgb),0.6)] border-b border-[rgba(var(--theme-text-rgb),0.1)]">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                               <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-3">Customer Details</p>
-                                <div className="space-y-1.5 text-[11px] text-[#EAE6E1]/70 bg-[#111] p-4 rounded-sm border border-[#EAE6E1]/5">
-                                  <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Name:</span> {customer?.name || '—'}</p>
-                                  <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Email:</span> {customer?.email || '—'}</p>
-                                  {customer?.phone && <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Phone:</span> {customer.phone}</p>}
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Customer Details</p>
+                                <div className="space-y-1.5 text-[11px] text-[rgba(var(--theme-text-rgb),0.7)] bg-[var(--theme-surface)] p-4 rounded-sm border border-[rgba(var(--theme-text-rgb),0.05)]">
+                                  <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Name:</span> {customer?.name || '—'}</p>
+                                  <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Email:</span> {customer?.email || '—'}</p>
+                                  {customer?.phone && <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Phone:</span> {customer.phone}</p>}
                                   <p>
-                                    <span className="text-[#EAE6E1]/40 w-14 inline-block">Address:</span>{' '}
+                                    <span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Address:</span>{' '}
                                     {[order.shipping_address?.line1, order.shipping_address?.line2, order.shipping_address?.city, order.shipping_address?.state, order.shipping_address?.postal_code, order.shipping_address?.country]
                                       .filter(Boolean).join(', ')}
                                   </p>
                                 </div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-3 mt-5">Update Status</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 mt-5">Update Status</p>
                                 <div className="flex flex-wrap gap-2">
                                   {['processing', 'shipped', 'delivered', 'cancelled'].map(s => (
                                     <button
                                       key={s}
                                       onClick={() => onUpdateStatus(order.id, s)}
-                                      className="px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans bg-[#12100C] border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/40 hover:text-[#C5A059] transition-colors capitalize"
+                                      className="px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors capitalize"
                                     >
                                       {s}
                                     </button>
@@ -365,15 +365,15 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                 </div>
                               </div>
                               <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-3">Products Ordered</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Products Ordered</p>
                                 <div className="space-y-2">
                                   {order.items.map((item, idx) => (
-                                    <div key={idx} className="flex justify-between items-center bg-[#111] p-3 border border-[#EAE6E1]/5 rounded-sm">
+                                    <div key={idx} className="flex justify-between items-center bg-[var(--theme-surface)] p-3 border border-[rgba(var(--theme-text-rgb),0.05)] rounded-sm">
                                       <div>
-                                        <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[#EAE6E1]">{item.name}</p>
-                                        <p className="text-[9px] font-mono text-[#EAE6E1]/40 mt-0.5">Size: {item.size || '—'} × {item.quantity}</p>
+                                        <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[var(--theme-text)]">{item.name}</p>
+                                        <p className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)] mt-0.5">Size: {item.size || '—'} × {item.quantity}</p>
                                       </div>
-                                      <span className="text-[11px] font-mono text-[#C5A059]">{formatVal(item.price * item.quantity)}</span>
+                                      <span className="text-[11px] font-mono text-[var(--theme-accent)]">{formatVal(item.price * item.quantity)}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -818,37 +818,37 @@ export function ProductsSection() {
       <SectionHeader title="Products" action="Add Product" onAction={openAdd} />
       
       <div className="relative mb-5">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#EAE6E1]/30" />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(var(--theme-text-rgb),0.3)]" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search products..."
-          className="w-full bg-[#111] border border-[#EAE6E1]/10 rounded-sm pl-9 pr-4 py-2.5 text-[12px] text-[#EAE6E1] font-mono placeholder:text-[#EAE6E1]/20 focus:outline-none focus:border-[#C5A059]/30 transition-colors"
+          className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm pl-9 pr-4 py-2.5 text-[12px] text-[var(--theme-text)] font-mono placeholder:text-[rgba(var(--theme-text-rgb),0.2)] focus:outline-none focus:border-[rgba(var(--theme-accent-rgb),0.3)] transition-colors"
         />
       </div>
 
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Database Products</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">Database Products</span>
           <button
             onClick={() => fetchDbProducts()}
-            className="ml-auto p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30"
+            className="ml-auto p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]"
           >
             <RefreshCw size={11} />
           </button>
         </div>
 
         {dbError && (
-          <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+          <div className="mb-4 p-3 text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.2)] text-[11px] font-sans rounded-sm flex items-center gap-2">
             <AlertCircle size={14} /> {dbError}
           </div>
         )}
 
-        <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden mb-2">
+        <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden mb-2">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] bg-[#12100C]/50">
+                <tr className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
                   <th className="p-4 font-normal">Product</th>
                   <th className="p-4 font-normal">Subcategory</th>
                   <th className="p-4 font-normal">Price</th>
@@ -860,45 +860,45 @@ export function ProductsSection() {
               <tbody>
                 {dbLoading ? (
                   <tr>
-                    <td colSpan={6} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse">
+                    <td colSpan={6} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">
                       Loading...
                     </td>
                   </tr>
                 ) : filteredDb.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-10 text-center text-[11px] font-sans text-[#EAE6E1]/30">
+                    <td colSpan={6} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">
                       No products yet. Click "Add Product" to create one.
                     </td>
                   </tr>
                 ) : (
                   filteredDb.map(p => (
-                    <tr key={p.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#12100C]/40 transition-colors">
+                    <tr key={p.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#12100C] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                          <div className="w-10 h-10 bg-[var(--theme-bg)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
                             {p.images?.[0] ? (
                               <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover opacity-80" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <Image size={12} className="text-[#EAE6E1]/20" />
+                                <Image size={12} className="text-[rgba(var(--theme-text-rgb),0.2)]" />
                               </div>
                             )}
                           </div>
                           <div>
-                            <span className="text-[11px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em] block">{p.name}</span>
+                            <span className="text-[11px] font-sans text-[var(--theme-text)] uppercase tracking-[0.05em] block">{p.name}</span>
                             {!p.in_stock && <span className="text-[9px] text-red-400 font-sans block">Out of Stock</span>}
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{p.subcategory}</td>
-                      <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">{formatVal(p.price)}</td>
+                      <td className="p-4 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{p.subcategory}</td>
+                      <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">{formatVal(p.price)}</td>
                       <td className="p-4">
                         {p.compare_price && p.compare_price > p.price ? (
                           <span className="px-2 py-0.5 text-[9px] font-mono font-semibold rounded-sm bg-emerald-900/20 text-emerald-400 border border-emerald-900/40">
                             -{Math.round(((p.compare_price - p.price) / p.compare_price) * 100)}%
                           </span>
                         ) : (
-                          <span className="text-[10px] text-[#EAE6E1]/20 font-sans">—</span>
+                          <span className="text-[10px] text-[rgba(var(--theme-text-rgb),0.2)] font-sans">—</span>
                         )}
                       </td>
                       <td className="p-4">
@@ -911,7 +911,7 @@ export function ProductsSection() {
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
                           {(p.stock_quantity || []).map(sq => (
-                            <span key={sq.size} className="px-1.5 py-0.5 text-[8px] font-sans border border-[#EAE6E1]/15 text-[#EAE6E1]/50 rounded-sm">
+                            <span key={sq.size} className="px-1.5 py-0.5 text-[8px] font-sans border border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm">
                               {sq.size}: {sq.quantity}
                             </span>
                           ))}
@@ -922,10 +922,10 @@ export function ProductsSection() {
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2 justify-end">
-                          <button onClick={() => openEdit(p)} className="p-1.5 text-[#EAE6E1]/40 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
+                          <button onClick={() => openEdit(p)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
                             <Edit2 size={12} />
                           </button>
-                          <button onClick={() => handleDelete(p.id)} className="p-1.5 text-[#EAE6E1]/40 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/50">
+                          <button onClick={() => handleDelete(p.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/50">
                             <Trash2 size={12} />
                           </button>
                         </div>
@@ -966,7 +966,7 @@ export function ProductsSection() {
                     type="button"
                     onClick={() => toggleCollection(col.id)}
                     className={`px-3 py-1.5 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
-                      form.collections.includes(col.id) ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                      form.collections.includes(col.id) ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)]' : 'border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.4)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
                     }`}
                   >
                     {col.name}
@@ -1039,7 +1039,7 @@ export function ProductsSection() {
                   type="button"
                   onClick={() => handleInventoryModeChange('size')}
                   className={`flex-1 px-3 py-2 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
-                    form.inventory_mode === 'size' ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                    form.inventory_mode === 'size' ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)]' : 'border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.4)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
                   }`}
                 >
                   Clothing (Standard Sizes)
@@ -1048,7 +1048,7 @@ export function ProductsSection() {
                   type="button"
                   onClick={() => handleInventoryModeChange('nosize')}
                   className={`flex-1 px-3 py-2 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
-                    form.inventory_mode === 'nosize' ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                    form.inventory_mode === 'nosize' ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)]' : 'border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.4)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
                   }`}
                 >
                   Other (Custom / No Size)
@@ -1066,7 +1066,7 @@ export function ProductsSection() {
                           type="button"
                           onClick={() => toggleSize(s)}
                           className={`px-3 py-1.5 w-14 text-[11px] font-sans uppercase tracking-wider border rounded-sm transition-all duration-150 ${
-                            isSelected ? 'border-[#C5A059] text-[#C5A059] bg-[#C5A059]/10' : 'border-[#EAE6E1]/15 text-[#EAE6E1]/40 hover:border-[#EAE6E1]/30'
+                            isSelected ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)]' : 'border-[rgba(var(--theme-text-rgb),0.15)] text-[rgba(var(--theme-text-rgb),0.4)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
                           }`}
                         >
                           {s}
@@ -1086,7 +1086,7 @@ export function ProductsSection() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <p className="text-[10px] text-[#EAE6E1]/40 font-sans mb-1">
+                  <p className="text-[10px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mb-1">
                     For items without standard sizing — jewellery, accessories, etc. A label is optional; leave it blank for a single stock count with no variant name.
                   </p>
                   {form.stock_quantity.map((row, i) => (
@@ -1109,7 +1109,7 @@ export function ProductsSection() {
                         type="button"
                         onClick={() => removeCustomStockRow(i)}
                         disabled={form.stock_quantity.length === 1}
-                        className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                        className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                         title={form.stock_quantity.length === 1 ? 'At least one row is required' : 'Remove row'}
                       >
                         <Trash2 size={14} />
@@ -1119,7 +1119,7 @@ export function ProductsSection() {
                   <button
                     type="button"
                     onClick={addCustomStockRow}
-                    className="flex items-center gap-1.5 mt-1 text-[10px] uppercase tracking-wider font-sans text-[#C5A059] hover:text-[#D4AE68] transition-colors self-start"
+                    className="flex items-center gap-1.5 mt-1 text-[10px] uppercase tracking-wider font-sans text-[var(--theme-accent)] hover:brightness-110 transition-colors self-start"
                   >
                     <Plus size={12} /> Add Row
                   </button>
@@ -1138,7 +1138,7 @@ export function ProductsSection() {
                 <button
                   type="button"
                   onClick={() => setForm(f => ({ ...f, in_stock: !f.in_stock }))}
-                  className={`w-full py-2.5 px-3 border rounded-sm text-[11px] font-sans transition-colors ${form.in_stock ? 'border-[#C5A059]/40 text-[#C5A059] bg-[#C5A059]/5' : 'border-[#EAE6E1]/10 text-[#EAE6E1]/40 bg-[#12100C]'}`}
+                  className={`w-full py-2.5 px-3 border rounded-sm text-[11px] font-sans transition-colors ${form.in_stock ? 'border-[rgba(var(--theme-accent-rgb),0.4)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]' : 'border-[rgba(var(--theme-text-rgb),0.1)] text-[rgba(var(--theme-text-rgb),0.4)] bg-[var(--theme-bg)]'}`}
                 >
                   {form.in_stock ? 'In Stock' : 'Out of Stock'}
                 </button>
@@ -1148,11 +1148,11 @@ export function ProductsSection() {
             <FormField label="Product Images">
               <div className="flex flex-wrap gap-4 mb-3">
                 {form.images.map((img, idx) => (
-                  <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[#EAE6E1]/20">
+                  <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[rgba(var(--theme-text-rgb),0.2)]">
                     <img src={img} alt="Product" className="w-full h-full object-cover" />
                     <button
                       onClick={() => handleRemoveExistingImage(img)}
-                      className="absolute top-1 right-1 bg-black/60 p-0.5 rounded-full hover:bg-red-500/80 transition-colors"
+                      className="absolute top-1 right-1 bg-[var(--theme-bg)]/80 p-0.5 rounded-full hover:bg-red-500/80 transition-colors"
                     >
                       <X size={12} className="text-white" />
                     </button>
@@ -1160,11 +1160,11 @@ export function ProductsSection() {
                 ))}
                 
                 {imageFiles.map((file, idx) => (
-                  <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[#C5A059] opacity-80">
+                  <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[var(--theme-accent)] opacity-80">
                     <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
                     <button
                       onClick={() => setImageFiles(files => files.filter((_, i) => i !== idx))}
-                      className="absolute top-1 right-1 bg-black/60 p-0.5 rounded-full hover:bg-red-500/80 transition-colors"
+                      className="absolute top-1 right-1 bg-[var(--theme-bg)]/80 p-0.5 rounded-full hover:bg-red-500/80 transition-colors"
                     >
                       <X size={12} className="text-white" />
                     </button>
@@ -1177,7 +1177,7 @@ export function ProductsSection() {
                 onChange={e => {
                   if (e.target.files) setImageFiles(prev => [...prev, ...Array.from(e.target.files!)]);
                 }}
-                className="text-xs text-[#EAE6E1]/70 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-semibold file:bg-[#C5A059] file:text-black hover:file:bg-[#d8b571] cursor-pointer w-full border border-[#EAE6E1]/10 p-2 rounded-sm"
+                className="text-xs text-[rgba(var(--theme-text-rgb),0.7)] file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-semibold file:bg-[var(--theme-accent)] file:text-[var(--theme-bg)] hover:file:brightness-110 cursor-pointer w-full border border-[rgba(var(--theme-text-rgb),0.1)] p-2 rounded-sm"
               />
             </FormField>
 
@@ -1185,13 +1185,13 @@ export function ProductsSection() {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim()}
-                className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:brightness-110 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={12} /> {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Product'}
               </button>
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors"
+                className="px-4 py-2.5 border border-[rgba(var(--theme-text-rgb),0.1)] text-[10px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors"
               >
                 Cancel
               </button>
@@ -1289,32 +1289,32 @@ export function CollectionsSection() {
   return (
     <div>
       <SectionHeader title="Collections" action="New Collection" onAction={openAdd} />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Group products into curated collections for seasonal drops and editorial features.</p>
+      <p className="text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mb-5">Group products into curated collections for seasonal drops and editorial features.</p>
 
       {error && (
-        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+        <div className="mb-4 p-3 text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.2)] text-[11px] font-sans rounded-sm flex items-center gap-2">
           <AlertCircle size={14} /> {error}
         </div>
       )}
 
       {loading ? (
-        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse text-center p-10">Loading...</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse text-center p-10">Loading...</p>
       ) : collections.length === 0 ? (
-        <p className="text-[11px] font-sans text-[#EAE6E1]/30 text-center p-10">No collections yet. Click "New Collection" to create one.</p>
+        <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] text-center p-10">No collections yet. Click "New Collection" to create one.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {collections.map(col => (
-            <div key={col.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
+            <div key={col.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-5 hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="text-[12px] font-sans text-[#EAE6E1] mb-1">{col.name}</p>
-                  <p className="text-[10px] font-mono text-[#EAE6E1]/30">/{col.slug}</p>
+                  <p className="text-[12px] font-sans text-[var(--theme-text)] mb-1">{col.name}</p>
+                  <p className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.3)]">/{col.slug}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <button onClick={() => openEdit(col)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors">
+                  <button onClick={() => openEdit(col)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors">
                     <Edit2 size={11} />
                   </button>
-                  <button onClick={() => handleDelete(col.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors">
+                  <button onClick={() => handleDelete(col.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors">
                     <Trash2 size={11} />
                   </button>
                 </div>
@@ -1322,11 +1322,11 @@ export function CollectionsSection() {
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center gap-2">
                   <Badge label={col.status} variant={col.status as any} />
-                  <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{productCounts[col.id] ?? 0} products</span>
+                  <span className="text-[9px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans">{productCounts[col.id] ?? 0} products</span>
                 </div>
                 <button
                   onClick={() => toggleFeatured(col)}
-                  className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${col.featured ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}
+                  className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${col.featured ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.3)]'}`}
                 >
                   <Star size={11} fill={col.featured ? 'currentColor' : 'none'} />
                   {col.featured ? 'Featured' : 'Feature'}
@@ -1362,7 +1362,7 @@ export function CollectionsSection() {
                 <button
                   type="button"
                   onClick={() => setForm(f => ({ ...f, featured: !f.featured }))}
-                  className={`w-full py-2.5 px-3 border rounded-sm text-[11px] font-sans flex items-center gap-2 transition-colors ${form.featured ? 'border-[#C5A059]/40 text-[#C5A059] bg-[#C5A059]/5' : 'border-[#EAE6E1]/10 text-[#EAE6E1]/40 bg-[#12100C]'}`}
+                  className={`w-full py-2.5 px-3 border rounded-sm text-[11px] font-sans flex items-center gap-2 transition-colors ${form.featured ? 'border-[rgba(var(--theme-accent-rgb),0.4)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]' : 'border-[rgba(var(--theme-text-rgb),0.1)] text-[rgba(var(--theme-text-rgb),0.4)] bg-[var(--theme-bg)]'}`}
                 >
                   <Star size={12} fill={form.featured ? 'currentColor' : 'none'} />
                   {form.featured ? 'Yes – Featured' : 'No – Not featured'}
@@ -1370,10 +1370,10 @@ export function CollectionsSection() {
               </FormField>
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:brightness-110 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                 <Save size={12} /> {saving ? 'Saving...' : editingCol ? 'Save Changes' : 'Create Collection'}
               </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[rgba(var(--theme-text-rgb),0.1)] text-[10px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
                 Cancel
               </button>
             </div>
@@ -1478,51 +1478,51 @@ export function CategoriesSection() {
   return (
     <div>
       <SectionHeader title="Categories" action="New Category" onAction={() => openAdd()} />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Manage top-level categories and their subcategories that appear in navigation.</p>
+      <p className="text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mb-5">Manage top-level categories and their subcategories that appear in navigation.</p>
 
       {error && (
-        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+        <div className="mb-4 p-3 text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.2)] text-[11px] font-sans rounded-sm flex items-center gap-2">
           <AlertCircle size={14} /> {error}
         </div>
       )}
 
       {loading ? (
-        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse text-center p-10">Loading...</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse text-center p-10">Loading...</p>
       ) : topLevel.length === 0 ? (
-        <p className="text-[11px] font-sans text-[#EAE6E1]/30 text-center p-10">No categories yet. Click "New Category" to create one.</p>
+        <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] text-center p-10">No categories yet. Click "New Category" to create one.</p>
       ) : (
         <div className="space-y-3">
           {topLevel.map(cat => (
-            <div key={cat.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
+            <div key={cat.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-5 hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <p className="text-[12px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em]">{cat.name}</p>
+                    <p className="text-[12px] font-sans text-[var(--theme-text)] uppercase tracking-[0.05em]">{cat.name}</p>
                     <Badge label={cat.status} variant={cat.status as any} />
-                    <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{productCounts[cat.id] ?? 0} products</span>
+                    <span className="text-[9px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans">{productCounts[cat.id] ?? 0} products</span>
                   </div>
-                  <p className="text-[10px] font-mono text-[#EAE6E1]/30 mb-3">/{cat.slug}</p>
+                  <p className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.3)] mb-3">/{cat.slug}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {childrenOf(cat.id).map(sub => (
-                      <span key={sub.id} className="group flex items-center gap-1 px-2 py-0.5 bg-[#12100C] border border-[#EAE6E1]/10 text-[9px] font-sans text-[#EAE6E1]/50 rounded-sm uppercase tracking-wider">
+                      <span key={sub.id} className="group flex items-center gap-1 px-2 py-0.5 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm uppercase tracking-wider">
                         {sub.name}
-                        <button onClick={() => openEdit(sub)} className="text-[#EAE6E1]/20 hover:text-[#C5A059]"><Edit2 size={9} /></button>
-                        <button onClick={() => handleDelete(sub.id)} className="text-[#EAE6E1]/20 hover:text-red-400"><Trash2 size={9} /></button>
+                        <button onClick={() => openEdit(sub)} className="text-[rgba(var(--theme-text-rgb),0.2)] hover:text-[var(--theme-accent)]"><Edit2 size={9} /></button>
+                        <button onClick={() => handleDelete(sub.id)} className="text-[rgba(var(--theme-text-rgb),0.2)] hover:text-red-400"><Trash2 size={9} /></button>
                       </span>
                     ))}
                     <button
                       onClick={() => openAdd(cat.id)}
-                      className="flex items-center gap-1 px-2 py-0.5 border border-dashed border-[#EAE6E1]/15 text-[9px] font-sans text-[#EAE6E1]/30 rounded-sm uppercase tracking-wider hover:border-[#C5A059]/40 hover:text-[#C5A059] transition-colors"
+                      className="flex items-center gap-1 px-2 py-0.5 border border-dashed border-[rgba(var(--theme-text-rgb),0.15)] text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] rounded-sm uppercase tracking-wider hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors"
                     >
                       <Plus size={9} /> Add Subcategory
                     </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 ml-4">
-                  <button onClick={() => openEdit(cat)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
+                  <button onClick={() => openEdit(cat)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
                     <Edit2 size={11} />
                   </button>
-                  <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
+                  <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/30">
                     <Trash2 size={11} />
                   </button>
                 </div>
@@ -1561,10 +1561,10 @@ export function CategoriesSection() {
               </select>
             </FormField>
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:brightness-110 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                 <Save size={12} /> {saving ? 'Saving...' : editingCat ? 'Save Changes' : 'Create Category'}
               </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[rgba(var(--theme-text-rgb),0.1)] text-[10px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
                 Cancel
               </button>
             </div>
@@ -1680,19 +1680,19 @@ export function DiscountsSection() {
   return (
     <div>
       <SectionHeader title="Discounts & Coupons" action="New Coupon" onAction={openAdd} />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Create coupon codes for promotions and customer loyalty programs.</p>
+      <p className="text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mb-5">Create coupon codes for promotions and customer loyalty programs.</p>
 
       {error && (
-        <div className="mb-4 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+        <div className="mb-4 p-3 text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.2)] text-[11px] font-sans rounded-sm flex items-center gap-2">
           <AlertCircle size={14} /> {error}
         </div>
       )}
 
-      <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
+      <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] bg-[#12100C]/50">
+              <tr className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
                 <th className="p-4 font-normal">Code</th>
                 <th className="p-4 font-normal">Type</th>
                 <th className="p-4 font-normal">Value</th>
@@ -1704,31 +1704,31 @@ export function DiscountsSection() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse">Loading...</td></tr>
+                <tr><td colSpan={7} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">Loading...</td></tr>
               ) : discounts.length === 0 ? (
-                <tr><td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[#EAE6E1]/30">No coupons yet. Click "New Coupon" to create one.</td></tr>
+                <tr><td colSpan={7} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No coupons yet. Click "New Coupon" to create one.</td></tr>
               ) : (
                 discounts.map(d => (
-                  <tr key={d.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#12100C]/40 transition-colors">
+                  <tr key={d.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
                     <td className="p-4">
-                      <span className="text-[12px] font-mono text-[#C5A059] bg-[#C5A059]/10 px-2 py-1 rounded-sm">{d.code}</span>
+                      <span className="text-[12px] font-mono text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] px-2 py-1 rounded-sm">{d.code}</span>
                     </td>
-                    <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.type}</td>
-                    <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">
+                    <td className="p-4 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{d.type}</td>
+                    <td className="p-4 text-[11px] font-mono text-[var(--theme-text)]">
                       {d.type === 'Percentage' ? `${d.value}%` : formatVal(d.value)}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 max-w-[80px] bg-[#12100C] rounded-full h-1.5">
+                        <div className="flex-1 max-w-[80px] bg-[var(--theme-bg)] rounded-full h-1.5">
                           <div
-                            className="bg-[#C5A059] h-full rounded-full transition-all"
+                            className="bg-[var(--theme-accent)] h-full rounded-full transition-all"
                             style={{ width: `${Math.min(100, (d.usage.used / d.usage.limit) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-[9px] font-mono text-[#EAE6E1]/40">{d.usage.used}/{d.usage.limit}</span>
+                        <span className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)]">{d.usage.used}/{d.usage.limit}</span>
                       </div>
                     </td>
-                    <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.expiry ? new Date(d.expiry).toLocaleDateString('en-IN') : '—'}</td>
+                    <td className="p-4 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{d.expiry ? new Date(d.expiry).toLocaleDateString('en-IN') : '—'}</td>
                     <td className="p-4">
                       <Badge label={d.status} variant={d.status} />
                     </td>
@@ -1736,15 +1736,15 @@ export function DiscountsSection() {
                       <div className="flex items-center gap-2 justify-end">
                         <button
                           onClick={() => toggleStatus(d)}
-                          className={`p-1.5 transition-colors border rounded-sm ${d.status === 'Active' ? 'text-[#C5A059] border-[#C5A059]/20 hover:border-[#C5A059]/40' : 'text-[#EAE6E1]/30 border-[#EAE6E1]/10 hover:border-[#EAE6E1]/20'}`}
+                          className={`p-1.5 transition-colors border rounded-sm ${d.status === 'Active' ? 'text-[var(--theme-accent)] border-[rgba(var(--theme-accent-rgb),0.2)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]' : 'text-[rgba(var(--theme-text-rgb),0.3)] border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-text-rgb),0.2)]'}`}
                           title={d.status === 'Active' ? 'Deactivate' : 'Activate'}
                         >
                           {d.status === 'Active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
                         </button>
-                        <button onClick={() => openEdit(d)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
+                        <button onClick={() => openEdit(d)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
                           <Edit2 size={12} />
                         </button>
-                        <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
+                        <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/30">
                           <Trash2 size={12} />
                         </button>
                       </div>
@@ -1800,10 +1800,10 @@ export function DiscountsSection() {
               </select>
             </FormField>
             <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:brightness-110 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                 <Save size={12} /> {saving ? 'Saving...' : editingDiscount ? 'Save Changes' : 'Create Coupon'}
               </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[rgba(var(--theme-text-rgb),0.1)] text-[10px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
                 Cancel
               </button>
             </div>
@@ -1842,7 +1842,7 @@ export function AnalysisSection() {
     return (
       <div>
         <SectionHeader title="Analysis" />
-        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[#C5A059] animate-pulse text-center p-16">Loading demand insights...</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse text-center p-16">Loading demand insights...</p>
       </div>
     );
   }
@@ -1850,38 +1850,38 @@ export function AnalysisSection() {
   return (
     <div>
       <SectionHeader title="Analysis" />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-6">
+      <p className="text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mb-6">
         Demand signals across the catalog — units ordered, plus "notify me" signups on items people wanted but couldn't buy.
       </p>
 
       {error && (
-        <div className="mb-5 p-3 text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/20 text-[11px] font-sans rounded-sm flex items-center gap-2">
+        <div className="mb-5 p-3 text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.2)] text-[11px] font-sans rounded-sm flex items-center gap-2">
           <AlertCircle size={14} /> {error}
         </div>
       )}
 
       {summary && (
         <>
-          <div className="bg-[#111] border border-[#C5A059]/20 rounded-sm p-5 mb-6">
+          <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm p-5 mb-6">
             <div className="flex items-center gap-2 mb-1">
-              <Bell size={14} className="text-[#C5A059]" />
-              <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Unfulfilled Demand — Restock Priority</p>
+              <Bell size={14} className="text-[var(--theme-accent)]" />
+              <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">Unfulfilled Demand — Restock Priority</p>
             </div>
-            <p className="text-[10px] text-[#EAE6E1]/40 font-sans mb-4">Out of stock right now, with active "notify me" signups. These are the clearest restocking candidates.</p>
+            <p className="text-[10px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mb-4">Out of stock right now, with active "notify me" signups. These are the clearest restocking candidates.</p>
             {summary.unfulfilledDemand.length === 0 ? (
-              <p className="text-[11px] font-sans text-[#EAE6E1]/30 py-6 text-center">No unfulfilled demand right now — nothing out of stock has active notify signups.</p>
+              <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] py-6 text-center">No unfulfilled demand right now — nothing out of stock has active notify signups.</p>
             ) : (
               <div className="space-y-2">
                 {summary.unfulfilledDemand.map((item) => (
-                  <div key={item.product?._id} className="flex items-center gap-3 bg-[#12100C] border border-[#EAE6E1]/5 rounded-sm p-3">
-                    <div className="w-10 h-10 bg-[#1a1a1a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                  <div key={item.product?._id} className="flex items-center gap-3 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.05)] rounded-sm p-3">
+                    <div className="w-10 h-10 bg-[var(--theme-surface)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
                       {productImage(item.product) && <img src={productImage(item.product)} alt={item.product?.name} className="w-full h-full object-cover" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-sans text-[#EAE6E1] truncate">{item.product?.name || 'Unknown product'}</p>
-                      <p className="text-[9px] font-sans text-[#EAE6E1]/40">{item.product?.category} / {item.product?.subcategory}</p>
+                      <p className="text-[11px] font-sans text-[var(--theme-text)] truncate">{item.product?.name || 'Unknown product'}</p>
+                      <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)]">{item.product?.category} / {item.product?.subcategory}</p>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[#C5A059] flex-shrink-0">
+                    <div className="flex items-center gap-1.5 text-[var(--theme-accent)] flex-shrink-0">
                       <Bell size={12} />
                       <span className="text-[12px] font-mono">{item.notifyCounter}</span>
                     </div>
@@ -1892,27 +1892,27 @@ export function AnalysisSection() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
+            <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-5">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp size={14} className="text-[#C5A059]" />
-                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Top Products Overall</p>
+                <TrendingUp size={14} className="text-[var(--theme-accent)]" />
+                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">Top Products Overall</p>
               </div>
               {summary.topOverall.length === 0 ? (
-                <p className="text-[11px] font-sans text-[#EAE6E1]/30 py-6 text-center">No demand data yet.</p>
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] py-6 text-center">No demand data yet.</p>
               ) : (
                 <div className="space-y-2">
                   {summary.topOverall.map((item, i) => (
                     <div key={item.product?._id} className="flex items-center gap-3">
-                      <span className="text-[10px] font-mono text-[#EAE6E1]/25 w-4">{i + 1}</span>
-                      <div className="w-8 h-8 bg-[#1a1a1a] rounded-sm overflow-hidden flex-shrink-0 border border-[#EAE6E1]/10">
+                      <span className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.25)] w-4">{i + 1}</span>
+                      <div className="w-8 h-8 bg-[var(--theme-surface)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
                         {productImage(item.product) && <img src={productImage(item.product)} alt={item.product?.name} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-sans text-[#EAE6E1] truncate">{item.product?.name || 'Unknown product'}</p>
+                        <p className="text-[10px] font-sans text-[var(--theme-text)] truncate">{item.product?.name || 'Unknown product'}</p>
                       </div>
-                      <div className="flex items-center gap-3 text-[9px] font-mono text-[#EAE6E1]/40 flex-shrink-0">
+                      <div className="flex items-center gap-3 text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)] flex-shrink-0">
                         <span title="Units ordered">{item.demandCounter} sold</span>
-                        {item.notifyCounter > 0 && <span className="text-[#C5A059]" title="Notify-me signups">{item.notifyCounter} waiting</span>}
+                        {item.notifyCounter > 0 && <span className="text-[var(--theme-accent)]" title="Notify-me signups">{item.notifyCounter} waiting</span>}
                       </div>
                     </div>
                   ))}
@@ -1920,13 +1920,13 @@ export function AnalysisSection() {
               )}
             </div>
 
-            <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
+            <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-5">
               <div className="flex items-center gap-2 mb-4">
-                <BarChart3 size={14} className="text-[#C5A059]" />
-                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Demand by Category</p>
+                <BarChart3 size={14} className="text-[var(--theme-accent)]" />
+                <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">Demand by Category</p>
               </div>
               {summary.byCategory.length === 0 ? (
-                <p className="text-[11px] font-sans text-[#EAE6E1]/30 py-6 text-center">No demand data yet.</p>
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] py-6 text-center">No demand data yet.</p>
               ) : (
                 <div className="space-y-3">
                   {(() => {
@@ -1934,14 +1934,14 @@ export function AnalysisSection() {
                     return summary.byCategory.map((cat) => (
                       <div key={cat._id}>
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] uppercase tracking-wider font-sans text-[#EAE6E1]/70">{cat._id || 'Uncategorized'}</span>
-                          <span className="text-[9px] font-mono text-[#EAE6E1]/40">{cat.productCount} product{cat.productCount !== 1 ? 's' : ''}</span>
+                          <span className="text-[10px] uppercase tracking-wider font-sans text-[rgba(var(--theme-text-rgb),0.7)]">{cat._id || 'Uncategorized'}</span>
+                          <span className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)]">{cat.productCount} product{cat.productCount !== 1 ? 's' : ''}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-[#12100C] rounded-full h-1.5">
-                            <div className="bg-[#C5A059] h-full rounded-full transition-all" style={{ width: `${(cat.combinedScore / maxScore) * 100}%` }} />
+                          <div className="flex-1 bg-[var(--theme-bg)] rounded-full h-1.5">
+                            <div className="bg-[var(--theme-accent)] h-full rounded-full transition-all" style={{ width: `${(cat.combinedScore / maxScore) * 100}%` }} />
                           </div>
-                          <span className="text-[9px] font-mono text-[#EAE6E1]/50 w-16 text-right">{cat.totalDemand} sold / {cat.totalNotify} waiting</span>
+                          <span className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.5)] w-16 text-right">{cat.totalDemand} sold / {cat.totalNotify} waiting</span>
                         </div>
                       </div>
                     ));
