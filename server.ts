@@ -62,6 +62,15 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
+  // ── Security headers ──────────────────────────────────────────────────
+  // same-origin-allow-popups keeps this page isolated from other origins
+  // while still allowing window.open()'d popups (e.g. the Google Identity
+  // Services sign-in popup) to communicate back via postMessage.
+  app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+    next();
+  });
+
   // ── Dev: proxy /api/* before Vite middleware ──
   if (process.env.NODE_ENV !== "production") {
     app.use("/api", (req, res) => {
