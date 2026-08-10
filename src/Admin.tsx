@@ -498,6 +498,8 @@ function ProductsSection() {
     setDbError('');
     try {
       const { data } = await productsApi.list({ limit: 100 });
+      console.log('fetched product from the DB: ', data);
+      
       setDbProducts((data as DbProduct[]) || []);
     } catch (err: any) {
       setDbError('Could not load products. Make sure the database is connected.');
