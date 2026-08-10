@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Minus, Plus, ShoppingCart } from 'lucide-react';
+import { X, Minus, Plus, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useNavigate } from 'react-router-dom';
@@ -76,6 +76,25 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   const currentImg = activeImage === 'front' ? product.frontImg : activeImage === 'back' ? product.backImg : product.topImg;
 
+  const availableImages: { type: 'front' | 'back' | 'top', url: string }[] = [];
+  if (product.frontImg) availableImages.push({ type: 'front', url: product.frontImg });
+  if (product.backImg && product.backImg !== product.frontImg) availableImages.push({ type: 'back', url: product.backImg });
+  if (product.topImg && product.topImg !== product.frontImg && product.topImg !== product.backImg) availableImages.push({ type: 'top', url: product.topImg });
+
+  const currentIndex = availableImages.findIndex(img => img.type === activeImage);
+  
+  const handleNextImage = () => {
+    if (availableImages.length <= 1) return;
+    const nextIdx = (currentIndex + 1) % availableImages.length;
+    setActiveImage(availableImages[nextIdx].type);
+  };
+
+  const handlePrevImage = () => {
+    if (availableImages.length <= 1) return;
+    const prevIdx = (currentIndex - 1 + availableImages.length) % availableImages.length;
+    setActiveImage(availableImages[prevIdx].type);
+  };
+
   return (
     <AnimatePresence>
         <motion.div
@@ -102,7 +121,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
           {/* Image Gallery */}
           <div className="w-full md:w-1/2 flex flex-col bg-[var(--theme-surface)] shrink-0">
-            <div className="relative h-[45vh] md:h-[600px] w-full overflow-hidden shrink-0">
+            <div className="relative h-[45vh] md:h-[600px] w-full overflow-hidden shrink-0 group">
               {currentImg ? (
                 <img 
                   src={currentImg} 
@@ -113,6 +132,26 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 <div className="w-full h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.2)] font-sans tracking-widest uppercase text-sm">
                   Image Unavailable
                 </div>
+              )}
+
+              {/* Navigation Arrows */}
+              {availableImages.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/40 text-white rounded-full hover:bg-black/70 transition-colors duration-300"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/40 text-white rounded-full hover:bg-black/70 transition-colors duration-300"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
               )}
             </div>
             
