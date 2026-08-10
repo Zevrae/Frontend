@@ -3,43 +3,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/UseAuth';
 import {
-  Package2, ChevronDown, Eye, CheckCircle2, Truck, XCircle,
-  DollarSign, Archive, Clock, Smartphone, LayoutDashboard,
-  ShoppingBag, Layers, Tag, Percent, Plus, Edit2, Trash2,
-  Search, X, ChevronRight, Image, ToggleLeft, ToggleRight,
-  FolderOpen, Star, AlertCircle, TrendingUp, Users, ArrowUpRight,
-  Save, Upload, RefreshCw
+  Package2, Eye, Archive, Clock, Smartphone, LayoutDashboard,
+  ShoppingBag, Plus, Edit2, Trash2, Search, X, ChevronRight, 
+  Image, AlertCircle, TrendingUp, Save, RefreshCw
 } from 'lucide-react';
 import { productsApi } from './api/products';
 import { ordersApi, Order } from './api/orders';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts';
-
-// ─── Mock data for frontend-only sections (Collections/Categories/Discounts
-// don't have backend models/endpoints yet — see note on those sections) ────
-
-const mockCollections = [
-  { id: 'c1', name: 'Autumn / Winter 2026', slug: 'aw26', products: 14, status: 'active', featured: true },
-  { id: 'c2', name: 'Spring / Summer 2026', slug: 'ss26', products: 22, status: 'active', featured: false },
-  { id: 'c3', name: 'Jewellery Essentials', slug: 'jewellery-essentials', products: 8, status: 'active', featured: true },
-  { id: 'c4', name: 'The Edit', slug: 'the-edit', products: 6, status: 'draft', featured: false },
-];
-
-const mockCategories = [
-  { id: 'cat1', name: 'Men', slug: 'men', subcategories: ['T-Shirts', 'Lowers', 'Outerwear'], products: 24, status: 'active' },
-  { id: 'cat2', name: 'Women', slug: 'women', subcategories: ['T-Shirts', 'Lowers', 'Dresses'], products: 31, status: 'active' },
-  { id: 'cat3', name: 'Unisex', slug: 'unisex', subcategories: ['T-Shirts', 'Lowers', 'Outerwear'], products: 15, status: 'active' },
-  { id: 'cat4', name: 'Jewellery', slug: 'jewellery', subcategories: ['Rings', 'Pendants', 'Ears', 'Bracelets'], products: 18, status: 'active' },
-  { id: 'cat5', name: 'Accessories', slug: 'accessories', subcategories: ['Keychains', 'Soft Toys'], products: 5, status: 'active' },
-];
-
-const mockDiscounts = [
-  { id: 'd1', code: 'ZEVRAE10', type: 'Percentage', value: 10, uses: 143, limit: 500, status: 'active', expiry: '2026-12-31' },
-  { id: 'd2', code: 'FLAT500', type: 'Fixed Amount', value: 500, uses: 67, limit: 200, status: 'active', expiry: '2026-09-30' },
-  { id: 'd3', code: 'WELCOME15', type: 'Percentage', value: 15, uses: 200, limit: 200, status: 'expired', expiry: '2026-03-31' },
-];
+type AdminSection = 'dashboard' | 'orders' | 'products';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -156,7 +129,11 @@ function DashboardSection({ orders }: { orders: Order[] }) {
   useEffect(() => {
     productsApi
       .list({ limit: 1 })
-      .then(({ pagination }) => setProductCount(pagination.total))
+      .then((res: any) => {
+        if (res.pagination) {
+          setProductCount(res.pagination.total);
+        }
+      })
       .catch(() => setProductCount(null));
   }, []);
 
@@ -164,7 +141,7 @@ function DashboardSection({ orders }: { orders: Order[] }) {
   const pendingOrders = orders.filter(o => o.order_status === 'placed').length;
   const revenue = orders.filter(o => o.payment_status === 'paid').reduce((s, o) => s + o.total, 0);
 
-  const recentOrders = orders.slice(0, 5);
+  const recentOrders = orders.slice(0, 10);
 
   return (
     <div>
@@ -176,61 +153,32 @@ function DashboardSection({ orders }: { orders: Order[] }) {
         <MetricCard title="Revenue" value={formatVal(revenue)} icon={<TrendingUp size={16} />} sub="Prepaid orders" highlight />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Recent Orders */}
-        <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#EAE6E1]/10 flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Recent Orders</span>
-            <span className="text-[10px] text-[#EAE6E1]/30 font-sans">Last 5</span>
-          </div>
-          {recentOrders.length === 0 ? (
-            <p className="p-6 text-[11px] text-[#EAE6E1]/30 font-sans text-center">No orders yet.</p>
-          ) : (
-            <div className="divide-y divide-[#EAE6E1]/5">
-              {recentOrders.map(o => {
-                const customer = typeof o.user === 'object' ? o.user : null;
-                return (
-                  <div key={o.id} className="px-5 py-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] text-[#EAE6E1] font-mono">{customer?.name || 'Customer'}</p>
-                      <p className="text-[9px] text-[#EAE6E1]/40 font-sans mt-0.5">{o.id.slice(-8)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[11px] font-mono text-[#C5A059]">{formatVal(o.total)}</p>
-                      <Badge label={o.order_status} variant={o.order_status as any} />
-                    </div>
+      <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#EAE6E1]/10 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059]">Recent Orders</span>
+          <span className="text-[10px] text-[#EAE6E1]/30 font-sans">Last 10</span>
+        </div>
+        {recentOrders.length === 0 ? (
+          <p className="p-6 text-[11px] text-[#EAE6E1]/30 font-sans text-center">No orders yet.</p>
+        ) : (
+          <div className="divide-y divide-[#EAE6E1]/5">
+            {recentOrders.map(o => {
+              const customer = typeof o.user === 'object' ? o.user : null;
+              return (
+                <div key={o.id} className="px-5 py-3 flex items-center justify-between hover:bg-[#12100C]/40 transition-colors">
+                  <div>
+                    <p className="text-[11px] text-[#EAE6E1] font-mono">{customer?.name || 'Customer'}</p>
+                    <p className="text-[9px] text-[#EAE6E1]/40 font-sans mt-0.5">{o.id.slice(-8)}</p>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Quick Stats */}
-        <div className="space-y-4">
-          <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-4">Catalog Overview</p>
-            <div className="space-y-3">
-              {mockCategories.map(cat => (
-                <div key={cat.id} className="flex items-center justify-between">
-                  <span className="text-[11px] font-sans text-[#EAE6E1]/70">{cat.name}</span>
-                  <span className="text-[11px] font-mono text-[#EAE6E1]/50">{cat.products} products</span>
+                  <div className="text-right">
+                    <p className="text-[11px] font-mono text-[#C5A059] mb-1">{formatVal(o.total)}</p>
+                    <Badge label={o.order_status} variant={o.order_status as any} />
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-          <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[#C5A059] mb-4">Active Discounts</p>
-            <div className="space-y-3">
-              {mockDiscounts.filter(d => d.status === 'active').map(d => (
-                <div key={d.id} className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-[#EAE6E1]/70">{d.code}</span>
-                  <span className="text-[11px] font-sans text-[#EAE6E1]/50">{d.uses}/{d.limit} uses</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -396,7 +344,7 @@ function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                   {customer?.phone && <p><span className="text-[#EAE6E1]/40 w-14 inline-block">Phone:</span> {customer.phone}</p>}
                                   <p>
                                     <span className="text-[#EAE6E1]/40 w-14 inline-block">Address:</span>{' '}
-                                    {[order.shipping_address.line1, order.shipping_address.line2, order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code, order.shipping_address.country]
+                                    {[order.shipping_address?.line1, order.shipping_address?.line2, order.shipping_address?.city, order.shipping_address?.state, order.shipping_address?.postal_code, order.shipping_address?.country]
                                       .filter(Boolean).join(', ')}
                                   </p>
                                 </div>
@@ -465,8 +413,8 @@ const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 const emptyForm = (): Omit<DbProduct, 'id' | 'created_at'> => ({
   name: '',
   description: '',
-  category: 'Men',
-  subcategory: 'T-Shirts',
+  category: '',
+  subcategory: '',
   price: 0,
   compare_price: null,
   sizes: [],
@@ -498,25 +446,28 @@ function ProductsSection() {
     setDbError('');
     try {
       let allProducts: DbProduct[] = [];
-      let offset = 0;
-      const limit = 100;
+      let currentPage = 1;
       let hasMore = true;
 
       while (hasMore) {
-        const { data } = await productsApi.list({ limit, offset });
-        if (data && data.length > 0) {
-          allProducts = [...allProducts, ...(data as DbProduct[])];
+        const response: any = await productsApi.list({ limit: 100, page: currentPage });
+        
+        const items = response.data || [];
+        const pagination = response.pagination;
+
+        if (items.length > 0) {
+          allProducts = [...allProducts, ...items];
         }
         
-        // If we received fewer items than requested, we've reached the end
-        if (!data || data.length < limit) {
-          hasMore = false;
+        if (pagination && currentPage >= pagination.pages) {
+           hasMore = false;
+        } else if (items.length < 100) {
+           hasMore = false;
         } else {
-          offset += limit;
+           currentPage++;
         }
       }
 
-      console.log('fetched product from the DB: ', allProducts);
       setDbProducts(allProducts);
     } catch (err: any) {
       setDbError('Could not load products. Make sure the database is connected.');
@@ -577,8 +528,6 @@ function ProductsSection() {
         productId = created.id;
       }
 
-      // Newly selected files go to Appwrite via the product-scoped upload
-      // endpoint, which appends them to the product's existing images array.
       if (imageFiles.length > 0 && productId) {
         await productsApi.uploadImages(productId, imageFiles);
       }
@@ -731,7 +680,7 @@ function ProductsSection() {
       {/* ── Add / Edit Modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
         {showModal && (
-          <Modal title={editingId ? 'Edit Men\'s Product' : 'Add Men\'s Product'} onClose={() => setShowModal(false)}>
+          <Modal title={editingId ? 'Edit Product' : 'Add Product'} onClose={() => setShowModal(false)}>
             <FormField label="Product Name">
               <input
                 value={form.name}
@@ -753,30 +702,20 @@ function ProductsSection() {
 
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Category">
-                <select
+                <input
                   value={form.category}
-                  onChange={e => {
-                    const cat = e.target.value;
-                    const found = mockCategories.find(c => c.name === cat);
-                    setForm(f => ({ ...f, category: cat, subcategory: found?.subcategories[0] || '' }));
-                  }}
-                  className={selectCls}
-                >
-                  {mockCategories.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  placeholder="e.g. Men"
+                  className={inputCls}
+                />
               </FormField>
               <FormField label="Subcategory">
-                <select
+                <input
                   value={form.subcategory}
                   onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))}
-                  className={selectCls}
-                >
-                  {(mockCategories.find(c => c.name === form.category)?.subcategories || []).map(sub => (
-                    <option key={sub} value={sub}>{sub}</option>
-                  ))}
-                </select>
+                  placeholder="e.g. T-Shirts"
+                  className={inputCls}
+                />
               </FormField>
             </div>
 
@@ -899,369 +838,12 @@ function ProductsSection() {
   );
 }
 
-// ─── Collections Section ──────────────────────────────────────────────────────
-
-function CollectionsSection() {
-  const [collections, setCollections] = useState(mockCollections);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCol, setEditingCol] = useState<typeof mockCollections[0] | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', status: 'active', featured: false });
-
-  const openAdd = () => { setEditingCol(null); setForm({ name: '', slug: '', status: 'active', featured: false }); setShowModal(true); };
-  const openEdit = (c: typeof mockCollections[0]) => { setEditingCol(c); setForm({ name: c.name, slug: c.slug, status: c.status, featured: c.featured }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.name) return;
-    if (editingCol) {
-      setCollections(prev => prev.map(c => c.id === editingCol.id ? { ...c, ...form } : c));
-    } else {
-      setCollections(prev => [...prev, { id: `c${Date.now()}`, ...form, products: 0 }]);
-    }
-    setShowModal(false);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this collection?')) setCollections(prev => prev.filter(c => c.id !== id));
-  };
-
-  const toggleFeatured = (id: string) => {
-    setCollections(prev => prev.map(c => c.id === id ? { ...c, featured: !c.featured } : c));
-  };
-
-  return (
-    <div>
-      <SectionHeader title="Collections" action="New Collection" onAction={openAdd} />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Group products into curated collections for seasonal drops and editorial features.</p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {collections.map(col => (
-          <div key={col.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-[12px] font-sans text-[#EAE6E1] mb-1">{col.name}</p>
-                <p className="text-[10px] font-mono text-[#EAE6E1]/30">/{col.slug}</p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button onClick={() => openEdit(col)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors">
-                  <Edit2 size={11} />
-                </button>
-                <button onClick={() => handleDelete(col.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors">
-                  <Trash2 size={11} />
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <Badge label={col.status} variant={col.status as any} />
-                <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{col.products} products</span>
-              </div>
-              <button
-                onClick={() => toggleFeatured(col.id)}
-                className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${col.featured ? 'text-[#C5A059]' : 'text-[#EAE6E1]/30'}`}
-              >
-                <Star size={11} fill={col.featured ? 'currentColor' : 'none'} />
-                {col.featured ? 'Featured' : 'Feature'}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <AnimatePresence>
-        {showModal && (
-          <Modal title={editingCol ? 'Edit Collection' : 'New Collection'} onClose={() => setShowModal(false)}>
-            <FormField label="Collection Name">
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Autumn / Winter 2026" className={inputCls} />
-            </FormField>
-            <FormField label="URL Slug">
-              <input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="e.g. aw26" className={inputCls} />
-            </FormField>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Status">
-                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
-                  <option value="active">Active</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </FormField>
-              <FormField label="Featured">
-                <button
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, featured: !f.featured }))}
-                  className={`w-full py-2.5 px-3 border rounded-sm text-[11px] font-sans flex items-center gap-2 transition-colors ${form.featured ? 'border-[#C5A059]/40 text-[#C5A059] bg-[#C5A059]/5' : 'border-[#EAE6E1]/10 text-[#EAE6E1]/40 bg-[#12100C]'}`}
-                >
-                  <Star size={12} fill={form.featured ? 'currentColor' : 'none'} />
-                  {form.featured ? 'Yes – Featured' : 'No – Not featured'}
-                </button>
-              </FormField>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingCol ? 'Save Changes' : 'Create Collection'}
-              </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
-                Cancel
-              </button>
-            </div>
-          </Modal>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ─── Categories Section ───────────────────────────────────────────────────────
-
-function CategoriesSection() {
-  const [categories, setCategories] = useState(mockCategories);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCat, setEditingCat] = useState<typeof mockCategories[0] | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', subcategories: '', status: 'active' });
-
-  const openAdd = () => { setEditingCat(null); setForm({ name: '', slug: '', subcategories: '', status: 'active' }); setShowModal(true); };
-  const openEdit = (c: typeof mockCategories[0]) => { setEditingCat(c); setForm({ name: c.name, slug: c.slug, subcategories: c.subcategories.join(', '), status: c.status }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.name) return;
-    const subcategories = form.subcategories.split(',').map(s => s.trim()).filter(Boolean);
-    if (editingCat) {
-      setCategories(prev => prev.map(c => c.id === editingCat.id ? { ...c, ...form, subcategories } : c));
-    } else {
-      setCategories(prev => [...prev, { id: `cat${Date.now()}`, name: form.name, slug: form.slug, subcategories, products: 0, status: form.status }]);
-    }
-    setShowModal(false);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this category?')) setCategories(prev => prev.filter(c => c.id !== id));
-  };
-
-  return (
-    <div>
-      <SectionHeader title="Categories" action="New Category" onAction={openAdd} />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Manage top-level categories and their subcategories that appear in navigation.</p>
-
-      <div className="space-y-3">
-        {categories.map(cat => (
-          <div key={cat.id} className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm p-5 hover:border-[#EAE6E1]/20 transition-colors">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <p className="text-[12px] font-sans text-[#EAE6E1] uppercase tracking-[0.05em]">{cat.name}</p>
-                  <Badge label={cat.status} variant={cat.status as any} />
-                  <span className="text-[9px] text-[#EAE6E1]/30 font-sans">{cat.products} products</span>
-                </div>
-                <p className="text-[10px] font-mono text-[#EAE6E1]/30 mb-3">/{cat.slug}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {cat.subcategories.map(sub => (
-                    <span key={sub} className="px-2 py-0.5 bg-[#12100C] border border-[#EAE6E1]/10 text-[9px] font-sans text-[#EAE6E1]/50 rounded-sm uppercase tracking-wider">
-                      {sub}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 ml-4">
-                <button onClick={() => openEdit(cat)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
-                  <Edit2 size={11} />
-                </button>
-                <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
-                  <Trash2 size={11} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <AnimatePresence>
-        {showModal && (
-          <Modal title={editingCat ? 'Edit Category' : 'New Category'} onClose={() => setShowModal(false)}>
-            <FormField label="Category Name">
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Men" className={inputCls} />
-            </FormField>
-            <FormField label="URL Slug">
-              <input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="e.g. men" className={inputCls} />
-            </FormField>
-            <FormField label="Subcategories (comma-separated)">
-              <input value={form.subcategories} onChange={e => setForm(f => ({ ...f, subcategories: e.target.value }))} placeholder="e.g. T-Shirts, Lowers, Outerwear" className={inputCls} />
-            </FormField>
-            <FormField label="Status">
-              <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
-                <option value="active">Active</option>
-                <option value="draft">Draft</option>
-              </select>
-            </FormField>
-            <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingCat ? 'Save Changes' : 'Create Category'}
-              </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
-                Cancel
-              </button>
-            </div>
-          </Modal>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ─── Discounts Section ────────────────────────────────────────────────────────
-
-function DiscountsSection() {
-  const [discounts, setDiscounts] = useState(mockDiscounts);
-  const [showModal, setShowModal] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState<typeof mockDiscounts[0] | null>(null);
-  const [form, setForm] = useState({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'active' });
-
-  const openAdd = () => { setEditingDiscount(null); setForm({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'active' }); setShowModal(true); };
-  const openEdit = (d: typeof mockDiscounts[0]) => { setEditingDiscount(d); setForm({ code: d.code, type: d.type, value: String(d.value), limit: String(d.limit), expiry: d.expiry, status: d.status }); setShowModal(true); };
-
-  const handleSave = () => {
-    if (!form.code) return;
-    if (editingDiscount) {
-      setDiscounts(prev => prev.map(d => d.id === editingDiscount.id ? { ...d, ...form, value: Number(form.value), limit: Number(form.limit) } : d));
-    } else {
-      setDiscounts(prev => [...prev, { id: `d${Date.now()}`, ...form, value: Number(form.value), limit: Number(form.limit), uses: 0 }]);
-    }
-    setShowModal(false);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Remove this discount?')) setDiscounts(prev => prev.filter(d => d.id !== id));
-  };
-
-  const toggleStatus = (id: string) => {
-    setDiscounts(prev => prev.map(d => d.id === id ? { ...d, status: d.status === 'active' ? 'expired' : 'active' } : d));
-  };
-
-  return (
-    <div>
-      <SectionHeader title="Discounts & Coupons" action="New Coupon" onAction={openAdd} />
-      <p className="text-[11px] text-[#EAE6E1]/40 font-sans mb-5">Create coupon codes for promotions and customer loyalty programs.</p>
-
-      <div className="bg-[#111] border border-[#EAE6E1]/10 rounded-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-[#EAE6E1]/10 text-[9px] uppercase tracking-[0.2em] font-sans text-[#C5A059] bg-[#12100C]/50">
-                <th className="p-4 font-normal">Code</th>
-                <th className="p-4 font-normal">Type</th>
-                <th className="p-4 font-normal">Value</th>
-                <th className="p-4 font-normal">Usage</th>
-                <th className="p-4 font-normal">Expiry</th>
-                <th className="p-4 font-normal">Status</th>
-                <th className="p-4 font-normal text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {discounts.map(d => (
-                <tr key={d.id} className="border-b border-[#EAE6E1]/5 hover:bg-[#12100C]/40 transition-colors">
-                  <td className="p-4">
-                    <span className="text-[12px] font-mono text-[#C5A059] bg-[#C5A059]/10 px-2 py-1 rounded-sm">{d.code}</span>
-                  </td>
-                  <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.type}</td>
-                  <td className="p-4 text-[11px] font-mono text-[#EAE6E1]">
-                    {d.type === 'Percentage' ? `${d.value}%` : formatVal(d.value)}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 max-w-[80px] bg-[#12100C] rounded-full h-1.5">
-                        <div
-                          className="bg-[#C5A059] h-full rounded-full transition-all"
-                          style={{ width: `${Math.min(100, (d.uses / d.limit) * 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-[9px] font-mono text-[#EAE6E1]/40">{d.uses}/{d.limit}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-[10px] font-sans text-[#EAE6E1]/50">{d.expiry}</td>
-                  <td className="p-4">
-                    <Badge label={d.status} variant={d.status as any} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button
-                        onClick={() => toggleStatus(d.id)}
-                        className={`p-1.5 transition-colors border rounded-sm ${d.status === 'active' ? 'text-[#C5A059] border-[#C5A059]/20 hover:border-[#C5A059]/40' : 'text-[#EAE6E1]/30 border-[#EAE6E1]/10 hover:border-[#EAE6E1]/20'}`}
-                        title={d.status === 'active' ? 'Deactivate' : 'Activate'}
-                      >
-                        {d.status === 'active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
-                      </button>
-                      <button onClick={() => openEdit(d)} className="p-1.5 text-[#EAE6E1]/30 hover:text-[#C5A059] transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-[#C5A059]/30">
-                        <Edit2 size={12} />
-                      </button>
-                      <button onClick={() => handleDelete(d.id)} className="p-1.5 text-[#EAE6E1]/30 hover:text-red-400 transition-colors border border-[#EAE6E1]/10 rounded-sm hover:border-red-900/30">
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {showModal && (
-          <Modal title={editingDiscount ? 'Edit Coupon' : 'New Coupon'} onClose={() => setShowModal(false)}>
-            <FormField label="Coupon Code">
-              <input
-                value={form.code}
-                onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-                placeholder="e.g. ZEVRAE10"
-                className={inputCls}
-              />
-            </FormField>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Discount Type">
-                <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className={selectCls}>
-                  <option>Percentage</option>
-                  <option>Fixed Amount</option>
-                </select>
-              </FormField>
-              <FormField label={form.type === 'Percentage' ? 'Value (%)' : 'Value (INR)'}>
-                <input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} placeholder={form.type === 'Percentage' ? '10' : '500'} className={inputCls} />
-              </FormField>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Usage Limit">
-                <input type="number" value={form.limit} onChange={e => setForm(f => ({ ...f, limit: e.target.value }))} placeholder="500" className={inputCls} />
-              </FormField>
-              <FormField label="Expiry Date">
-                <input type="date" value={form.expiry} onChange={e => setForm(f => ({ ...f, expiry: e.target.value }))} className={inputCls} />
-              </FormField>
-            </div>
-            <FormField label="Status">
-              <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
-                <option value="active">Active</option>
-                <option value="expired">Inactive</option>
-              </select>
-            </FormField>
-            <div className="flex gap-3 pt-2">
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#C5A059] text-black text-[10px] uppercase tracking-[0.2em] font-sans rounded-sm hover:bg-[#D4AE68] transition-colors flex items-center justify-center gap-2">
-                <Save size={12} /> {editingDiscount ? 'Save Changes' : 'Create Coupon'}
-              </button>
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 border border-[#EAE6E1]/10 text-[10px] uppercase tracking-[0.2em] font-sans text-[#EAE6E1]/50 rounded-sm hover:border-[#EAE6E1]/20 transition-colors">
-                Cancel
-              </button>
-            </div>
-          </Modal>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 const navItems: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
   { id: 'orders', label: 'Orders', icon: <Archive size={15} /> },
   { id: 'products', label: 'Products', icon: <ShoppingBag size={15} /> },
-  { id: 'collections', label: 'Collections', icon: <Layers size={15} /> },
-  { id: 'categories', label: 'Categories', icon: <FolderOpen size={15} /> },
-  { id: 'discounts', label: 'Discounts', icon: <Percent size={15} /> },
 ];
 
 function Sidebar({ active, setActive, isMobileOpen, onClose }: {
@@ -1342,8 +924,6 @@ export default function Admin() {
     fetchOrders();
   }, [authLoading, isAdmin]);
 
-  // Real-time order updates aren't wired up on the backend (no websocket/SSE
-  // endpoint), so we poll instead — same effective behavior as before.
   useEffect(() => {
     if (!isAdmin) return;
     const poll = setInterval(() => fetchOrders(false), 5000);
@@ -1354,21 +934,25 @@ export default function Admin() {
     if (showLoader) setLoading(true);
     try {
       let allOrders: Order[] = [];
-      let offset = 0;
-      const limit = 100;
+      let currentPage = 1;
       let hasMore = true;
 
       while (hasMore) {
-        const { data } = await ordersApi.list({ limit, offset });
-        if (data && data.length > 0) {
-          allOrders = [...allOrders, ...(data as Order[])];
+        const response: any = await ordersApi.list({ limit: 100, page: currentPage });
+        
+        const items = response.data || [];
+        const pagination = response.pagination;
+
+        if (items.length > 0) {
+          allOrders = [...allOrders, ...items];
         }
         
-        // If we received fewer items than requested, we've reached the end
-        if (!data || data.length < limit) {
+        if (pagination && currentPage >= pagination.pages) {
+          hasMore = false;
+        } else if (items.length < 100) {
           hasMore = false;
         } else {
-          offset += limit;
+          currentPage++;
         }
       }
       
@@ -1459,9 +1043,6 @@ export default function Admin() {
                 />
               )}
               {activeSection === 'products' && <ProductsSection />}
-              {activeSection === 'collections' && <CollectionsSection />}
-              {activeSection === 'categories' && <CategoriesSection />}
-              {activeSection === 'discounts' && <DiscountsSection />}
             </motion.div>
           </AnimatePresence>
         </main>
