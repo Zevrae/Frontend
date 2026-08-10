@@ -23,6 +23,7 @@ import { analysisApi, AnalysisSummary } from '../api/analysis';
 import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+// Exported so AdminLayout.tsx can type its section-switch state.
 
 export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts' | 'analysis';
 export type { Order };
@@ -970,7 +971,7 @@ export function ProductsSection() {
 
         <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden mb-2">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left">
               <thead>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
@@ -1149,7 +1150,7 @@ export function ProductsSection() {
                             type="number"
                             value={existing.quantity}
                             onChange={e => handleQuantityChange(s, parseInt(e.target.value) || 0)}
-                            className={`w-24 py-1.5 ${baseInputCls}`}
+                            className={`${baseInputCls} w-24 py-1.5`}
                             placeholder="Qty"
                           />
                         )}
@@ -1163,20 +1164,22 @@ export function ProductsSection() {
                     For items without standard sizing — jewellery, accessories, etc. A label is optional; leave it blank for a single stock count with no variant name.
                   </p>
                   {form.stock_quantity.map((row, i) => (
-                    <div key={row._rowId ?? i} className="flex items-center gap-2">
+                    <div key={row._rowId ?? i} className="grid grid-cols-[1fr_80px_auto] sm:grid-cols-[1fr_100px_auto] gap-2 items-center w-full">
                       <input
                         type="text"
                         value={row.size}
                         onChange={e => updateCustomStockRow(i, { size: e.target.value })}
                         placeholder="Label (optional) — e.g. One Size"
-                        className={`flex-1 min-w-0 py-1.5 ${baseInputCls}`}
+                        className={inputCls}
+                        style={{ paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
                       />
                       <input
                         type="number"
                         value={row.quantity}
                         onChange={e => updateCustomStockRow(i, { quantity: parseInt(e.target.value) || 0 })}
                         placeholder="Qty"
-                        className={`w-24 py-1.5 ${baseInputCls}`}
+                        className={inputCls}
+                        style={{ paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
                       />
                       <button
                         type="button"
@@ -1192,7 +1195,7 @@ export function ProductsSection() {
                   <button
                     type="button"
                     onClick={addCustomStockRow}
-                    className="flex items-center gap-1.5 mt-1 text-[10px] uppercase tracking-wider font-sans text-[var(--theme-accent)] hover:brightness-110 transition-colors self-start"
+                    className="flex items-center gap-1.5 mt-2 text-[10px] uppercase tracking-wider font-sans text-[var(--theme-accent)] hover:brightness-110 transition-colors self-start"
                   >
                     <Plus size={12} /> Add Row
                   </button>
