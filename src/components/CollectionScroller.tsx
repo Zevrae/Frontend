@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+﻿import { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
@@ -48,8 +48,8 @@ const collections: Collection[] = [
     label: 'JEWELLERY',
     heading: 'Jewellery',
     sub: 'Handcrafted with precision and care. Each piece tells a story of dedication and artistry.',
-    menRoute: '/jewellery',
-    womenRoute: '/jewellery',
+    menRoute: '/jewellery/men',
+    womenRoute: '/jewellery/women',
     image: jewelleryCover,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
