@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
