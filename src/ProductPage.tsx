@@ -614,16 +614,34 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
 
-                {/* Price row */}
-                <div className="flex items-baseline gap-4 pt-1">
-                  <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
-                    {formatPrice(product.price)}
-                  </span>
-                  {product.originalPrice && (
-                    <span className="text-sm font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] line-through">
-                      {formatPrice(product.originalPrice)}
+                {/* Price and Share row */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-baseline gap-4">
+                    <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
+                      {formatPrice(product.price)}
                     </span>
-                  )}
+                    {product.originalPrice && (
+                      <span className="text-sm font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] line-through">
+                        {formatPrice(product.originalPrice)}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      const url = window.location.origin + '/product/' + product.id;
+                      if (navigator.share) {
+                        navigator.share({ title: product.name, url }).catch(console.error);
+                      } else {
+                        navigator.clipboard.writeText(url);
+                        alert('Link copied to clipboard!');
+                      }
+                    }}
+                    className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors"
+                    title="Share this product"
+                    aria-label="Share product"
+                  >
+                    <span className="text-xl leading-none">↗</span>
+                  </button>
                 </div>
               </motion.div>
 

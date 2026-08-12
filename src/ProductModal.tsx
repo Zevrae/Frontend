@@ -212,13 +212,35 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           {/* Product Details */}
           <div className="w-full md:w-1/2 p-5 sm:p-6 md:p-12 flex flex-col overflow-y-auto pb-[90px] md:pb-12">
             <div className="mb-4 md:mb-8">
-              <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[var(--theme-accent)] mb-1 sm:mb-2 block">
-                {product.label}
-              </span>
-              <h2 className="text-xl sm:text-2xl md:text-4xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] uppercase leading-tight mb-1 sm:mb-4">
-                {product.name}
-              </h2>
-              <p className="text-lg sm:text-xl font-mono text-[var(--theme-text)]">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}</p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[var(--theme-accent)] mb-1 sm:mb-2 block">
+                    {product.label}
+                  </span>
+                  <h2 className="text-xl sm:text-2xl md:text-4xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] uppercase leading-tight mb-1 sm:mb-4">
+                    {product.name}
+                  </h2>
+                  <p className="text-lg sm:text-xl font-mono text-[var(--theme-text)]">
+                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const url = window.location.origin + '/product/' + product.id;
+                    if (navigator.share) {
+                      navigator.share({ title: product.name, url }).catch(console.error);
+                    } else {
+                      navigator.clipboard.writeText(url);
+                      alert('Link copied to clipboard!');
+                    }
+                  }}
+                  className="flex items-center justify-center w-10 h-10 mt-4 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors shrink-0"
+                  title="Share this product"
+                  aria-label="Share product"
+                >
+                  <span className="text-xl leading-none">↗</span>
+                </button>
+              </div>
             </div>
 
             {/* Size Selector */}
