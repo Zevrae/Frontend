@@ -646,23 +646,44 @@ export function ProductsSection() {
       let currentPage = 1;
       let hasMore = true;
 
-      while (hasMore) {
+      // Hard ceiling regardless of what the backend reports — 300 pages at
+      // 100/page is 30,000 products, far beyond any real catalog here. This
+      // is what actually prevents a runaway loop: previously, if a response
+      // ever came back without valid `pagination` metadata while still
+      // returning a full page of 100 items, NEITHER stop condition below
+      // could ever fire, and this loop ran indefinitely — continuously
+      // fetching and growing `allProducts` without bound. That's a genuine
+      // main-thread-starving/memory-exhausting loop, not just a slow one,
+      // and matches a frozen tab with a "Wait/Exit page" prompt exactly.
+      const MAX_PAGES = 300;
+
+      while (hasMore && currentPage <= MAX_PAGES) {
         const response: any = await productsApi.list({ limit: 100, page: currentPage });
-        
-        const items = response.data || [];
-        const pagination = response.pagination;
+
+        const items = response?.data || [];
+        const pagination = response?.pagination;
 
         if (items.length > 0) {
           const mappedItems = items.map((item: any) => productToDbProduct(item));
           allProducts = [...allProducts, ...mappedItems];
         }
-        
-        if (pagination && currentPage >= pagination.pages) {
-           hasMore = false;
+
+        if (items.length === 0) {
+          // Nothing came back at all — definitely no more pages.
+          hasMore = false;
+        } else if (pagination && typeof pagination.pages === 'number') {
+          // Trust real pagination metadata when we have it.
+          hasMore = currentPage < pagination.pages;
+          currentPage++;
         } else if (items.length < 100) {
-           hasMore = false;
+          // No pagination info, but a partial page — safe to assume this
+          // was the last page.
+          hasMore = false;
         } else {
-           currentPage++;
+          // No pagination info AND a full page — we genuinely can't tell if
+          // there's more. Stop here rather than guess forever; a missing
+          // page of results is far better than a frozen tab.
+          hasMore = false;
         }
       }
 
