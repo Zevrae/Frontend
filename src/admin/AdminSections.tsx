@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Eye, CheckCircle2, Truck, XCircle,
@@ -295,19 +295,20 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       header: () => <div className="text-right">Actions</div>,
       cell: info => (
         <button
-          onClick={() => setExpandedOrder(expandedOrder === info.row.original.id ? null : info.row.original.id)}
+          onClick={() => setExpandedOrder(prev => prev === info.row.original.id ? null : info.row.original.id)}
           className="text-[9px] uppercase tracking-[0.1em] font-sans hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.15)] px-3 py-1.5 rounded-sm flex items-center gap-1.5 ml-auto"
         >
           <Eye size={11} /> View
         </button>
       )
     })
-  ], [expandedOrder]);
+  ], []);
 
   const table = useReactTable({
     data: filtered,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.id,
   });
 
   return (
@@ -637,7 +638,7 @@ export function ProductsSection() {
       });
   }, []);
 
-  const fetchDbProducts = async () => {
+  const fetchDbProducts = useCallback(async () => {
     setDbLoading(true);
     setDbError('');
     try {
@@ -671,7 +672,7 @@ export function ProductsSection() {
     } finally {
       setDbLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => { fetchDbProducts(); }, []);
 
@@ -683,7 +684,7 @@ export function ProductsSection() {
     setShowModal(true);
   };
 
-  const openEdit = (p: DbProduct) => {
+  const openEdit = useCallback((p: DbProduct) => {
     setEditingId(p.id);
     setForm({
       name: p.name,
@@ -703,7 +704,7 @@ export function ProductsSection() {
     setImageFiles([]);
     setFormError('');
     setShowModal(true);
-  };
+  }, []);
 
   const toggleSize = (s: string) => {
     setForm(f => {
@@ -824,7 +825,7 @@ export function ProductsSection() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Soft delete this product? It will be removed from the active store views.')) return;
     try {
       await productsApi.remove(id);
@@ -832,7 +833,7 @@ export function ProductsSection() {
     } catch (error: any) {
       alert('Delete failed: ' + (error?.response?.data?.message || error.message));
     }
-  };
+  }, [fetchDbProducts]);
 
   const filteredDb = dbProducts.filter(p =>
     !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.subcategory.toLowerCase().includes(search.toLowerCase())
@@ -936,6 +937,7 @@ export function ProductsSection() {
     data: filteredDb,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.id,
   });
 
   return (
@@ -1661,7 +1663,7 @@ export function DiscountsSection() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const fetchDiscounts = async () => {
+  const fetchDiscounts = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -1672,7 +1674,7 @@ export function DiscountsSection() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => { fetchDiscounts(); }, []);
 
@@ -1682,7 +1684,7 @@ export function DiscountsSection() {
     setFormError('');
     setShowModal(true);
   };
-  const openEdit = (d: Discount) => {
+  const openEdit = useCallback((d: Discount) => {
     setEditingDiscount(d);
     setForm({
       code: d.code,
@@ -1694,7 +1696,7 @@ export function DiscountsSection() {
     });
     setFormError('');
     setShowModal(true);
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!form.code.trim()) { setFormError('Coupon code is required.'); return; }
@@ -1732,7 +1734,7 @@ export function DiscountsSection() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Remove this discount?')) return;
     try {
       await discountsApi.remove(id);
@@ -1740,16 +1742,16 @@ export function DiscountsSection() {
     } catch (err: any) {
       alert('Delete failed: ' + (err?.response?.data?.message || err.message));
     }
-  };
+  }, [fetchDiscounts]);
 
-  const toggleStatus = async (d: Discount) => {
+  const toggleStatus = useCallback(async (d: Discount) => {
     try {
       await discountsApi.update(d.id, { status: d.status === 'Active' ? 'Expired' : 'Active' });
       fetchDiscounts();
     } catch (err: any) {
       alert('Update failed: ' + (err?.response?.data?.message || err.message));
     }
-  };
+  }, [fetchDiscounts]);
 
   const discountColumnHelper = createColumnHelper<Discount>();
   const discountColumns = useMemo(() => [
@@ -1825,6 +1827,7 @@ export function DiscountsSection() {
     data: discounts,
     columns: discountColumns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.id,
   });
 
   return (
