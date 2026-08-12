@@ -60,4 +60,17 @@ export const reviewsApi = {
     const response = await api.delete(`/reviews/${reviewId}`);
     return response.data as { success: boolean; message: string };
   },
+
+  // Fetches the most-recent reviews site-wide (any product) for the scrolling
+  // ticker strip. Returns an empty array silently if the endpoint is unavailable.
+  listAll: async (params?: { page?: number; limit?: number }): Promise<Review[]> => {
+    try {
+      const response = await api.get('/reviews', { params: { limit: 40, ...params } });
+      const body = response.data;
+      // Some backends return { data: [...] }, others return the array directly.
+      return Array.isArray(body) ? body : (body?.data ?? []);
+    } catch {
+      return [];
+    }
+  },
 };

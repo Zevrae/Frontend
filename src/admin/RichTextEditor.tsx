@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -34,6 +34,13 @@ const PRODUCT_TEMPLATE = `
   <p>Dispatched within 2–4 business days. Delivery in 5–8 days.</p>
   <p>14-day returns accepted on unworn, unaltered items with original tags intact.</p>
 `;
+
+const EDITOR_CLASS =
+  'prose-invert max-w-none text-[12px] font-mono text-[#EAE6E1] focus:outline-none min-h-[120px] px-3 py-2.5 ' +
+  '[&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_ul]:pl-5 [&_ol]:pl-5 [&_ul]:list-disc [&_ol]:list-decimal ' +
+  '[&_h2]:text-[13px] [&_h2]:uppercase [&_h2]:tracking-[0.1em] [&_h2]:text-[#C5A059] [&_h2]:my-2 ' +
+  '[&_.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.is-editor-empty:first-child::before]:float-left ' +
+  '[&_.is-editor-empty:first-child::before]:text-[#EAE6E1]/20 [&_.is-editor-empty:first-child::before]:pointer-events-none [&_.is-editor-empty:first-child::before]:h-0';
 
 // ─── Toolbar ──────────────────────────────────────────────────────────────────
 
@@ -87,24 +94,39 @@ export default function RichTextEditor({
   // reset the editor cursor / undo-stack mid-edit.
   const lastEmittedHtml = useRef<string | null>(null);
 
-  const editor = useEditor({
-    extensions: [
+  // CRITICAL: Tiptap's useEditor compares the `extensions` array element-by-
+  // element BY REFERENCE on every render (see @tiptap/react's compareOptions)
+  // to decide whether to call editor.setOptions() — a genuinely expensive
+  // operation that reconfigures the whole ProseMirror plugin pipeline
+  // (StarterKit, Placeholder, etc). Without this useMemo, `extensions` was a
+  // brand-new array of brand-new .configure() instances on every render,
+  // which is EVERY keystroke (typing -> onUpdate -> parent setState ->
+  // re-render). That meant the editor was reconfiguring itself from scratch
+  // on every single keystroke — the actual cause of the admin panel getting
+  // laggier and heavier the more it was used.
+  const extensions = useMemo(
+    () => [
       StarterKit.configure({
         heading: { levels: [2] },
       }),
       Placeholder.configure({ placeholder }),
     ],
-    content: value || PRODUCT_TEMPLATE,
-    editorProps: {
+    [placeholder]
+  );
+
+  const editorProps = useMemo(
+    () => ({
       attributes: {
-        class:
-          'prose-invert max-w-none text-[12px] font-mono text-[#EAE6E1] focus:outline-none min-h-[120px] px-3 py-2.5 ' +
-          '[&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_ul]:pl-5 [&_ol]:pl-5 [&_ul]:list-disc [&_ol]:list-decimal ' +
-          '[&_h2]:text-[13px] [&_h2]:uppercase [&_h2]:tracking-[0.1em] [&_h2]:text-[#C5A059] [&_h2]:my-2 ' +
-          '[&_.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.is-editor-empty:first-child::before]:float-left ' +
-          '[&_.is-editor-empty:first-child::before]:text-[#EAE6E1]/20 [&_.is-editor-empty:first-child::before]:pointer-events-none [&_.is-editor-empty:first-child::before]:h-0',
+        class: EDITOR_CLASS,
       },
-    },
+    }),
+    []
+  );
+
+  const editor = useEditor({
+    extensions,
+    content: value || PRODUCT_TEMPLATE,
+    editorProps,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       // Record what we're about to emit so the useEffect knows it came from

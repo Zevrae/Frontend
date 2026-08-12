@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles, AlertCircle, Check } from 'lucide-react';
+import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles, AlertCircle, Check, Star, Send, ChevronDown } from 'lucide-react';
 import { useAuth } from '../hooks/UseAuth';
 import { useAuthModal } from '../AuthModalContext';
 import { tryonApi } from '../api/tryon';
 import { buildImageProxyUrl } from '../api/images';
+import { reviewsApi } from '../api/reviews';
 
 interface TryOnModalProps {
   isOpen: boolean;
@@ -29,6 +30,15 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
   const [stage, setStage] = useState<Stage>('upload');
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Review form state (result stage)
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [reviewHoverRating, setReviewHoverRating] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when modal closes
@@ -41,6 +51,13 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       setStage('upload');
       setProgress(0);
       setErrorMessage('');
+      setShowReviewForm(false);
+      setReviewRating(0);
+      setReviewComment('');
+      setReviewSubmitting(false);
+      setReviewSubmitted(false);
+      setReviewError('');
+      setReviewHoverRating(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -200,6 +217,34 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
   };
 
   const clampedProgress = Math.min(Math.round(progress), 100);
+
+  // Fetch the generated try-on image as a File blob, then submit a review.
+  const handleReviewSubmit = async () => {
+    if (reviewRating === 0) {
+      setReviewError('Please select a star rating.');
+      return;
+    }
+    if (!generatedImage) return;
+    setReviewSubmitting(true);
+    setReviewError('');
+    try {
+      let imageFiles: File[] = [];
+      try {
+        const res = await fetch(buildImageProxyUrl(generatedImage));
+        const blob = await res.blob();
+        const ext = blob.type.includes('png') ? 'png' : 'jpg';
+        imageFiles = [new File([blob], `tryon-review.${ext}`, { type: blob.type })];
+      } catch {
+        // If fetching the image fails just submit without attaching it.
+      }
+      await reviewsApi.create(productId, reviewRating, reviewComment, imageFiles);
+      setReviewSubmitted(true);
+    } catch (err: any) {
+      setReviewError(err?.response?.data?.message || 'Could not submit your review. Please try again.');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -544,6 +589,122 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       />
                       Try a Different Photo
                     </button>
+
+                    {/* ── Share Your Experience ── */}
+                    <div className="mt-5">
+                      {reviewSubmitted ? (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex items-center justify-center gap-2.5 py-3.5 bg-emerald-500/10 border border-emerald-500/22 rounded-md"
+                        >
+                          <CheckCircle2 size={14} className="text-emerald-400" strokeWidth={2} />
+                          <span className="text-[10px] font-plex-mono text-emerald-400 tracking-[0.2em] uppercase font-medium">
+                            Review submitted — thank you!
+                          </span>
+                        </motion.div>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setShowReviewForm((v) => !v)}
+                            className="w-full flex items-center justify-between py-3 px-4 border border-[rgba(var(--theme-text-rgb),0.1)] rounded-md hover:border-[rgba(var(--theme-accent-rgb),0.3)] transition-colors group"
+                          >
+                            <span className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-[0.2em] uppercase group-hover:text-[var(--theme-accent)] transition-colors">
+                              ✦ Share Your Experience
+                            </span>
+                            <ChevronDown
+                              size={13}
+                              strokeWidth={1.5}
+                              className={`text-[rgba(var(--theme-text-rgb),0.35)] group-hover:text-[var(--theme-accent)] transition-all duration-300 ${
+                                showReviewForm ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </button>
+
+                          <AnimatePresence>
+                            {showReviewForm && (
+                              <motion.div
+                                key="review-form"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-4 space-y-4">
+                                  {/* Star rating */}
+                                  <div>
+                                    <span className="text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] tracking-[0.25em] uppercase block mb-2">
+                                      Your Rating
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      {[1, 2, 3, 4, 5].map((n) => (
+                                        <button
+                                          key={n}
+                                          type="button"
+                                          onMouseEnter={() => setReviewHoverRating(n)}
+                                          onMouseLeave={() => setReviewHoverRating(0)}
+                                          onClick={() => setReviewRating(n)}
+                                        >
+                                          <Star
+                                            size={18}
+                                            strokeWidth={1.2}
+                                            className={`transition-colors duration-150 ${
+                                              n <= (reviewHoverRating || reviewRating)
+                                                ? 'text-[var(--theme-accent)] fill-[var(--theme-accent)]'
+                                                : 'text-[rgba(var(--theme-text-rgb),0.2)]'
+                                            }`}
+                                          />
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Comment */}
+                                  <textarea
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                    placeholder="How did the outfit look? Share your thoughts…"
+                                    maxLength={1000}
+                                    rows={3}
+                                    className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-lg p-3.5 text-[12px] font-plex-mono text-[var(--theme-text)]/80 placeholder:text-[rgba(var(--theme-text-rgb),0.25)] focus:outline-none focus:border-[var(--theme-accent)]/45 transition-colors resize-none"
+                                  />
+
+                                  {/* Attached image preview */}
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-11 h-11 rounded-lg overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.25)] flex-shrink-0">
+                                      <img src={generatedImage!} alt="Try-on" className="w-full h-full object-cover" />
+                                    </div>
+                                    <span className="text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] tracking-[0.12em] uppercase">
+                                      Your try-on photo will be attached
+                                    </span>
+                                  </div>
+
+                                  {reviewError && (
+                                    <p className="text-[10px] font-plex-mono text-red-400">{reviewError}</p>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={handleReviewSubmit}
+                                    disabled={reviewSubmitting || reviewRating === 0}
+                                    className="w-full py-3 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-md disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase"
+                                  >
+                                    {reviewSubmitting ? (
+                                      <div className="w-3.5 h-3.5 border border-[var(--theme-bg)]/30 border-t-[var(--theme-bg)] rounded-full animate-spin" />
+                                    ) : (
+                                      <Send size={11} strokeWidth={2} />
+                                    )}
+                                    {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
+                                  </button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </>
+                      )}
+                    </div>
                   </motion.div>
                 )}
 
