@@ -56,18 +56,18 @@ html[data-theme="accessories"] {
   --theme-surface-rgb: 223, 241, 241;
   --theme-text: #17282D;
   --theme-text-rgb: 23, 40, 45;
-  --theme-accent: #E50914;
-  --theme-accent-rgb: 229, 9, 20;
+  --theme-accent: #C81E3A;
+  --theme-accent-rgb: 200, 30, 58;
 }
 
 html[data-theme="jewellery"] {
   /* Champagne Warmth & Deep Teal Accent */
   --theme-bg: #FAEAB1;
-  --theme-bg-rgb: 250, 248, 241;
-  --theme-surface: #efdea2;
-  --theme-surface-rgb: 250, 234, 177;
-  --theme-text: #334443;
-  --theme-text-rgb: 51, 68, 67;
+  --theme-bg-rgb: 250, 234, 177;
+  --theme-surface: #F1DD9C;
+  --theme-surface-rgb: 241, 221, 156;
+  --theme-text: #2C3B3A;
+  --theme-text-rgb: 44, 59, 58;
   --theme-accent: #34656D;
   --theme-accent-rgb: 52, 101, 109;
 }
