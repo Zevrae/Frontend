@@ -21,6 +21,7 @@ import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.webp';
 import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
+import TryOnReviewTicker from './components/TryOnReviewTicker';
 
 // Code-split everything that isn't the core "browse the storefront /
 // view a product" path most visitors are on — the admin panel alone
@@ -682,6 +683,9 @@ return (
       </Routes>
       </Suspense>
 
+
+      {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}
+      {!location.pathname.startsWith('/admin') && <TryOnReviewTicker />}
 
       {/* Footer */}
       {!location.pathname.startsWith('/admin') && <Footer />}
