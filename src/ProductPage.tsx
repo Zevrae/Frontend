@@ -33,26 +33,6 @@ type ProductDetail = {
 
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-// Legacy hardcoded details (Kept as a fallback for older products)
-const MATERIALS = [
-  { label: 'Composition', value: '100% Premium Cotton — 240 GSM oversized fit' },
-  { label: 'Origin', value: 'Ethically produced in limited quantities' },
-  { label: 'Finish', value: 'Enzyme-washed for a lived-in softness' },
-];
-
-const FIT_NOTES = [
-  'Oversized silhouette — size down for a relaxed fit',
-  'Drop shoulders, extended hem',
-  'Crew neck collar with double stitching',
-];
-
-const CARE = [
-  'Machine wash cold, inside out',
-  'Do not tumble dry',
-  'Iron on low heat, avoid print',
-  'Do not bleach',
-];
-
 function AccordionSection({
   title,
   children,
@@ -136,6 +116,19 @@ export default function ProductPage() {
     return nonApparelKeys.includes(cat) || nonApparelKeys.includes(type);
   }, [product]);
 
+  // ─── DYNAMIC SIZES EXTRACTION ───
+  const availableSizes = useMemo(() => {
+    if (!product) return [];
+    let sizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
+    // Fallback to default apparel sizes if not defined in DB but categorized as apparel
+    if (sizes.length === 0 && !isNonApparel) {
+      sizes = DEFAULT_SIZES;
+    }
+    return sizes;
+  }, [product, isNonApparel]);
+
+  const requireSizeSelection = availableSizes.length > 0;
+
   // ─── HYDRATE PRODUCT IF DATA IS INCOMPLETE ───
   useEffect(() => {
     const hydrateProduct = async () => {
@@ -143,7 +136,6 @@ export default function ProductPage() {
       try {
         let p: any = null;
 
-        // Fast Path: Try fetching the single product directly if the API supports it
         if (typeof (productsApi as any).get === 'function') {
           const res = await (productsApi as any).get(params.id);
           p = res.data || res;
@@ -151,7 +143,6 @@ export default function ProductPage() {
           const res = await (productsApi as any).getById(params.id);
           p = res.data || res;
         } else {
-          // Fallback: Paginated while-loop to search the entire catalog
           let currentPage = 1;
           let hasMore = true;
 
@@ -159,12 +150,9 @@ export default function ProductPage() {
             const response: any = await productsApi.list({ limit: 100, page: currentPage });
             const items = response.data || [];
             
-            // Check if our product is in this chunk
             p = items.find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
             
-            if (p) {
-              break; // Found it! Stop fetching.
-            }
+            if (p) break;
 
             const pagination = response.pagination;
             if (pagination && currentPage >= pagination.pages) {
@@ -280,10 +268,9 @@ export default function ProductPage() {
     setQuantity(1);
     setActiveImg(0);
     setAdded(false);
-    setSelectedSize(isNonApparel ? 'One Size' : '');
-  }, [params.id, isNonApparel]);
+    setSelectedSize('');
+  }, [params.id]);
 
-  // Fetch related products safely
   useEffect(() => {
     if (!product) return;
     const fetchRelated = async () => {
@@ -387,7 +374,7 @@ export default function ProductPage() {
     try {
       await productsApi.notifyMe(product.id, {
         email: user ? undefined : email,
-        size: isNonApparel ? undefined : selectedSize,
+        size: requireSizeSelection ? selectedSize : undefined,
       });
       setNotifyStatus('done');
     } catch (err: any) {
@@ -402,12 +389,12 @@ export default function ProductPage() {
   }, [selectedSize]);
 
   const handleAddToCart = () => {
-    if (!product || (!selectedSize && !isNonApparel)) return;
+    if (!product || (requireSizeSelection && !selectedSize)) return;
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
-      size: selectedSize || 'One Size',
+      size: requireSizeSelection ? selectedSize : 'One Size',
       quantity,
       image: images[0] || product.frontImg || '',
       category: product.category || 'unknown',
@@ -417,7 +404,7 @@ export default function ProductPage() {
   };
 
   const handleBuyNow = () => {
-    if (!product || (!selectedSize && !isNonApparel)) return;
+    if (!product || (requireSizeSelection && !selectedSize)) return;
     if (!token) {
       setIsLoginModalOpen(true);
       return;
@@ -443,13 +430,14 @@ export default function ProductPage() {
     );
   }
 
-  const availableSizes = product.sizes?.length ? product.sizes : [];
   const sizeStock = product.size_stock || {};
-  const isNoSizeProduct = availableSizes.length === 0;
+  const isNoSizeProduct = !requireSizeSelection;
   const isSizeOutOfStock = (size: string) => (sizeStock[size] ?? 0) <= 0;
+  
   const overallInStock = isNoSizeProduct
     ? (product.stock_quantity ?? 0) > 0
     : availableSizes.some(s => !isSizeOutOfStock(s));
+    
   const showNotifyMe = isNoSizeProduct
     ? !overallInStock
     : !!selectedSize && isSizeOutOfStock(selectedSize);
@@ -648,8 +636,8 @@ export default function ProductPage() {
               {/* Divider */}
               <div className="h-px bg-[rgba(var(--theme-text-rgb),0.08)]" />
 
-              {/* Size selector — hidden for non-apparel */}
-              {!isNonApparel && (
+              {/* Size selector — Dynamic based on DB entry */}
+              {requireSizeSelection && (
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -668,26 +656,19 @@ export default function ProductPage() {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2.5">
-                    {DEFAULT_SIZES.map((size) => {
-                      const isOffered = availableSizes.includes(size);
-                      const outOfStock = isOffered && isSizeOutOfStock(size);
+                    {availableSizes.map((size) => {
+                      const outOfStock = isSizeOutOfStock(size);
                       return (
                         <button
                           key={size}
-                          id={`size-${size}`}
+                          id={`size-${size.replace(/\s+/g, '-')}`}
                           onClick={() => {
-                            if (isOffered) {
-                              setSelectedSize(size);
-                              setSizeError(false);
-                            } else {
-                              setSizeError(true);
-                            }
+                            setSelectedSize(size);
+                            setSizeError(false);
                           }}
                           className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
                             selectedSize === size
                               ? 'border-[var(--theme-accent)] text-[var(--theme-bg)] bg-[var(--theme-accent)]'
-                              : !isOffered
-                              ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.2)] cursor-not-allowed opacity-50'
                               : outOfStock
                               ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
                               : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
@@ -819,9 +800,9 @@ export default function ProductPage() {
                     <button
                       id="add-to-bag"
                       onClick={handleAddToCart}
-                      disabled={!selectedSize && !isNonApparel}
+                      disabled={requireSizeSelection && !selectedSize}
                       className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${
-                        (selectedSize || isNonApparel)
+                        (!requireSizeSelection || selectedSize)
                           ? 'bg-[var(--theme-text)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent)] cursor-pointer'
                           : 'bg-[rgba(var(--theme-text-rgb),0.08)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
                       }`}
@@ -856,9 +837,9 @@ export default function ProductPage() {
                     <button
                       id="buy-now"
                       onClick={handleBuyNow}
-                      disabled={!selectedSize && !isNonApparel}
+                      disabled={requireSizeSelection && !selectedSize}
                       className={`w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
-                        (selectedSize || isNonApparel)
+                        (!requireSizeSelection || selectedSize)
                           ? 'border-[var(--theme-text)] text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] cursor-pointer'
                           : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
                       }`}
