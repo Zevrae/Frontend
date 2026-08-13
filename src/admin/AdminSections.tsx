@@ -23,7 +23,6 @@ import { analysisApi, AnalysisSummary } from '../api/analysis';
 import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-// Exported so AdminLayout.tsx can type its section-switch state.
 
 export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts' | 'analysis';
 export type { Order };
@@ -212,20 +211,23 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
-  const filtered = orders.filter(o => {
-    const customer = typeof o.user === 'object' ? o.user : null;
-    const matchFilter =
-      filter === 'All' ? true :
-      filter === 'Pending' ? o.order_status === 'placed' :
-      filter === 'Paid' ? o.payment_status === 'paid' :
-      filter === 'COD' ? o.payment_method === 'cod' :
-      filter === 'Delivered' ? o.order_status === 'delivered' : true;
-    const matchSearch = !search ||
-      (customer?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      o.id.toLowerCase().includes(search.toLowerCase()) ||
-      (customer?.email || '').toLowerCase().includes(search.toLowerCase());
-    return matchFilter && matchSearch;
-  });
+  // 1. Memoize the table data to prevent infinite re-renders!
+  const memoizedOrders = useMemo(() => {
+    return orders.filter(o => {
+      const customer = typeof o.user === 'object' ? o.user : null;
+      const matchFilter =
+        filter === 'All' ? true :
+        filter === 'Pending' ? o.order_status === 'placed' :
+        filter === 'Paid' ? o.payment_status === 'paid' :
+        filter === 'COD' ? o.payment_method === 'cod' :
+        filter === 'Delivered' ? o.order_status === 'delivered' : true;
+      const matchSearch = !search ||
+        (customer?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        o.id.toLowerCase().includes(search.toLowerCase()) ||
+        (customer?.email || '').toLowerCase().includes(search.toLowerCase());
+      return matchFilter && matchSearch;
+    });
+  }, [orders, filter, search]);
 
   const orderStatusColor = (s?: string) => {
     switch (s) {
@@ -305,7 +307,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
   ], []);
 
   const table = useReactTable({
-    data: filtered,
+    data: memoizedOrders,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: row => row.id,
@@ -456,7 +458,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
 interface StockItem {
   size: string;
   quantity: number;
-  _rowId?: number; // UI-only stable key for "Other" mode rows; never sent to the backend
+  _rowId?: number; 
 }
 
 let rowIdCounter = 0;
@@ -481,8 +483,6 @@ interface DbProduct {
   created_at: string;
 }
 
-// Adapts an `api/products.ts` Product (the shape actually returned by
-// productsApi) into the UI's per-size StockItem[] shape.
 function productToDbProduct(p: Product): DbProduct {
   const sizeStock = p.size_stock || {};
   const inventory_mode = p.inventory_mode || (p.sizes && p.sizes.length > 0 ? 'size' : 'nosize');
@@ -511,8 +511,6 @@ function productToDbProduct(p: Product): DbProduct {
   };
 }
 
-// Adapts the UI form's StockItem[] back into a payload the productsApi /
-// backend can accept
 function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'>): Partial<Product> {
   const sizes = form.inventory_mode === 'size'
     ? form.stock_quantity.filter(s => s.quantity > 0).map(s => s.size)
@@ -645,16 +643,6 @@ export function ProductsSection() {
       let allProducts: DbProduct[] = [];
       let currentPage = 1;
       let hasMore = true;
-
-      // Hard ceiling regardless of what the backend reports — 300 pages at
-      // 100/page is 30,000 products, far beyond any real catalog here. This
-      // is what actually prevents a runaway loop: previously, if a response
-      // ever came back without valid `pagination` metadata while still
-      // returning a full page of 100 items, NEITHER stop condition below
-      // could ever fire, and this loop ran indefinitely — continuously
-      // fetching and growing `allProducts` without bound. That's a genuine
-      // main-thread-starving/memory-exhausting loop, not just a slow one,
-      // and matches a frozen tab with a "Wait/Exit page" prompt exactly.
       const MAX_PAGES = 300;
 
       while (hasMore && currentPage <= MAX_PAGES) {
@@ -669,20 +657,13 @@ export function ProductsSection() {
         }
 
         if (items.length === 0) {
-          // Nothing came back at all — definitely no more pages.
           hasMore = false;
         } else if (pagination && typeof pagination.pages === 'number') {
-          // Trust real pagination metadata when we have it.
           hasMore = currentPage < pagination.pages;
           currentPage++;
         } else if (items.length < 100) {
-          // No pagination info, but a partial page — safe to assume this
-          // was the last page.
           hasMore = false;
         } else {
-          // No pagination info AND a full page — we genuinely can't tell if
-          // there's more. Stop here rather than guess forever; a missing
-          // page of results is far better than a frozen tab.
           hasMore = false;
         }
       }
@@ -695,7 +676,7 @@ export function ProductsSection() {
     }
   }, []);
 
-  useEffect(() => { fetchDbProducts(); }, []);
+  useEffect(() => { fetchDbProducts(); }, [fetchDbProducts]);
 
   const openAdd = () => {
     setEditingId(null);
@@ -856,9 +837,12 @@ export function ProductsSection() {
     }
   }, [fetchDbProducts]);
 
-  const filteredDb = dbProducts.filter(p =>
-    !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.subcategory.toLowerCase().includes(search.toLowerCase())
-  );
+  // 1. Memoize the table data to prevent infinite re-renders!
+  const memoizedProducts = useMemo(() => {
+    return dbProducts.filter(p =>
+      !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.subcategory.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [dbProducts, search]);
 
   const columnHelper = createColumnHelper<DbProduct>();
   const columns = useMemo(() => [
@@ -955,7 +939,7 @@ export function ProductsSection() {
   ], [openEdit, handleDelete]);
 
   const table = useReactTable({
-    data: filteredDb,
+    data: memoizedProducts,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: row => row.id,
@@ -1187,20 +1171,22 @@ export function ProductsSection() {
                     For items without standard sizing — jewellery, accessories, etc. A label is optional; leave it blank for a single stock count with no variant name.
                   </p>
                   {form.stock_quantity.map((row, i) => (
-                    <div key={row._rowId ?? i} className="flex items-center gap-2 mb-2">
+                    <div key={row._rowId ?? i} className="grid grid-cols-[1fr_80px_auto] sm:grid-cols-[1fr_100px_auto] gap-2 items-center w-full mb-2">
                       <input
                         type="text"
                         value={row.size}
                         onChange={e => updateCustomStockRow(i, { size: e.target.value })}
                         placeholder="Label (optional) — e.g. One Size"
-                        className={`${baseInputCls} w-[160px] py-1.5`}
+                        className={inputCls}
+                        style={{ paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
                       />
                       <input
                         type="number"
                         value={row.quantity}
                         onChange={e => updateCustomStockRow(i, { quantity: parseInt(e.target.value) || 0 })}
                         placeholder="Qty"
-                        className={`${baseInputCls} w-[80px] py-1.5`}
+                        className={inputCls}
+                        style={{ paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
                       />
                       <button
                         type="button"
@@ -1319,8 +1305,6 @@ export function CollectionsSection() {
     try {
       const { data } = await collectionsApi.list();
       setCollections(data || []);
-      // Product counts aren't returned by /collections directly — one
-      // lightweight lookup per collection via the products list filter.
       const counts: Record<string, number> = {};
       await Promise.all(
         (data || []).map(async (c) => {
@@ -1343,7 +1327,13 @@ export function CollectionsSection() {
   useEffect(() => { fetchCollections(); }, []);
 
   const openAdd = () => { setEditingCol(null); setForm({ name: '', description: '', status: 'active', featured: false }); setFormError(''); setShowModal(true); };
-  const openEdit = (c: Collection) => { setEditingCol(c); setForm({ name: c.name, description: c.description || '', status: c.status, featured: c.featured }); setFormError(''); setShowModal(true); };
+  
+  const openEdit = useCallback((c: Collection) => { 
+    setEditingCol(c); 
+    setForm({ name: c.name, description: c.description || '', status: c.status, featured: c.featured }); 
+    setFormError(''); 
+    setShowModal(true); 
+  }, []);
 
   const handleSave = async () => {
     if (!form.name.trim()) { setFormError('Collection name is required.'); return; }
@@ -1364,7 +1354,7 @@ export function CollectionsSection() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Remove this collection?')) return;
     try {
       await collectionsApi.remove(id);
@@ -1372,16 +1362,77 @@ export function CollectionsSection() {
     } catch (err: any) {
       alert('Delete failed: ' + (err?.response?.data?.message || err.message));
     }
-  };
+  }, []);
 
-  const toggleFeatured = async (c: Collection) => {
+  const toggleFeatured = useCallback(async (c: Collection) => {
     try {
       await collectionsApi.update(c.id, { featured: !c.featured });
       fetchCollections();
     } catch (err: any) {
       alert('Update failed: ' + (err?.response?.data?.message || err.message));
     }
-  };
+  }, []);
+
+  // 1. Memoize Data to prevent infinite re-renders!
+  const memoizedCollections = useMemo(() => collections, [collections]);
+
+  const columnHelper = createColumnHelper<Collection>();
+  const columns = useMemo(() => [
+    columnHelper.accessor('name', {
+      header: 'Collection',
+      cell: info => (
+        <div>
+          <span className="text-[12px] font-sans text-[var(--theme-text)] block">{info.getValue()}</span>
+          <span className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.3)]">/{info.row.original.slug}</span>
+        </div>
+      )
+    }),
+    columnHelper.display({
+      id: 'products',
+      header: 'Products',
+      cell: info => <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{productCounts[info.row.original.id] ?? 0}</span>
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => <Badge label={info.getValue()} variant={info.getValue() as any} />
+    }),
+    columnHelper.accessor('featured', {
+      header: 'Featured',
+      cell: info => {
+        const c = info.row.original;
+        return (
+          <button
+            onClick={() => toggleFeatured(c)}
+            className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${c.featured ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.3)]'}`}
+          >
+            <Star size={11} fill={c.featured ? 'currentColor' : 'none'} />
+            {c.featured ? 'Featured' : 'Feature'}
+          </button>
+        )
+      }
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: () => <div className="text-right">Actions</div>,
+      cell: info => (
+        <div className="flex items-center gap-2 justify-end">
+          <button onClick={() => openEdit(info.row.original)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
+            <Edit2 size={12} />
+          </button>
+          <button onClick={() => handleDelete(info.row.original.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/50">
+            <Trash2 size={12} />
+          </button>
+        </div>
+      )
+    })
+  ], [productCounts, toggleFeatured, openEdit, handleDelete]);
+
+  const table = useReactTable({
+    data: memoizedCollections,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.id,
+  });
 
   return (
     <div>
@@ -1394,45 +1445,40 @@ export function CollectionsSection() {
         </div>
       )}
 
-      {loading ? (
-        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse text-center p-10">Loading...</p>
-      ) : collections.length === 0 ? (
-        <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] text-center p-10">No collections yet. Click "New Collection" to create one.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {collections.map(col => (
-            <div key={col.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-5 hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-[12px] font-sans text-[var(--theme-text)] mb-1">{col.name}</p>
-                  <p className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.3)]">/{col.slug}</p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button onClick={() => openEdit(col)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors">
-                    <Edit2 size={11} />
-                  </button>
-                  <button onClick={() => handleDelete(col.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors">
-                    <Trash2 size={11} />
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center gap-2">
-                  <Badge label={col.status} variant={col.status as any} />
-                  <span className="text-[9px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans">{productCounts[col.id] ?? 0} products</span>
-                </div>
-                <button
-                  onClick={() => toggleFeatured(col)}
-                  className={`flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider transition-colors ${col.featured ? 'text-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.3)]'}`}
-                >
-                  <Star size={11} fill={col.featured ? 'currentColor' : 'none'} />
-                  {col.featured ? 'Featured' : 'Feature'}
-                </button>
-              </div>
-            </div>
-          ))}
+      <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden mb-2">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id} className="p-4 font-normal">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">Loading...</td></tr>
+              ) : table.getRowModel().rows.length === 0 ? (
+                <tr><td colSpan={5} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No collections yet. Click "New Collection" to create one.</td></tr>
+              ) : (
+                table.getRowModel().rows.map(row => (
+                  <tr key={row.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className={cell.column.id === 'actions' ? 'p-4 text-right' : 'p-4'}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       <AnimatePresence>
         {showModal && (
@@ -1521,26 +1567,20 @@ export function CategoriesSection() {
 
   useEffect(() => { fetchCategories(); }, []);
 
-  const topLevel = categories.filter(c => !c.parent);
-  const childrenOf = (parentId: string) => categories.filter(c => {
-    const p = c.parent;
-    const pid = typeof p === 'string' ? p : p?.id;
-    return pid === parentId;
-  });
-
-  const openAdd = (parentId?: string) => {
+  const openAdd = useCallback((parentId?: string) => {
     setEditingCat(null);
     setForm({ name: '', description: '', parent: parentId || '', status: 'active' });
     setFormError('');
     setShowModal(true);
-  };
-  const openEdit = (c: Category) => {
+  }, []);
+
+  const openEdit = useCallback((c: Category) => {
     setEditingCat(c);
     const parentId = typeof c.parent === 'string' ? c.parent : c.parent?.id || '';
     setForm({ name: c.name, description: c.description || '', parent: parentId, status: c.status });
     setFormError('');
     setShowModal(true);
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!form.name.trim()) { setFormError('Category name is required.'); return; }
@@ -1562,7 +1602,7 @@ export function CategoriesSection() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Remove this category? Any subcategories under it will need to be reassigned separately.')) return;
     try {
       await categoriesApi.remove(id);
@@ -1570,7 +1610,83 @@ export function CategoriesSection() {
     } catch (err: any) {
       alert('Delete failed: ' + (err?.response?.data?.message || err.message));
     }
-  };
+  }, []);
+
+  // 1. Memoize Data to prevent infinite re-renders!
+  const memoizedTopLevel = useMemo(() => categories.filter(c => !c.parent), [categories]);
+
+  const columnHelper = createColumnHelper<Category>();
+  const columns = useMemo(() => [
+    columnHelper.accessor('name', {
+      header: 'Category',
+      cell: info => (
+        <div>
+          <span className="text-[12px] font-sans text-[var(--theme-text)] uppercase tracking-[0.05em] block">{info.getValue()}</span>
+          <span className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.3)]">/{info.row.original.slug}</span>
+        </div>
+      )
+    }),
+    columnHelper.display({
+      id: 'products',
+      header: 'Products',
+      cell: info => <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.5)]">{productCounts[info.row.original.id] ?? 0}</span>
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => <Badge label={info.getValue()} variant={info.getValue() as any} />
+    }),
+    columnHelper.display({
+      id: 'subcategories',
+      header: 'Subcategories',
+      cell: info => {
+        const cat = info.row.original;
+        const subs = categories.filter(c => {
+          const p = c.parent;
+          const pid = typeof p === 'string' ? p : p?.id;
+          return pid === cat.id;
+        });
+
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            {subs.map(sub => (
+              <span key={sub.id} className="group flex items-center gap-1 px-2 py-0.5 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm uppercase tracking-wider">
+                {sub.name}
+                <button onClick={() => openEdit(sub)} className="text-[rgba(var(--theme-text-rgb),0.2)] hover:text-[var(--theme-accent)]"><Edit2 size={9} /></button>
+                <button onClick={() => handleDelete(sub.id)} className="text-[rgba(var(--theme-text-rgb),0.2)] hover:text-red-400"><Trash2 size={9} /></button>
+              </span>
+            ))}
+            <button
+              onClick={() => openAdd(cat.id)}
+              className="flex items-center gap-1 px-2 py-0.5 border border-dashed border-[rgba(var(--theme-text-rgb),0.15)] text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] rounded-sm uppercase tracking-wider hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors"
+            >
+              <Plus size={9} /> Add Sub
+            </button>
+          </div>
+        );
+      }
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: () => <div className="text-right">Actions</div>,
+      cell: info => (
+        <div className="flex items-center gap-2 justify-end">
+          <button onClick={() => openEdit(info.row.original)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
+            <Edit2 size={11} />
+          </button>
+          <button onClick={() => handleDelete(info.row.original.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/30">
+            <Trash2 size={11} />
+          </button>
+        </div>
+      )
+    })
+  ], [productCounts, categories, openEdit, handleDelete, openAdd]);
+
+  const table = useReactTable({
+    data: memoizedTopLevel,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.id,
+  });
 
   return (
     <div>
@@ -1583,51 +1699,40 @@ export function CategoriesSection() {
         </div>
       )}
 
-      {loading ? (
-        <p className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse text-center p-10">Loading...</p>
-      ) : topLevel.length === 0 ? (
-        <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] text-center p-10">No categories yet. Click "New Category" to create one.</p>
-      ) : (
-        <div className="space-y-3">
-          {topLevel.map(cat => (
-            <div key={cat.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-5 hover:border-[rgba(var(--theme-text-rgb),0.2)] transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <p className="text-[12px] font-sans text-[var(--theme-text)] uppercase tracking-[0.05em]">{cat.name}</p>
-                    <Badge label={cat.status} variant={cat.status as any} />
-                    <span className="text-[9px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans">{productCounts[cat.id] ?? 0} products</span>
-                  </div>
-                  <p className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.3)] mb-3">/{cat.slug}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {childrenOf(cat.id).map(sub => (
-                      <span key={sub.id} className="group flex items-center gap-1 px-2 py-0.5 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.5)] rounded-sm uppercase tracking-wider">
-                        {sub.name}
-                        <button onClick={() => openEdit(sub)} className="text-[rgba(var(--theme-text-rgb),0.2)] hover:text-[var(--theme-accent)]"><Edit2 size={9} /></button>
-                        <button onClick={() => handleDelete(sub.id)} className="text-[rgba(var(--theme-text-rgb),0.2)] hover:text-red-400"><Trash2 size={9} /></button>
-                      </span>
+      <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden mb-2">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id} className="border-b border-[rgba(var(--theme-text-rgb),0.1)] text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-bg-rgb),0.5)]">
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id} className="p-4 font-normal">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="p-10 text-center text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] animate-pulse">Loading...</td></tr>
+              ) : table.getRowModel().rows.length === 0 ? (
+                <tr><td colSpan={5} className="p-10 text-center text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No categories yet. Click "New Category" to create one.</td></tr>
+              ) : (
+                table.getRowModel().rows.map(row => (
+                  <tr key={row.id} className="border-b border-[rgba(var(--theme-text-rgb),0.05)] hover:bg-[rgba(var(--theme-bg-rgb),0.4)] transition-colors">
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className={cell.column.id === 'actions' ? 'p-4 text-right' : 'p-4'}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
                     ))}
-                    <button
-                      onClick={() => openAdd(cat.id)}
-                      className="flex items-center gap-1 px-2 py-0.5 border border-dashed border-[rgba(var(--theme-text-rgb),0.15)] text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] rounded-sm uppercase tracking-wider hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors"
-                    >
-                      <Plus size={9} /> Add Subcategory
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 ml-4">
-                  <button onClick={() => openEdit(cat)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.3)]">
-                    <Edit2 size={11} />
-                  </button>
-                  <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-red-400 transition-colors border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-red-900/30">
-                    <Trash2 size={11} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       <AnimatePresence>
         {showModal && (
@@ -1646,7 +1751,7 @@ export function CategoriesSection() {
             <FormField label="Parent Category">
               <select value={form.parent} onChange={e => setForm(f => ({ ...f, parent: e.target.value }))} className={selectCls}>
                 <option value="">None — top-level category</option>
-                {topLevel.filter(c => c.id !== editingCat?.id).map(c => (
+                {memoizedTopLevel.filter(c => c.id !== editingCat?.id).map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
@@ -1684,7 +1789,7 @@ export function DiscountsSection() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const fetchDiscounts = useCallback(async () => {
+  const fetchDiscounts = async () => {
     setLoading(true);
     setError('');
     try {
@@ -1695,7 +1800,7 @@ export function DiscountsSection() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => { fetchDiscounts(); }, []);
 
@@ -1763,7 +1868,7 @@ export function DiscountsSection() {
     } catch (err: any) {
       alert('Delete failed: ' + (err?.response?.data?.message || err.message));
     }
-  }, [fetchDiscounts]);
+  }, []);
 
   const toggleStatus = useCallback(async (d: Discount) => {
     try {
@@ -1772,7 +1877,10 @@ export function DiscountsSection() {
     } catch (err: any) {
       alert('Update failed: ' + (err?.response?.data?.message || err.message));
     }
-  }, [fetchDiscounts]);
+  }, []);
+
+  // 1. Memoize Data to prevent infinite re-renders!
+  const memoizedDiscounts = useMemo(() => discounts, [discounts]);
 
   const discountColumnHelper = createColumnHelper<Discount>();
   const discountColumns = useMemo(() => [
@@ -1845,7 +1953,7 @@ export function DiscountsSection() {
   ], [toggleStatus, openEdit, handleDelete]);
 
   const table = useReactTable({
-    data: discounts,
+    data: memoizedDiscounts,
     columns: discountColumns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: row => row.id,
