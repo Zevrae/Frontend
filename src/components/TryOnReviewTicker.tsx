@@ -140,7 +140,7 @@ const STATIC_REVIEWS: Review[] = [
   {
     id: 'static-1',
     product: 'prod-1',
-    user: { id: 'u1', name: 'Alice M.' },
+    user: { id: 'u1', name: 'Rahul' },
     rating: 5,
     comment: 'Absolutely love the fit and quality. The try-on was so helpful!',
     images: [],
@@ -150,7 +150,7 @@ const STATIC_REVIEWS: Review[] = [
   {
     id: 'static-2',
     product: 'prod-2',
-    user: { id: 'u2', name: 'John D.' },
+    user: { id: 'u2', name: 'Ansh' },
     rating: 4,
     comment: 'Looks great! Fabric feels premium. Sizing was spot on.',
     images: [],
@@ -160,7 +160,7 @@ const STATIC_REVIEWS: Review[] = [
   {
     id: 'static-3',
     product: 'prod-3',
-    user: { id: 'u3', name: 'Sarah K.' },
+    user: { id: 'u3', name: 'Khushi' },
     rating: 5,
     comment: 'Obsessed with this piece. The virtual preview looked exactly like reality.',
     images: [],
