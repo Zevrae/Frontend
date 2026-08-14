@@ -35,6 +35,6 @@ export const termsOfServiceHtml = `<h1>ZEVRAE TERMS OF SERVICE</h1><p><strong>La
 
 <h2>11. CHANGES TO THESE TERMS</h2><p>We may update these Terms from time to time. Continued use of the Service after changes are posted constitutes acceptance of the updated Terms.</p>
 
-<h2>12. CONTACT US</h2><p><strong>Email:</strong> <a href="mailto:zevareofficial@gmail.com">zevareofficial@gmail.com</a><br /><strong>Phone:</strong> +91 96747 78549</p>
+<h2>12. CONTACT US</h2><p><strong>Email:</strong> <a href="mailto:zevareofficial@gmail.com">zevareofficial@gmail.com</a><br /><strong>Phone:</strong> +91 92580 55185</p>
 
 <p><strong>&copy; 2026 ZEVRAE. All Rights Reserved.</strong></p>`;

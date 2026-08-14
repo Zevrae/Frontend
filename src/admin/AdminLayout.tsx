@@ -142,9 +142,9 @@ export default function AdminLayout() {
     return () => clearInterval(poll);
   }, []);
 
-  const updateOrderStatus = async (id: string, status: string) => {
+  const updateOrderStatus = async (id: string, updates: { order_status?: string; payment_status?: string }) => {
     try {
-      await ordersApi.updateStatus(id, { order_status: status });
+      await ordersApi.updateStatus(id, updates);
       fetchOrders(true);
     } catch (err: any) {
       alert('Status update failed: ' + (err?.response?.data?.message || err.message));

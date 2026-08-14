@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
@@ -18,8 +18,8 @@ const formatDate = (d: string) =>
 
 const emptyAddress: Address = { label: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India', is_default: false };
 
-// The order lifecycle a tracking card visualizes. "cancelled" is handled
-// separately since it isn't a step along this line.
+// The order lifecycle a tracking card visualizes. "payment_pending" and
+// "cancelled" are handled separately since they aren't steps along this line.
 const TRACK_STEPS: { key: Order['order_status']; label: string; icon: React.ReactNode }[] = [
   { key: 'placed', label: 'Placed', icon: <Clock size={14} /> },
   { key: 'processing', label: 'Processing', icon: <Package size={14} /> },
@@ -27,10 +27,41 @@ const TRACK_STEPS: { key: Order['order_status']; label: string; icon: React.Reac
   { key: 'delivered', label: 'Delivered', icon: <CheckCircle2 size={14} /> },
 ];
 
-function OrderTrackingCard({ order }: { order: Order }) {
+// Self-serve cancellation is only offered for paid online orders, within
+// 24 hours of placement, and before the order has shipped. The backend
+// re-checks all of this — this is just what decides whether to show the
+// button at all.
+const CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000;
+function canCancelOrder(order: Order): boolean {
+  if (order.payment_method !== 'online') return false;
+  if (order.payment_status !== 'paid') return false;
+  if (!['placed', 'processing'].includes(order.order_status)) return false;
+  const elapsed = Date.now() - new Date(order.created_at).getTime();
+  return elapsed <= CANCELLATION_WINDOW_MS;
+}
+
+function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: (updated: Order) => void }) {
   const [expanded, setExpanded] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
   const isCancelled = order.order_status === 'cancelled';
+  const isAwaitingPayment = order.order_status === 'payment_pending';
   const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
+
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Cancel this order? This cannot be undone.')) return;
+    setCancelling(true);
+    setCancelError('');
+    try {
+      const updated = await ordersApi.cancel(order.id);
+      onCancelled(updated);
+    } catch (err: any) {
+      setCancelError(err?.response?.data?.message || err.message || 'Could not cancel this order.');
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   return (
     <div className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden">
@@ -51,6 +82,10 @@ function OrderTrackingCard({ order }: { order: Order }) {
           <div className="flex items-center gap-2 text-[11px] font-sans text-red-500 bg-red-500/10 border border-red-500/30 rounded-sm px-3 py-2">
             <XCircle size={14} /> This order was cancelled.
           </div>
+        ) : isAwaitingPayment ? (
+          <div className="flex items-center gap-2 text-[11px] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.3)] rounded-sm px-3 py-2">
+            <Clock size={14} /> Awaiting payment confirmation — this order will be placed once payment succeeds.
+          </div>
         ) : (
           <div className="flex items-center">
             {TRACK_STEPS.map((step, i) => (
@@ -66,6 +101,20 @@ function OrderTrackingCard({ order }: { order: Order }) {
                 )}
               </React.Fragment>
             ))}
+          </div>
+        )}
+
+        {canCancelOrder(order) && (
+          <div className="mt-4">
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-sans text-red-500 border border-red-500/30 hover:bg-red-500/10 transition-colors px-3 py-1.5 rounded-sm disabled:opacity-50"
+            >
+              <Ban size={12} /> {cancelling ? 'Cancelling...' : 'Cancel Order'}
+            </button>
+            <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-1.5">Cancellable within 24 hours of placement.</p>
+            {cancelError && <p className="text-[10px] font-sans text-red-500 mt-1.5">{cancelError}</p>}
           </div>
         )}
       </div>
@@ -89,6 +138,16 @@ function OrderTrackingCard({ order }: { order: Order }) {
                       <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-[rgba(var(--theme-text-rgb),0.1)] space-y-1 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.6)]">
+                  <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{formatVal(order.subtotal)}</span></div>
+                  <div className="flex justify-between"><span>Shipping</span><span className="font-mono">{order.shipping_fee === 0 ? 'Free' : formatVal(order.shipping_fee)}</span></div>
+                  {order.handling_fee > 0 && (
+                    <div className="flex justify-between"><span>Handling Charge (COD)</span><span className="font-mono">{formatVal(order.handling_fee)}</span></div>
+                  )}
+                  {order.discount_amount > 0 && (
+                    <div className="flex justify-between text-[var(--theme-accent)]"><span>Discount {order.discount_code ? `(${order.discount_code})` : ''}</span><span className="font-mono">−{formatVal(order.discount_amount)}</span></div>
+                  )}
                 </div>
               </div>
               <div>
@@ -309,7 +368,13 @@ export default function ProfilePage() {
                 <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Start Shopping</button>
               </div>
             ) : (
-              orders.map(order => <OrderTrackingCard key={order.id} order={order} />)
+              orders.map(order => (
+                <OrderTrackingCard
+                  key={order.id}
+                  order={order}
+                  onCancelled={updated => setOrders(prev => prev.map(o => o.id === updated.id ? updated : o))}
+                />
+              ))
             )}
           </div>
         ) : (

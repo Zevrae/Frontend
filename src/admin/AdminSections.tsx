@@ -185,7 +185,7 @@ export function DashboardSection({ orders }: { orders: Order[] }) {
                       <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans mt-0.5">{o.id.slice(-8)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[11px] font-mono text-[var(--theme-accent)] mb-1">{formatVal(o.total/100)}</p>
+                      <p className="text-[11px] font-mono text-[var(--theme-accent)] mb-1">{formatVal(o.total)}</p>
                       <Badge label={o.order_status} variant={o.order_status as any} />
                     </div>
                   </div>
@@ -205,7 +205,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
   orders: Order[];
   loading: boolean;
   errorMsg: string;
-  onUpdateStatus: (id: string, status: string) => void;
+  onUpdateStatus: (id: string, updates: { order_status?: string; payment_status?: string }) => void;
 }) {
   const [filter, setFilter] = useState('All');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -217,6 +217,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       const customer = typeof o.user === 'object' ? o.user : null;
       const matchFilter =
         filter === 'All' ? true :
+        filter === 'Awaiting Payment' ? o.order_status === 'payment_pending' :
         filter === 'Pending' ? o.order_status === 'placed' :
         filter === 'Paid' ? o.payment_status === 'paid' :
         filter === 'COD' ? o.payment_method === 'cod' :
@@ -235,6 +236,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       case 'shipped': return 'text-blue-400 bg-blue-900/20';
       case 'processing': return 'text-purple-400 bg-purple-900/20';
       case 'cancelled': return 'text-red-400 bg-red-900/20';
+      case 'payment_pending': return 'text-yellow-400 bg-yellow-900/20';
       default: return 'text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)]';
     }
   };
@@ -269,7 +271,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
     }),
     columnHelper.accessor('total', {
       header: 'Total',
-      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">{formatVal(info.getValue() / 100)}</span>
+      cell: info => <span className="text-[11px] font-mono text-[var(--theme-text)]">{formatVal(info.getValue())}</span>
     }),
     columnHelper.display({
       id: 'payment',
@@ -327,7 +329,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {['All', 'Pending', 'Paid', 'COD', 'Delivered'].map(f => (
+          {['All', 'Awaiting Payment', 'Pending', 'Paid', 'COD', 'Delivered'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -409,18 +411,33 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                         .filter(Boolean).join(', ')}
                                     </p>
                                   </div>
-                                  <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 mt-5">Update Status</p>
+                                  <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 mt-5">Update Order Status</p>
                                   <div className="flex flex-wrap gap-2">
-                                    {['processing', 'shipped', 'delivered', 'cancelled'].map(s => (
+                                    {['placed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
                                       <button
                                         key={s}
-                                        onClick={() => onUpdateStatus(order.id, s)}
-                                        className="px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors capitalize"
+                                        onClick={() => onUpdateStatus(order.id, { order_status: s })}
+                                        className={`px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans border rounded-sm transition-colors capitalize ${order.order_status === s ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.08)]' : 'bg-[var(--theme-bg)] border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)]'}`}
                                       >
                                         {s}
                                       </button>
                                     ))}
                                   </div>
+                                  <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 mt-5">Update Payment Status</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {['pending', 'paid', 'failed', 'refunded'].map(s => (
+                                      <button
+                                        key={s}
+                                        onClick={() => onUpdateStatus(order.id, { payment_status: s })}
+                                        className={`px-3 py-1.5 text-[9px] uppercase tracking-[0.1em] font-sans border rounded-sm transition-colors capitalize ${order.payment_status === s ? 'border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.08)]' : 'bg-[var(--theme-bg)] border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)]'}`}
+                                      >
+                                        {s}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  {order.payment_method === 'cod' && (
+                                    <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-2">Mark Cash on Delivery orders "Paid" once payment is collected at delivery.</p>
+                                  )}
                                 </div>
                                 <div>
                                   <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Products Ordered</p>
@@ -434,6 +451,17 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                         <span className="text-[11px] font-mono text-[var(--theme-accent)]">{formatVal(item.price * item.quantity)}</span>
                                       </div>
                                     ))}
+                                  </div>
+                                  <div className="mt-3 pt-3 border-t border-[rgba(var(--theme-text-rgb),0.1)] space-y-1 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.6)]">
+                                    <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{formatVal(order.subtotal)}</span></div>
+                                    <div className="flex justify-between"><span>Shipping</span><span className="font-mono">{order.shipping_fee === 0 ? 'Free' : formatVal(order.shipping_fee)}</span></div>
+                                    {order.handling_fee > 0 && (
+                                      <div className="flex justify-between"><span>Handling Charge (COD)</span><span className="font-mono">{formatVal(order.handling_fee)}</span></div>
+                                    )}
+                                    {order.discount_amount > 0 && (
+                                      <div className="flex justify-between text-[var(--theme-accent)]"><span>Discount {order.discount_code ? `(${order.discount_code})` : ''}</span><span className="font-mono">−{formatVal(order.discount_amount)}</span></div>
+                                    )}
+                                    <div className="flex justify-between text-[var(--theme-text)] font-semibold pt-1"><span>Total</span><span className="font-mono">{formatVal(order.total)}</span></div>
                                   </div>
                                 </div>
                               </div>
@@ -1785,7 +1813,7 @@ export function DiscountsSection() {
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState<Discount | null>(null);
-  const [form, setForm] = useState({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'Active' });
+  const [form, setForm] = useState({ code: '', type: 'Percentage', value: '', limit_type: 'uses' as 'uses' | 'time', limit: '', expiry: '', status: 'Active' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -1806,7 +1834,7 @@ export function DiscountsSection() {
 
   const openAdd = () => {
     setEditingDiscount(null);
-    setForm({ code: '', type: 'Percentage', value: '', limit: '', expiry: '', status: 'Active' });
+    setForm({ code: '', type: 'Percentage', value: '', limit_type: 'uses', limit: '', expiry: '', status: 'Active' });
     setFormError('');
     setShowModal(true);
   };
@@ -1816,7 +1844,8 @@ export function DiscountsSection() {
       code: d.code,
       type: d.type,
       value: String(d.value),
-      limit: String(d.usage.limit),
+      limit_type: d.limit_type || 'uses',
+      limit: d.usage.limit ? String(d.usage.limit) : '',
       expiry: d.expiry ? d.expiry.slice(0, 10) : '',
       status: d.status,
     });
@@ -1827,7 +1856,7 @@ export function DiscountsSection() {
   const handleSave = async () => {
     if (!form.code.trim()) { setFormError('Coupon code is required.'); return; }
     if (!form.value || Number(form.value) <= 0) { setFormError('Value must be greater than 0.'); return; }
-    if (!form.limit || Number(form.limit) <= 0) { setFormError('Usage limit must be greater than 0.'); return; }
+    if (form.limit_type === 'uses' && (!form.limit || Number(form.limit) <= 0)) { setFormError('Usage limit must be greater than 0.'); return; }
     if (!form.expiry) { setFormError('Expiry date is required.'); return; }
 
     setSaving(true);
@@ -1837,7 +1866,8 @@ export function DiscountsSection() {
         await discountsApi.update(editingDiscount.id, {
           type: form.type as Discount['type'],
           value: Number(form.value),
-          usage: { limit: Number(form.limit) },
+          limit_type: form.limit_type,
+          usage: { limit: form.limit_type === 'uses' ? Number(form.limit) : undefined },
           expiry: form.expiry,
           status: form.status as Discount['status'],
         });
@@ -1846,7 +1876,8 @@ export function DiscountsSection() {
           code: form.code,
           type: form.type as Discount['type'],
           value: Number(form.value),
-          usage: { limit: Number(form.limit) },
+          limit_type: form.limit_type,
+          usage: { limit: form.limit_type === 'uses' ? Number(form.limit) : undefined },
           expiry: form.expiry,
           status: form.status as Discount['status'],
         });
@@ -1905,6 +1936,14 @@ export function DiscountsSection() {
       header: 'Usage',
       cell: info => {
         const d = info.row.original;
+        if (d.limit_type === 'time') {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] uppercase tracking-wider font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] px-2 py-0.5 rounded-sm">Unlimited</span>
+              <span className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)]">{d.usage.used} used</span>
+            </div>
+          );
+        }
         return (
           <div className="flex items-center gap-2">
             <div className="flex-1 max-w-[80px] bg-[var(--theme-bg)] rounded-full h-1.5">
@@ -2033,10 +2072,22 @@ export function DiscountsSection() {
                 <input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} placeholder={form.type === 'Percentage' ? '10' : '500'} className={inputCls} />
               </FormField>
             </div>
+            <FormField label="Coupon Mode">
+              <select
+                value={form.limit_type}
+                onChange={e => setForm(f => ({ ...f, limit_type: e.target.value as 'uses' | 'time' }))}
+                className={selectCls}
+              >
+                <option value="uses">Limited Uses — capped at a fixed number of redemptions</option>
+                <option value="time">Limited Time — unlimited redemptions until expiry</option>
+              </select>
+            </FormField>
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Usage Limit *">
-                <input type="number" value={form.limit} onChange={e => setForm(f => ({ ...f, limit: e.target.value }))} placeholder="500" className={inputCls} />
-              </FormField>
+              {form.limit_type === 'uses' && (
+                <FormField label="Usage Limit *">
+                  <input type="number" value={form.limit} onChange={e => setForm(f => ({ ...f, limit: e.target.value }))} placeholder="500" className={inputCls} />
+                </FormField>
+              )}
               <FormField label="Expiry Date *">
                 <input type="date" value={form.expiry} onChange={e => setForm(f => ({ ...f, expiry: e.target.value }))} className={inputCls} />
               </FormField>

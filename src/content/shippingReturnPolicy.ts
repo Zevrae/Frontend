@@ -809,7 +809,7 @@ export const shippingReturnPolicyHtml = `
 </tr>
 <tr>
 <td><strong>Phone</strong></td>
-<td>+91 96747 78549</td>
+<td>+91 92580 55185</td>
 <td>6-12 hours</td>
 </tr>
 <tr>

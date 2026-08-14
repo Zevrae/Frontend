@@ -813,7 +813,7 @@ For questions about returns, refunds, or exchanges, contact ZEVRAE Customer Supp
 | Channel | Details | Response Time |
 |---------|---------|---|
 | **Email** | zevareofficial@gmail.com | 12-24 hours |
-| **Phone** | +91 96747 78549 | 6-12 hours |
+| **Phone** | +91 92580 55185 | 6-12 hours |
 | **Instagram** | @zevare.co (DM) | ~6 hours |
 | **Facebook** | ZEVRAE (Messenger) | 6-12 hours |
 | **X (Twitter)** | @zevareofficial (DM) | 6-12 hours |
