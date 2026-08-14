@@ -114,6 +114,9 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
   );
 };
 
+// Cache the products globally so returning from a single product page is instant
+let cachedDbProducts: any[] | null = null;
+
 export default function ProductGrid({ 
   categoryFilter = 'all' 
 }: { 
@@ -127,10 +130,18 @@ export default function ProductGrid({
     | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings'
 }) {
   const navigate = useNavigate();
-  const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [dbProducts, setDbProducts] = useState<any[]>(cachedDbProducts || []);
+  const [isLoading, setIsLoading] = useState(!cachedDbProducts);
 
   useEffect(() => {
     const fetchDbProducts = async () => {
+      if (cachedDbProducts) {
+        setDbProducts(cachedDbProducts);
+        setIsLoading(false);
+        return; // Already cached, no need to re-fetch on every mount
+      }
+
+      setIsLoading(true);
       try {
         let allData: any[] = [];
         let currentPage = 1;
@@ -197,9 +208,12 @@ export default function ProductGrid({
             backImg:  p.images?.[1] || p.images?.[0] || '',
           };
         });
+        cachedDbProducts = formatted;
         setDbProducts(formatted);
       } catch (err) {
         console.error('Failed to fetch DB products', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchDbProducts();
@@ -312,7 +326,11 @@ export default function ProductGrid({
             title={`${isMenFilter ? "MEN'S" : "WOMEN'S"} ${isTshirtFilter ? 'TSHIRTS' : 'LOWERS'}`}
           />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            {activeSubcategoryProducts.length === 0 ? (
+            {isLoading ? (
+              <div className="w-full flex justify-center py-24">
+                <div className="animate-pulse w-8 h-8 rounded-full bg-[var(--theme-accent)]/20" />
+              </div>
+            ) : activeSubcategoryProducts.length === 0 ? (
               <div className="w-full flex justify-center py-24">
                 <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">New Collection Coming Soon</h3>
               </div>
@@ -480,6 +498,11 @@ export default function ProductGrid({
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
             {(() => {
               const filtered = getGenderedJewelleryProducts();
+              if (isLoading) return (
+                <div className="w-full flex justify-center py-24">
+                  <div className="animate-pulse w-8 h-8 rounded-full bg-[var(--theme-accent)]/20" />
+                </div>
+              );
               return filtered.length === 0 ? (
                 <div className="w-full flex justify-center py-24">
                   <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">New Collection Coming Soon</h3>
@@ -513,6 +536,11 @@ export default function ProductGrid({
             {(() => {
               const normalizedFilter = (categoryFilter === 'keychain' || categoryFilter === 'keychains') ? 'keychains' : 'soft toys';
               const filtered = dbAccessoriesProducts.filter(p => p.category === normalizedFilter);
+              if (isLoading) return (
+                <div className="w-full flex justify-center py-24">
+                  <div className="animate-pulse w-8 h-8 rounded-full bg-[var(--theme-accent)]/20" />
+                </div>
+              );
               return filtered.length === 0 ? (
                 <div className="w-full flex justify-center py-24">
                   <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">New Collection Coming Soon</h3>
