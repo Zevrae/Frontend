@@ -344,6 +344,7 @@
 .cs-arrows__counter {
   @apply font-plex-mono;
   font-size: 9px;
+  font-weight: bold;
   letter-spacing: 0.3em;
   color: rgba(var(--theme-text-rgb),0.25);
   min-width: 52px;
