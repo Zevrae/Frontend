@@ -217,7 +217,6 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       const customer = typeof o.user === 'object' ? o.user : null;
       const matchFilter =
         filter === 'All' ? true :
-        filter === 'Awaiting Payment' ? o.order_status === 'payment_pending' :
         filter === 'Pending' ? o.order_status === 'placed' :
         filter === 'Paid' ? o.payment_status === 'paid' :
         filter === 'COD' ? o.payment_method === 'cod' :
@@ -329,7 +328,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {['All', 'Awaiting Payment', 'Pending', 'Paid', 'COD', 'Delivered'].map(f => (
+          {['All', 'Pending', 'Paid', 'COD', 'Delivered'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
