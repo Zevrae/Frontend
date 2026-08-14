@@ -24,6 +24,7 @@ export interface Order {
   shipping_address: ShippingAddress;
   subtotal: number;
   shipping_fee: number;
+  handling_fee: number;
   discount_code: string | null;
   discount_amount: number;
   total: number;
@@ -31,7 +32,7 @@ export interface Order {
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   razorpay_order_id?: string;
   razorpay_payment_id?: string;
-  order_status: 'placed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  order_status: 'payment_pending' | 'placed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   created_at: string;
 }
 
@@ -67,6 +68,13 @@ export const ordersApi = {
 
   getById: async (id: string): Promise<Order> => {
     const response = await api.get(`/orders/${id}`);
+    return response.data.data;
+  },
+
+  // Self-serve cancellation — backend enforces the eligibility rules
+  // (online-paid orders only, within 24 hours of placement).
+  cancel: async (id: string): Promise<Order> => {
+    const response = await api.post(`/orders/${id}/cancel`);
     return response.data.data;
   },
 

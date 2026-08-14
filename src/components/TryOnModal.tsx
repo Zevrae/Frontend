@@ -304,6 +304,13 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       // the backend proxy rather than being fetch()'d directly — Appwrite's
       // CORS policy would otherwise block this from the browser.
       const res = await fetch(buildImageProxyUrl(generatedImage));
+      if (!res.ok) {
+        // The proxy responds with a JSON error body on failure — saving
+        // that as "zevrae-tryon.jpg" would silently produce a file that
+        // looks like an image but isn't one. Fall through to the catch
+        // block's "open in a new tab" fallback instead.
+        throw new Error('Image proxy request failed');
+      }
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -332,6 +339,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       let imageFiles: File[] = [];
       try {
         const res = await fetch(buildImageProxyUrl(generatedImage));
+        if (!res.ok) throw new Error('Image proxy request failed');
         const blob = await res.blob();
         const ext = blob.type.includes('png') ? 'png' : 'jpg';
         imageFiles = [new File([blob], `tryon-review.${ext}`, { type: blob.type })];

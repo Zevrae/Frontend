@@ -86,6 +86,9 @@ export default function CheckoutPage() {
 
   const subtotal = cartTotal;
   const shipping = subtotal > 1000 ? 0 : 19; // 19 INR shipping, free over 1000
+  // Flat handling charge added to Cash on Delivery orders — keep in sync
+  // with COD_HANDLING_FEE in the backend's orderController.js.
+  const COD_HANDLING_FEE = 15;
 
   const [couponInput, setCouponInput] = useState('');
   const [couponStatus, setCouponStatus] = useState<'idle' | 'checking' | 'applied' | 'error'>('idle');
@@ -117,7 +120,8 @@ export default function CheckoutPage() {
   };
 
   const discountAmount = appliedDiscount?.amount || 0;
-  const grandTotal = Math.max(0, subtotal + shipping - discountAmount);
+  const handlingFee = selectedMethod === 'COD' ? COD_HANDLING_FEE : 0;
+  const grandTotal = Math.max(0, subtotal + shipping + handlingFee - discountAmount);
 
   const buildShippingAddress = () => ({
     line1: shippingData.address,
@@ -519,7 +523,8 @@ export default function CheckoutPage() {
 
                                 {method.id === 'COD' && (
                                   <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
-                                    Pay {formatVal(grandTotal)} with cash or UPI at the time of delivery.
+                                    A {formatVal(COD_HANDLING_FEE)} handling charge applies to Cash on Delivery orders.
+                                    Pay {formatVal(subtotal + shipping + COD_HANDLING_FEE - discountAmount)} with cash or UPI at the time of delivery.
                                   </p>
                                 )}
                               </div>
@@ -658,6 +663,12 @@ export default function CheckoutPage() {
                   <span>Shipping</span>
                   <span className="font-mono text-[var(--theme-text)]">{shipping === 0 ? 'Free' : formatVal(shipping)}</span>
                 </div>
+                {handlingFee > 0 && (
+                  <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+                    <span>Handling Charge (COD)</span>
+                    <span className="font-mono text-[var(--theme-text)]">{formatVal(handlingFee)}</span>
+                  </div>
+                )}
                 {appliedDiscount && (
                   <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-plex-mono text-[var(--theme-accent)]">
                     <span>Discount ({appliedDiscount.code})</span>

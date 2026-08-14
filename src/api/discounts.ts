@@ -5,6 +5,9 @@ export interface Discount {
   code: string;
   type: 'Percentage' | 'Fixed Amount';
   value: number;
+  // 'uses': capped at usage.limit total redemptions.
+  // 'time': unlimited redemptions, capped only by the expiry date.
+  limit_type: 'uses' | 'time';
   usage: { used: number; limit: number };
   expiry: string;
   status: 'Active' | 'Expired';
@@ -35,7 +38,8 @@ export const discountsApi = {
     code: string;
     type: 'Percentage' | 'Fixed Amount';
     value: number;
-    usage: { limit: number };
+    limit_type: 'uses' | 'time';
+    usage: { limit?: number };
     expiry: string;
     status?: 'Active' | 'Expired';
   }): Promise<Discount> => {
@@ -46,7 +50,8 @@ export const discountsApi = {
   update: async (id: string, payload: Partial<{
     type: 'Percentage' | 'Fixed Amount';
     value: number;
-    usage: { limit: number; used?: number };
+    limit_type: 'uses' | 'time';
+    usage: { limit?: number; used?: number };
     expiry: string;
     status: 'Active' | 'Expired';
   }>): Promise<Discount> => {
