@@ -164,6 +164,7 @@
   top: 20px;
   left: 20px;
   @apply font-plex-mono;
+  font-weight: bold;
   font-size: 9px;
   letter-spacing: 0.3em;
   color: rgba(var(--theme-accent-rgb),0.35);
