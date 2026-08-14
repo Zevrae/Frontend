@@ -48,6 +48,71 @@ const accessoriesCategories = [
   { id: 'toys',     name: 'TOYS',     image: stuffedAnimalImg, fit: 'cover',   path: '/accessories/toys' }
 ];
 
+// ─── Reusable Jewellery Subcategory Grid ─────────────────────────────────────
+const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewelleryCategories }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+      {categories.map((item, i) => (
+        <motion.div 
+          key={item.id}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.8, delay: (i % 4) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+          className="group relative flex flex-col cursor-pointer"
+          onClick={() => navigate(item.path)}
+        >
+          <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
+            <img 
+              src={item.image} 
+              alt={item.name} 
+              className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h3 className="text-sm md:text-2xl font-archivo font-bold tracking-[0.08em] md:tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-1 break-words">
+                {item.name}
+              </h3>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// ─── Shared section heading ───────────────────────────────────────────────────
+const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
+        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
+      >
+        <button onClick={() => navigate(-1)} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          {eyebrow}
+        </button>
+      </motion.h2>
+      <motion.h3
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
+      >
+        {title}
+      </motion.h3>
+    </div>
+  );
+};
+
 export default function ProductGrid({ 
   categoryFilter = 'all' 
 }: { 
@@ -179,65 +244,6 @@ export default function ProductGrid({
   const openProduct = (product: any) => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
-
-  // ─── Reusable Jewellery Subcategory Grid ─────────────────────────────────────
-  const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewelleryCategories }) => (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-      {categories.map((item, i) => (
-        <motion.div 
-          key={item.id}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8, delay: (i % 4) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-          className="group relative flex flex-col cursor-pointer"
-          onClick={() => navigate(item.path)}
-        >
-          <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-            <img 
-              src={item.image} 
-              alt={item.name} 
-              className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-sm md:text-2xl font-archivo font-bold tracking-[0.08em] md:tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-1 break-words">
-                {item.name}
-              </h3>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-
-  // ─── Shared section heading ───────────────────────────────────────────────────
-  const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => (
-    <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
-      >
-        <button onClick={() => navigate(-1)} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          {eyebrow}
-        </button>
-      </motion.h2>
-      <motion.h3
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
-      >
-        {title}
-      </motion.h3>
-    </div>
-  );
 
   return (
     <>
