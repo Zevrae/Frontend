@@ -41,6 +41,106 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Dynamic silhouette border ─────────────────────────────────────────────
+  const [silhouetteData, setSilhouetteData] = useState<{
+    path: string;
+    viewW: number;
+    viewH: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!selectedImage) { setSilhouetteData(null); return; }
+
+    const img = new Image();
+    img.onload = () => {
+      const W = 64;
+      const H = Math.round(W * img.naturalHeight / img.naturalWidth);
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, W, H);
+      const { data } = ctx.getImageData(0, 0, W, H);
+
+      const getRGB = (x: number, y: number) => {
+        const i = (y * W + x) * 4;
+        return [data[i], data[i + 1], data[i + 2]] as const;
+      };
+
+      // Estimate background from border pixels
+      let bgR = 0, bgG = 0, bgB = 0, n = 0;
+      const addBg = (x: number, y: number) => {
+        const [r, g, b] = getRGB(x, y);
+        bgR += r; bgG += g; bgB += b; n++;
+      };
+      for (let x = 0; x < W; x++) { addBg(x, 0); addBg(x, H - 1); }
+      for (let y = 1; y < H - 1; y++) { addBg(0, y); addBg(W - 1, y); }
+      bgR /= n; bgG /= n; bgB /= n;
+
+      // Raw foreground mask
+      const THRESHOLD = 38;
+      const DILATE = 2;
+      const raw: boolean[][] = Array.from({ length: H }, (_, y) =>
+        Array.from({ length: W }, (_, x) => {
+          const [r, g, b] = getRGB(x, y);
+          return Math.sqrt((r - bgR) ** 2 + (g - bgG) ** 2 + (b - bgB) ** 2) > THRESHOLD;
+        })
+      );
+
+      // Dilate to push border slightly outside the subject
+      const mask: boolean[][] = Array.from({ length: H }, (_, y) =>
+        Array.from({ length: W }, (_, x) => {
+          for (let dy = -DILATE; dy <= DILATE; dy++)
+            for (let dx = -DILATE; dx <= DILATE; dx++) {
+              const ny = Math.max(0, Math.min(H - 1, y + dy));
+              const nx = Math.max(0, Math.min(W - 1, x + dx));
+              if (raw[ny][nx]) return true;
+            }
+          return false;
+        })
+      );
+
+      // Collect left/right silhouette edges per row
+      const leftPts: [number, number][] = [];
+      const rightPts: [number, number][] = [];
+      for (let y = 0; y < H; y++) {
+        let left = -1, right = -1;
+        for (let x = 0; x < W; x++) {
+          if (mask[y][x]) { if (left === -1) left = x; right = x; }
+        }
+        if (left !== -1) { leftPts.push([left, y]); rightPts.push([right, y]); }
+      }
+      if (leftPts.length === 0) return;
+
+      // Build closed polygon (down left edge, up right edge)
+      const allPts = [...leftPts, ...[...rightPts].reverse()];
+      const pts = allPts;
+      const count = pts.length;
+
+      // Scale to natural image dimensions (so viewBox matches object-contain)
+      const sx = (x: number) => ((x / W) * img.naturalWidth).toFixed(1);
+      const sy = (y: number) => ((y / H) * img.naturalHeight).toFixed(1);
+
+      // Catmull-Rom → cubic bezier for smooth curves
+      const TENSION = 0.35;
+      let d = `M ${sx(pts[0][0])} ${sy(pts[0][1])}`;
+      for (let i = 0; i < count; i++) {
+        const p0 = pts[(i - 1 + count) % count];
+        const p1 = pts[i];
+        const p2 = pts[(i + 1) % count];
+        const p3 = pts[(i + 2) % count];
+        const cp1x = p1[0] + (p2[0] - p0[0]) * TENSION;
+        const cp1y = p1[1] + (p2[1] - p0[1]) * TENSION;
+        const cp2x = p2[0] - (p3[0] - p1[0]) * TENSION;
+        const cp2y = p2[1] - (p3[1] - p1[1]) * TENSION;
+        d += ` C ${sx(cp1x)} ${sy(cp1y)}, ${sx(cp2x)} ${sy(cp2y)}, ${sx(p2[0])} ${sy(p2[1])}`;
+      }
+      d += ' Z';
+
+      setSilhouetteData({ path: d, viewW: img.naturalWidth, viewH: img.naturalHeight });
+    };
+    img.src = selectedImage;
+  }, [selectedImage]);
+
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -58,6 +158,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       setReviewSubmitted(false);
       setReviewError('');
       setReviewHoverRating(0);
+      setSilhouetteData(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -364,21 +465,49 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                           </span>
                         </div>
                       ) : (
-                        <div className="w-full h-64 rounded-xl overflow-hidden relative border border-[rgba(var(--theme-accent-rgb),0.3)] bg-[var(--theme-surface)] flex items-center justify-center">
+                        <div className="w-full h-64 rounded-xl overflow-hidden relative bg-[var(--theme-surface)] flex items-center justify-center">
+                          {/* Dynamic silhouette SVG border */}
+                          {silhouetteData ? (
+                            <svg
+                              viewBox={`0 0 ${silhouetteData.viewW} ${silhouetteData.viewH}`}
+                              preserveAspectRatio="xMidYMid meet"
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                width: '100%',
+                                height: '100%',
+                                pointerEvents: 'none',
+                                zIndex: 10,
+                              }}
+                            >
+                              {/* Simple static silhouette border */}
+                              <path
+                                d={silhouetteData.path}
+                                fill="none"
+                                stroke="rgba(var(--theme-accent-rgb), 0.7)"
+                                strokeWidth="1.5"
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          ) : (
+                            /* Fallback static border while silhouette is computing */
+                            <div className="absolute inset-0 rounded-xl border border-[rgba(var(--theme-accent-rgb),0.3)] pointer-events-none" />
+                          )}
                           <img
-                            src={selectedImage}
+                            src={selectedImage!}
                             alt="Preview"
                             className="max-w-full max-h-full object-contain"
                           />
                           <button
-                            onClick={() => { setSelectedImage(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                            className="absolute top-3 right-3 bg-[var(--theme-bg)]/80 hover:bg-[var(--theme-bg)] p-1.5 rounded-full text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-text)] transition-all border border-[rgba(var(--theme-text-rgb),0.1)]"
+                            onClick={() => { setSelectedImage(null); setSilhouetteData(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                            className="absolute top-3 right-3 bg-[var(--theme-bg)]/80 hover:bg-[var(--theme-bg)] p-1.5 rounded-full text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-text)] transition-all border border-[rgba(var(--theme-text-rgb),0.1)]" style={{ zIndex: 20 }}
                           >
                             <X size={14} strokeWidth={1.5} />
                           </button>
                           <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--theme-bg)]/70 backdrop-blur-sm text-[var(--theme-accent)] text-[10px] font-plex-mono tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-all"
+                            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--theme-bg)]/70 backdrop-blur-sm text-[var(--theme-accent)] text-[10px] font-plex-mono tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-all" style={{ zIndex: 20 }}
                           >
                             Change Photo
                           </button>
