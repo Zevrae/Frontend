@@ -16,6 +16,7 @@ import womenTops from "./assets/static/womenTops.webp";
 import menRingImg from "./assets/men ring.png";
 import menPendantImg from "./assets/men pendant.png";
 import menEarringsImg from "./assets/men earrings.png";
+import menBraceletImg from "./assets/men bracelet.png";
 
 const mensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', image: menTshirts, path: '/men/tshirts' },
@@ -31,7 +32,7 @@ const womensCategories = [
 const mensJewelleryCategories = [
   { id: 'rings',     name: 'RINGS',     image: menRingImg,     fit: 'contain', path: '/jewellery/men/rings' },
   { id: 'pendants',  name: 'PENDANTS',  image: menPendantImg,  fit: 'contain', path: '/jewellery/men/pendants' },
-  { id: 'bracelets', name: 'BRACELETS', image: braceletImg, fit: 'contain', path: '/jewellery/men/bracelets' },
+  { id: 'bracelets', name: 'BRACELETS', image: menBraceletImg, fit: 'contain', path: '/jewellery/men/bracelets' },
   { id: 'earrings',  name: 'EARRINGS',  image: menEarringsImg, fit: 'contain', path: '/jewellery/men/earrings' },
 ];
 
