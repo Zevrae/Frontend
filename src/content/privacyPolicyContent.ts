@@ -55,7 +55,7 @@ export const privacyPolicyHtml = `<h1>ZEVRAE PRIVACY POLICY</h1><p><strong>Last 
 
 <h2>9. CONTACT US</h2>
 <p>Questions about this Privacy Policy or your data can be sent to:</p>
-<p><strong>Email:</strong> <a href="mailto:zevareofficial@gmail.com">zevareofficial@gmail.com</a><br /><strong>Phone:</strong> +91 96747 78549</p>
+<p><strong>Email:</strong> <a href="mailto:zevareofficial@gmail.com">zevareofficial@gmail.com</a><br /><strong>Phone:</strong> +91 92580 55185</p>
 
 <h2>10. CHANGES TO THIS POLICY</h2>
 <p>We may update this Privacy Policy from time to time. Material changes will be reflected by an updated "Last Updated" date above, and where appropriate, communicated to you directly.</p>
