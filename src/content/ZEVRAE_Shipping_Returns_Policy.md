@@ -815,7 +815,6 @@ For questions about returns, refunds, or exchanges, contact ZEVRAE Customer Supp
 | **Email** | zevareofficial@gmail.com | 12-24 hours |
 | **Phone** | +91 92580 55185 | 6-12 hours |
 | **Instagram** | @zevare.co (DM) | ~6 hours |
-| **Facebook** | ZEVRAE (Messenger) | 6-12 hours |
 | **X (Twitter)** | @zevareofficial (DM) | 6-12 hours |
 | **Support Hours** | 9:00 AM – 9:00 PM (Daily) | — |
 
