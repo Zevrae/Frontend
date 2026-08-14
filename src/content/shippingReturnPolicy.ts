@@ -818,11 +818,6 @@ export const shippingReturnPolicyHtml = `
 <td>~6 hours</td>
 </tr>
 <tr>
-<td><strong>Facebook</strong></td>
-<td>ZEVRAE (Messenger)</td>
-<td>6-12 hours</td>
-</tr>
-<tr>
 <td><strong>X (Twitter)</strong></td>
 <td>@zevareofficial (DM)</td>
 <td>6-12 hours</td>
