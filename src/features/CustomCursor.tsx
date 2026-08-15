@@ -31,7 +31,7 @@ const GOLD = 'var(--theme-accent)';
 const DOT_SIZE = 10;
 const BUTTON_SIZE = 22;
 const IMAGE_SIZE = 80;
-const LERP_FACTOR = 1; // position tracks the real pointer 1:1, no lag
+const LERP_FACTOR = 0.15; // subtle trailing — dot follows the real pointer with a small delay
 const SIZE_LERP = 0.12;
 const OPACITY_LERP = 0.12;
 const CLICK_LERP = 0.18;
@@ -192,11 +192,8 @@ export function CustomCursor() {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Suppress native cursor site-wide on non-touch devices
-    const style = document.createElement('style');
-    style.id = 'zevrae-cursor-none';
-    style.textContent = '@media (hover: hover) and (pointer: fine) { *, *::before, *::after { cursor: none !important; } }';
-    document.head.appendChild(style);
+    // Native browser cursor is intentionally left visible.
+    // The custom dot trails behind it as a decorative effect.
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('mousedown', onMouseDown, { passive: true });
@@ -207,8 +204,6 @@ export function CustomCursor() {
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
-      const s = document.getElementById('zevrae-cursor-none');
-      if (s) s.remove();
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);

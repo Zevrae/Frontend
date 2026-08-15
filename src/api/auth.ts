@@ -24,10 +24,8 @@ export const authApi = {
   },
 
   verifyEmail: async (token: string) => {
-
     return api.get(`/auth/verify-email/${token}`);
-
-},
+  },
 
   getCurrentUser: async () => {
     const response = await api.get('/auth/me');
@@ -41,6 +39,16 @@ export const authApi = {
 
   googleLogin: async (credential: string) => {
     const response = await api.post('/auth/google', { credential });
+    return response.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, password: string) => {
+    const response = await api.post('/auth/reset-password', { token, password });
     return response.data;
   },
 };

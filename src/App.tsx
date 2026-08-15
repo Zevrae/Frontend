@@ -33,6 +33,7 @@ const ProfilePage = lazy(() => import('./ProfilePage'));
 const AdminGate = lazy(() => import('./admin/AdminGate'));
 const ComingSoon = lazy(() => import('./pages/comingsoon/ComingSoon'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const CustomerCare = lazy(() => import('./pages/customerCare'));
 const SizeGuide = lazy(() => import('./pages/sizeGuide'));
 const ShippingReturns = lazy(() => import('./pages/shippingReturns'));
@@ -208,7 +209,7 @@ export default function App() {
   const displayName = getDisplayName();
 
 return (
-  <div data-page-content className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans">
+  <div data-page-content className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans">
     {/* Premium custom cursor — hidden on touch devices */}
     <CustomCursor />
     {/* Preloader Overlay — self-manages slide-up exit, never re-renders after completion */}
@@ -627,6 +628,7 @@ return (
         </>
       )}
 
+      <div className="flex-grow">
       <Suspense
         fallback={
           <div className="min-h-screen bg-[var(--theme-bg)] flex items-center justify-center">
@@ -672,6 +674,7 @@ return (
         <Route path="/admin/discounts" element={<AdminGate />} />
         <Route path="/admin/analysis" element={<AdminGate />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/shipping-returns" element={<ShippingReturns />} />
@@ -682,6 +685,7 @@ return (
 
       </Routes>
       </Suspense>
+      </div>
 
 
       {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}
