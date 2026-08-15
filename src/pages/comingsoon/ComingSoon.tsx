@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { animate } from 'animejs/animation';
-import { Sparkles, ChevronLeft } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import './ComingSoon.css';
 
 export default function ComingSoon() {
@@ -11,7 +10,6 @@ export default function ComingSoon() {
   const subRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   // GSAP: entrance choreography for the page shell / text
   useEffect(() => {
@@ -84,10 +82,6 @@ export default function ComingSoon() {
 
   return (
     <div ref={containerRef} className="coming-soon-page">
-      <button onClick={() => navigate('/')} className="cs-back">
-        <ChevronLeft size={16} /> Back
-      </button>
-
       <div ref={glowRef} className="cs-glow" aria-hidden="true" />
 
       <div className="cs-content">
