@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './hooks/UseAuth';
 import { cartApi, Cart } from './api/cart';
+import { productsApi } from './api/products';
 
 export interface CartItem {
   id: string;
@@ -48,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
-      const saved = localStorage.getItem('zevrae_guest_cart');
+      const saved = localStorage.getItem('zevrae_cart_cache') || localStorage.getItem('zevrae_guest_cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -56,10 +57,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Persist guest cart to local storage whenever it changes
+  // Persist cart to local storage whenever it changes.
+  // This acts as a robust display cache (for images/categories) across reloads for ALL users.
   useEffect(() => {
+    localStorage.setItem('zevrae_cart_cache', JSON.stringify(items));
     if (!token) {
       localStorage.setItem('zevrae_guest_cart', JSON.stringify(items));
+    } else {
+      localStorage.removeItem('zevrae_guest_cart');
     }
   }, [items, token]);
 
@@ -70,7 +75,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!token) return;
     cartApi
       .getCart()
-      .then((cart) => setItems((prev) => mergeDisplayFields(cart.items, prev)))
+      .then(async (cart) => {
+        // Initial merge using the local cache (prev)
+        setItems((prev) => {
+          const merged = mergeDisplayFields(cart.items, prev);
+          
+          // Check if any items are missing images (could happen if logged in from a new device)
+          const missingImageItems = merged.filter(item => !item.image);
+          if (missingImageItems.length > 0) {
+            // Fetch missing product details asynchronously to populate images
+            const fetchMissing = async () => {
+              try {
+                const uniqueIds = Array.from(new Set(missingImageItems.map(i => i.id)));
+                const products = await Promise.all(uniqueIds.map(id => productsApi.getById(id).catch(() => null)));
+                
+                setItems((currentItems) => {
+                  return currentItems.map(item => {
+                    if (!item.image) {
+                      const p = products.find(prod => prod && (prod.id === item.id || (prod as any).$id === item.id));
+                      if (p) {
+                        const imgs = Array.isArray(p.images) ? p.images : (typeof p.images === 'string' ? JSON.parse(p.images) : []);
+                        return { ...item, image: imgs[0] || '', category: p.category || '' };
+                      }
+                    }
+                    return item;
+                  });
+                });
+              } catch (e) {
+                console.error("Failed to fetch missing cart item details", e);
+              }
+            };
+            fetchMissing();
+          }
+          
+          return merged;
+        });
+      })
       .catch((err) => console.error('Failed to load cart:', err));
   }, [token]);
 

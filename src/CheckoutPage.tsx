@@ -176,6 +176,15 @@ export default function CheckoutPage() {
           currency: orderRes.payment.currency,
           name: "ZEVRAE",
           description: "Luxury Apparel Checkout",
+          // Served as a static asset from THIS site's own domain
+          // (window.location.origin), so it's always HTTPS in production
+          // and never depends on the backend being reachable. Put the
+          // actual logo file at frontend/public/logo.png — anything in
+          // /public is served as-is from the site root.
+          // Pins the checkout branding explicitly so it can never fall
+          // back to a stale/local URL saved in the Razorpay Dashboard's
+          // Business Settings.
+          image: `${window.location.origin}/logo.png`,
           order_id: orderRes.payment.order_id,
           handler: async function (response: any) {
             try {
@@ -202,7 +211,17 @@ export default function CheckoutPage() {
           },
           theme: {
             color: "var(--theme-accent)"
-          }
+          },
+          modal: {
+            // Fires when the user dismisses the widget WITHOUT paying —
+            // clicking the 'X', pressing Escape, or clicking the backdrop.
+            // `handler` above only fires on a completed payment, so without
+            // this the button gets stuck on "Processing..." forever if the
+            // user just backs out.
+            ondismiss: () => {
+              setIsProcessing(false);
+            },
+          },
         };
 
         const rzp = new (window as any).Razorpay(options);
