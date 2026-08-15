@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Mail, Lock, User, Phone, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock, User, Phone, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
+import { authApi } from './api/auth';
 
 declare global {
   interface Window {
@@ -23,12 +24,13 @@ interface LoginModalProps {
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const { login, loginWithGoogle, register, loading: authLoading } = useAuth();
-  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
+  const [mode, setMode] = useState<'signIn' | 'signUp' | 'forgotPassword'>('signIn');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [googleReady, setGoogleReady] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
+  const [forgotEmail, setForgotEmail] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -93,6 +95,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setErrorMessage('');
       setSuccessMessage('');
       setFormData({ name: '', phone: '', email: '', password: '' });
+      setForgotEmail('');
       setMode('signIn');
     }
   }, [isOpen]);
@@ -152,6 +155,28 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    setSubmitting(true);
+    try {
+      await authApi.forgotPassword(forgotEmail);
+      setSuccessMessage(
+        'Password reset link sent! Please check your email inbox (and spam folder).'
+      );
+      setForgotEmail('');
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Something went wrong. Please try again.';
+      setErrorMessage(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const isLoading = submitting || authLoading;
 
   return (
@@ -186,24 +211,45 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               <h1 className="text-sm font-plex-mono font-light tracking-[0.4em] text-[var(--theme-accent)] mb-4 uppercase">
                 ZEVRAE
               </h1>
-              <div className="flex justify-center gap-6 mb-2">
-                <button
-                  onClick={() => setMode('signIn')}
-                  className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signIn' ? 'text-[var(--theme-text)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
-                >
-                  SIGN IN
-                </button>
-                <span className="text-[var(--theme-accent)]/40 text-2xl font-light">|</span>
-                <button
-                  onClick={() => setMode('signUp')}
-                  className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signUp' ? 'text-[var(--theme-text)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
-                >
-                  SIGN UP
-                </button>
-              </div>
-              <p className="text-[12px] font-plex-mono tracking-[0.05em] text-[rgba(var(--theme-text-rgb),0.5)] mt-4">
-                {mode === 'signIn' ? 'Access your personal account' : 'Create your personal account'}
-              </p>
+
+              {mode === 'forgotPassword' ? (
+                <div>
+                  <button
+                    onClick={() => { setMode('signIn'); setErrorMessage(''); setSuccessMessage(''); }}
+                    className="flex items-center gap-2 text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors mb-4 mx-auto font-plex-mono text-[11px] tracking-wider"
+                  >
+                    <ArrowLeft size={14} />
+                    Back to Sign In
+                  </button>
+                  <h2 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase text-[var(--theme-text)]">
+                    RESET PASSWORD
+                  </h2>
+                  <p className="text-[12px] font-plex-mono tracking-[0.05em] text-[rgba(var(--theme-text-rgb),0.5)] mt-3">
+                    Enter your email and we'll send you a reset link
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex justify-center gap-6 mb-2">
+                    <button
+                      onClick={() => setMode('signIn')}
+                      className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signIn' ? 'text-[var(--theme-text)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
+                    >
+                      SIGN IN
+                    </button>
+                    <span className="text-[var(--theme-accent)]/40 text-2xl font-light">|</span>
+                    <button
+                      onClick={() => setMode('signUp')}
+                      className={`text-xl md:text-2xl font-archivo font-bold tracking-[0.1em] uppercase transition-colors ${mode === 'signUp' ? 'text-[var(--theme-text)]' : 'text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[rgba(var(--theme-text-rgb),0.7)]'}`}
+                    >
+                      SIGN UP
+                    </button>
+                  </div>
+                  <p className="text-[12px] font-plex-mono tracking-[0.05em] text-[rgba(var(--theme-text-rgb),0.5)] mt-4">
+                    {mode === 'signIn' ? 'Access your personal account' : 'Create your personal account'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Success message */}
@@ -240,6 +286,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               )}
             </AnimatePresence>
 
+            {mode !== 'forgotPassword' && (
             <form onSubmit={handleSubmit} className="space-y-4 mb-6">
               <AnimatePresence mode="popLayout">
                 {mode === 'signUp' && (
@@ -332,7 +379,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
               {mode === 'signIn' && (
                 <div className="flex justify-end">
-                  <button type="button" className="text-[var(--theme-accent)] text-[11px] font-plex-mono hover:underline tracking-wider">
+                  <button
+                    type="button"
+                    onClick={() => { setMode('forgotPassword'); setErrorMessage(''); setSuccessMessage(''); }}
+                    className="text-[var(--theme-accent)] text-[11px] font-plex-mono hover:underline tracking-wider"
+                  >
                     Forgot Password?
                   </button>
                 </div>
@@ -350,43 +401,83 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   : 'CREATE ACCOUNT'}
               </button>
             </form>
+            )}
 
-            {/* Divider */}
-            <div className="relative flex items-center justify-center my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[rgba(var(--theme-accent-rgb),0.2)]"></div>
-              </div>
-              <span className="relative bg-[var(--theme-bg)] px-4 text-[10px] font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.4)] uppercase">
-                Or Continue With
-              </span>
-            </div>
+            {/* Forgot Password Form */}
+            <AnimatePresence mode="wait">
+              {mode === 'forgotPassword' && (
+                <motion.div
+                  key="forgotPassword"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <form onSubmit={handleForgotPassword} className="space-y-4 mb-6">
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--theme-accent)]/50" size={18} />
+                      <input
+                        type="email"
+                        placeholder="Email Address"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        required
+                        disabled={isLoading}
+                        className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] rounded-sm py-3 px-12 text-[var(--theme-text)] text-[13px] font-plex-mono focus:outline-none focus:border-[var(--theme-accent)]/60 transition-colors placeholder:text-[rgba(var(--theme-text-rgb),0.3)] disabled:opacity-50"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full py-4 mt-2 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] font-bold tracking-[0.2em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? 'SENDING...' : 'SEND RESET LINK'}
+                    </button>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Google Sign-In */}
-            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
-              <div className="flex flex-col items-center justify-center w-full gap-2">
-                {/* Removed [&>div]:!w-full so the inner iframe can naturally center */}
-                <div ref={googleBtnRef} className="w-full flex justify-center" />
-                {!googleReady && (
-                  <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] tracking-wider">Loading Google Sign-In…</p>
-                )}
+            {/* Divider + Google — hidden in forgotPassword mode */}
+            {mode !== 'forgotPassword' && (
+              <>
+              <div className="relative flex items-center justify-center my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[rgba(var(--theme-accent-rgb),0.2)]"></div>
+                </div>
+                <span className="relative bg-[var(--theme-bg)] px-4 text-[10px] font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.4)] uppercase">
+                  Or Continue With
+                </span>
               </div>
-            ) : (
-              <button
-                type="button"
-                disabled
-                title="Google sign-in is not configured"
-                className="w-full py-4 px-6 bg-transparent border border-[rgba(var(--theme-accent-rgb),0.2)] text-[rgba(var(--theme-text-rgb),0.3)] text-[12px] tracking-[0.1em] font-plex-mono cursor-not-allowed flex items-center justify-center gap-4 rounded-sm"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
-                  <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                    <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
-                    <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
-                    <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
-                    <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
-                  </g>
-                </svg>
-                <span>GOOGLE — NOT CONFIGURED</span>
-              </button>
+
+              {/* Google Sign-In */}
+              {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+                <div className="flex flex-col items-center justify-center w-full gap-2">
+                  {/* Removed [&>div]:!w-full so the inner iframe can naturally center */}
+                  <div ref={googleBtnRef} className="w-full flex justify-center" />
+                  {!googleReady && (
+                    <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] tracking-wider">Loading Google Sign-In…</p>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  title="Google sign-in is not configured"
+                  className="w-full py-4 px-6 bg-transparent border border-[rgba(var(--theme-accent-rgb),0.2)] text-[rgba(var(--theme-text-rgb),0.3)] text-[12px] tracking-[0.1em] font-plex-mono cursor-not-allowed flex items-center justify-center gap-4 rounded-sm"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
+                    <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                      <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+                      <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+                      <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+                      <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+                    </g>
+                  </svg>
+                  <span>GOOGLE — NOT CONFIGURED</span>
+                </button>
+              )}
+              </>
             )}
 
             <div className="mt-8 text-center">

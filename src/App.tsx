@@ -33,6 +33,7 @@ const ProfilePage = lazy(() => import('./ProfilePage'));
 const AdminGate = lazy(() => import('./admin/AdminGate'));
 const ComingSoon = lazy(() => import('./pages/comingsoon/ComingSoon'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const CustomerCare = lazy(() => import('./pages/customerCare'));
 const SizeGuide = lazy(() => import('./pages/sizeGuide'));
 const ShippingReturns = lazy(() => import('./pages/shippingReturns'));
@@ -672,6 +673,7 @@ return (
         <Route path="/admin/discounts" element={<AdminGate />} />
         <Route path="/admin/analysis" element={<AdminGate />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/customer-care" element={<CustomerCare />} />
         <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/shipping-returns" element={<ShippingReturns />} />
