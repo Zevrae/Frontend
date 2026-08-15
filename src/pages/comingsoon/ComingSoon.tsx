@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { animate as animeAnimate } from 'animejs';
+import { animate } from 'animejs/animation';
 import { Sparkles } from 'lucide-react';
 import './ComingSoon.css';
 
@@ -39,22 +39,22 @@ export default function ComingSoon() {
     return () => ctx.revert();
   }, []);
 
-  // anime.js: interactive micro-animation on the CTA button — a traveling
-  // shine sweep on hover, and a satisfying pulse on click.
+  // anime.js (modular v4): interactive micro-animation on the CTA button 
+  // a traveling shine sweep on hover, and a satisfying pulse on click.
   useEffect(() => {
     const btn = buttonRef.current;
     if (!btn) return;
 
     const handleEnter = () => {
-      animeAnimate('.cs-shine', {
+      animate('.cs-shine', {
         translateX: ['-120%', '220%'],
         duration: 900,
-        ease: 'inOutQuad',
+        ease: 'inOutQuad', // In v4, 'easing' property becomes 'ease'
       });
     };
 
     const handleClick = () => {
-      animeAnimate(btn, {
+      animate(btn, {
         scale: [1, 0.94, 1],
         duration: 420,
         ease: 'outElastic(1, .6)',
@@ -63,6 +63,7 @@ export default function ComingSoon() {
 
     btn.addEventListener('mouseenter', handleEnter);
     btn.addEventListener('click', handleClick);
+    
     return () => {
       btn.removeEventListener('mouseenter', handleEnter);
       btn.removeEventListener('click', handleClick);

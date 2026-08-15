@@ -2,7 +2,7 @@
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: #0c0a08;
+  background: var(--theme-bg); /* Replaced hardcoded #0c0a08 */
   display: flex;
   align-items: center;
   justify-content: center;
