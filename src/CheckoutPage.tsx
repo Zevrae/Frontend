@@ -89,7 +89,7 @@ export default function CheckoutPage() {
   // (backend/controllers/orderController.js) — the backend is the source of
   // truth and recomputes this independently, but the two must agree so the
   // amount shown here matches what's actually charged.
-  const shipping = subtotal > 999 ? 0 : 59;
+  const shipping = subtotal > 999 ? 0 : 49;
   const COD_HANDLING_FEE = 15;
 
   const [couponInput, setCouponInput] = useState('');
