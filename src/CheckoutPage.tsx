@@ -85,7 +85,11 @@ export default function CheckoutPage() {
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   const subtotal = cartTotal;
-  const shipping = subtotal > 1000 ? 0 : 19; 
+  // Keep in sync with the backend's server-side calculation
+  // (backend/controllers/orderController.js) — the backend is the source of
+  // truth and recomputes this independently, but the two must agree so the
+  // amount shown here matches what's actually charged.
+  const shipping = subtotal > 999 ? 0 : 59;
   const COD_HANDLING_FEE = 15;
 
   const [couponInput, setCouponInput] = useState('');

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getThemeForPath, type ThemeName } from './themeConfig';
+import { getThemeForPath, DEFAULT_THEME, type ThemeName } from './themeConfig';
 
 interface ThemeContextValue {
   theme: ThemeName;
@@ -11,9 +11,41 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'clothing',
+  theme: DEFAULT_THEME,
   setTheme: () => {},
 });
+
+// Persists the last *effective* theme so a hard refresh (or reopening the
+// tab) on a non-category route — /product/:id, /bag, /checkout, /profile,
+// etc. — restores whatever palette was actually on screen instead of
+// silently falling back to DEFAULT_THEME. Category routes still win on
+// every load (see getThemeForPath below); this only fills in the gap for
+// routes that don't define a category of their own.
+const THEME_STORAGE_KEY = 'zevrae:theme';
+const VALID_THEMES: ThemeName[] = ['clothing', 'jewellery', 'accessories'];
+
+function isValidTheme(value: unknown): value is ThemeName {
+  return typeof value === 'string' && (VALID_THEMES as string[]).includes(value);
+}
+
+function readStoredTheme(): ThemeName | null {
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return isValidTheme(stored) ? stored : null;
+  } catch {
+    // localStorage can throw in private-browsing / storage-disabled
+    // contexts — fall back to the default rather than letting init crash.
+    return null;
+  }
+}
+
+function persistTheme(theme: ThemeName) {
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Best-effort only — persistence isn't critical to the page working.
+  }
+}
 
 /** Read the active category theme anywhere in the tree. */
 export function useTheme(): ThemeName {
@@ -29,7 +61,15 @@ export function useSetTheme(): (theme: ThemeName) => void {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const [theme, setThemeState] = useState<ThemeName>(() => getThemeForPath(location.pathname) ?? 'clothing');
+  // Initialization order: a category route (e.g. /jewellery/...) always
+  // wins, since that's an explicit, unambiguous signal. Otherwise fall back
+  // to whatever theme was last persisted (so refreshing on /product/:id or
+  // /checkout doesn't flash back to DEFAULT_THEME), and only use
+  // DEFAULT_THEME when neither is available (first-ever visit, or a
+  // corrupted/missing localStorage value).
+  const [theme, setThemeState] = useState<ThemeName>(
+    () => getThemeForPath(location.pathname) ?? readStoredTheme() ?? DEFAULT_THEME,
+  );
 
   // Route change only overrides the palette when the new route actually
   // belongs to a category. Non-category routes (product detail, cart,
@@ -53,6 +93,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // behind, so the CSS `transition` declared on `html`/`body` for these
     // custom properties takes over instead, and the palette crossfades.
     document.documentElement.setAttribute('data-theme', theme);
+    // Every theme change — whether from route navigation, the scroll-linked
+    // override, or a future explicit theme switcher — is persisted
+    // immediately so the next load/refresh picks up right where this one
+    // left off.
+    persistTheme(theme);
   }, [theme]);
 
   const setTheme = useCallback((next: ThemeName) => setThemeState(next), []);
