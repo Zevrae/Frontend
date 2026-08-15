@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import { animate as animeAnimate } from 'animejs';
-import { Sparkles } from 'lucide-react';
+import anime from 'animejs';
+import { Sparkles, ChevronLeft } from 'lucide-react';
 import './ComingSoon.css';
 
 export default function ComingSoon() {
@@ -10,6 +11,7 @@ export default function ComingSoon() {
   const subRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // GSAP: entrance choreography for the page shell / text
   useEffect(() => {
@@ -46,23 +48,26 @@ export default function ComingSoon() {
     if (!btn) return;
 
     const handleEnter = () => {
-      animeAnimate('.cs-shine', {
+      anime({
+        targets: '.cs-shine',
         translateX: ['-120%', '220%'],
         duration: 900,
-        ease: 'inOutQuad',
+        easing: 'easeInOutQuad',
       });
     };
 
     const handleClick = () => {
-      animeAnimate(btn, {
+      anime({
+        targets: btn,
         scale: [1, 0.94, 1],
         duration: 420,
-        ease: 'outElastic(1, .6)',
+        easing: 'easeOutElastic(1, .6)',
       });
     };
 
     btn.addEventListener('mouseenter', handleEnter);
     btn.addEventListener('click', handleClick);
+    
     return () => {
       btn.removeEventListener('mouseenter', handleEnter);
       btn.removeEventListener('click', handleClick);
@@ -81,6 +86,11 @@ export default function ComingSoon() {
 
   return (
     <div ref={containerRef} className="coming-soon-page">
+      {/* Back Button added to match .cs-back CSS */}
+      <button onClick={() => navigate('/')} className="cs-back">
+        <ChevronLeft size={16} /> Back
+      </button>
+
       <div ref={glowRef} className="cs-glow" aria-hidden="true" />
 
       <div className="cs-content">
