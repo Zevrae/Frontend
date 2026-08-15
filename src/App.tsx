@@ -209,7 +209,7 @@ export default function App() {
   const displayName = getDisplayName();
 
 return (
-  <div data-page-content className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans">
+  <div data-page-content className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans">
     {/* Premium custom cursor — hidden on touch devices */}
     <CustomCursor />
     {/* Preloader Overlay — self-manages slide-up exit, never re-renders after completion */}
@@ -628,6 +628,7 @@ return (
         </>
       )}
 
+      <div className="flex-grow">
       <Suspense
         fallback={
           <div className="min-h-screen bg-[var(--theme-bg)] flex items-center justify-center">
@@ -684,6 +685,7 @@ return (
 
       </Routes>
       </Suspense>
+      </div>
 
 
       {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}

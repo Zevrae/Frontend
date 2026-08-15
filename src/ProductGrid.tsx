@@ -262,18 +262,18 @@ export default function ProductGrid({
 
   return (
     <>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
 
       {/* ── MEN'S SECTION ── */}
       {categoryFilter === 'men' && (
         <motion.section 
           key="men"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="men" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
         >
           <SectionHeading eyebrow="LATEST DROPS" title="Men's Collection" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -314,12 +314,12 @@ export default function ProductGrid({
       {['men-tshirts', 'men-lowers', 'women-tshirts', 'women-lowers'].includes(categoryFilter) && (
         <motion.section 
           key="gendered-category"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="gendered-category" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading
             eyebrow={isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
@@ -347,12 +347,12 @@ export default function ProductGrid({
       {categoryFilter === 'women' && (
         <motion.section 
           key="women"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="women" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading eyebrow="NEW ARRIVALS" title="Women's Collection" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -393,12 +393,12 @@ export default function ProductGrid({
       {categoryFilter === 'accessories' && (
         <motion.section 
           key="accessories"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="accessories" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading eyebrow="NEW ARRIVALS" title="ACCESSORIES COLLECTION" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -432,12 +432,12 @@ export default function ProductGrid({
       {categoryFilter === 'jewellery-men' && (
         <motion.section 
           key="jewellery-men"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="jewellery-men" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading eyebrow="JEWELLERY" title="MEN'S JEWELLERY" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -458,12 +458,12 @@ export default function ProductGrid({
       {categoryFilter === 'jewellery-women' && (
         <motion.section 
           key="jewellery-women"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="jewellery-women" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading eyebrow="JEWELLERY" title="WOMEN'S JEWELLERY" />
           <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -484,12 +484,12 @@ export default function ProductGrid({
       {isGenderedJewellerySubcategory && (
         <motion.section 
           key="gendered-jewellery-sub"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="gendered-jewellery-sub" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading
             eyebrow={categoryFilter.startsWith('men-') ? "MEN'S JEWELLERY" : "WOMEN'S JEWELLERY"}
@@ -521,12 +521,12 @@ export default function ProductGrid({
       {['keychain', 'keychains', 'toys', 'soft-toys'].includes(categoryFilter) && (
         <motion.section 
           key="accessories-category"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           id="accessories-category" 
-          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)]"
+          className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
         >
           <SectionHeading
             eyebrow="ACCESSORIES"
