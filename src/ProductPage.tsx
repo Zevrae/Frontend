@@ -8,6 +8,7 @@ import { useAuth } from './hooks/UseAuth';
 import { productsApi } from './api/products';
 import TryOn from './components/TryOn';
 import TryOnModal from './components/TryOnModal';
+import SpecularButton from './components/specularbutton';
 import ReviewSection from './components/ReviewSection';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
@@ -589,12 +590,11 @@ export default function ProductPage() {
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 className="space-y-5"
               >
-                {/* Category label + TryOn row */}
+                {/* Category label */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0' }}>
                   <p className="text-[10px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]" style={{ margin: 0 }}>
                     {product.label || "Men's Collection"}
                   </p>
-                  {!isNonApparel && <TryOn onClick={() => setTryOnOpen(true)} />}
                 </div>
 
                 <h1
@@ -705,6 +705,52 @@ export default function ProductPage() {
                       </motion.p>
                     )}
                   </AnimatePresence>
+                </motion.div>
+              )}
+
+              {/* ── SEE IT ON YOU — Try-On inline CTA ── */}
+              {!isNonApparel && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <SpecularButton
+                    onClick={() => setTryOnOpen(true)}
+                    radius={4}
+                    tint="#000000"
+                    tintOpacity={0}
+                    blur={0}
+                    textColor="#ffffffff"
+                    lineColor="#C8A96A"
+                    baseColor="#3a2e1a"
+                    intensity={1.4}
+                    shineSize={12}
+                    shineFade={38}
+                    thickness={1.2}
+                    speed={0.4}
+                    followMouse
+                    proximity={200}
+                    autoAnimate={false}
+                    className="group w-full !p-0 bg-transparent hover:bg-[rgba(var(--theme-accent-rgb),0.03)] transition-all duration-300"
+                  >
+                    <div className="w-full flex items-center justify-between px-5 py-4">
+                      <div className="flex flex-col items-start gap-0.5">
+                        <span className="text-[11px] uppercase tracking-[0.35em] font-plex-mono text-[var(--theme-accent)] flex items-center gap-2">
+                          <span className="text-[var(--theme-accent)] opacity-60">✦</span>
+                          See It On You
+                        </span>
+                        <span className="text-[9px] tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] uppercase">
+                          Upload a photo to preview the fit
+                        </span>
+                      </div>
+                      <ArrowRight
+                        size={14}
+                        strokeWidth={1.5}
+                        className="text-[rgba(var(--theme-accent-rgb),0.5)] group-hover:text-[var(--theme-accent)] group-hover:translate-x-1 transition-all duration-300"
+                      />
+                    </div>
+                  </SpecularButton>
                 </motion.div>
               )}
 
