@@ -85,9 +85,7 @@ export default function CheckoutPage() {
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   const subtotal = cartTotal;
-  const shipping = subtotal > 1000 ? 0 : 19; // 19 INR shipping, free over 1000
-  // Flat handling charge added to Cash on Delivery orders — keep in sync
-  // with COD_HANDLING_FEE in the backend's orderController.js.
+  const shipping = subtotal > 1000 ? 0 : 19; 
   const COD_HANDLING_FEE = 15;
 
   const [couponInput, setCouponInput] = useState('');
@@ -100,8 +98,6 @@ export default function CheckoutPage() {
     setCouponStatus('checking');
     setCouponError('');
     try {
-      // Preview only — doesn't consume a use. The code is only actually
-      // redeemed once, when the order is placed below.
       const { discountAmount } = await discountsApi.preview(couponInput.trim().toUpperCase(), subtotal);
       setAppliedDiscount({ code: couponInput.trim().toUpperCase(), amount: discountAmount });
       setCouponStatus('applied');
@@ -130,9 +126,6 @@ export default function CheckoutPage() {
     country: 'India',
   });
 
-  // The backend's POST /orders reads from the user's server-side cart, not
-  // from the request body, so the client-side cart has to be pushed up
-  // before checkout can create an order.
   const syncCartToBackend = async () => {
     await cartApi.clearCart();
     for (const item of items) {
@@ -163,8 +156,6 @@ export default function CheckoutPage() {
       }
 
       try {
-        // Order (and its Razorpay counterpart) is created server-side, from
-        // the cart we just synced — the client never dictates the amount.
         const orderRes = await ordersApi.create({
           shipping_address: buildShippingAddress(),
           payment_method: 'online',
@@ -184,8 +175,6 @@ export default function CheckoutPage() {
           order_id: orderRes.payment.order_id,
           handler: async function (response: any) {
             try {
-              // Signature is verified server-side — the client can never
-              // mark an order as paid on its own.
               await paymentsApi.verify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -351,7 +340,7 @@ export default function CheckoutPage() {
                         value={shippingData.firstName} 
                         onChange={handleChange}
                         onBlur={() => handleBlur('firstName')}
-                        className={`w-full bg-[#111] border ${touched.firstName && errors.firstName ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.firstName && errors.firstName ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.firstName && errors.firstName && (
                         <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
@@ -365,7 +354,7 @@ export default function CheckoutPage() {
                         value={shippingData.lastName} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('lastName')}
-                        className={`w-full bg-[#111] border ${touched.lastName && errors.lastName ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.lastName && errors.lastName ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.lastName && errors.lastName && (
                         <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
@@ -381,7 +370,7 @@ export default function CheckoutPage() {
                         value={shippingData.email} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('email')}
-                        className={`w-full bg-[#111] border ${touched.email && errors.email ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.email && errors.email ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.email && errors.email && (
                         <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -395,7 +384,7 @@ export default function CheckoutPage() {
                         value={shippingData.phone} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('phone')}
-                        className={`w-full bg-[#111] border ${touched.phone && errors.phone ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.phone && errors.phone ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.phone && errors.phone && (
                         <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
@@ -410,7 +399,7 @@ export default function CheckoutPage() {
                       value={shippingData.address} 
                       onChange={handleChange} 
                       onBlur={() => handleBlur('address')}
-                      className={`w-full bg-[#111] border ${touched.address && errors.address ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                      className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.address && errors.address ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                     />
                     {touched.address && errors.address && (
                       <p className="text-red-500 text-xs mt-1">{errors.address}</p>
@@ -425,7 +414,7 @@ export default function CheckoutPage() {
                         value={shippingData.city} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('city')}
-                        className={`w-full bg-[#111] border ${touched.city && errors.city ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.city && errors.city ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.city && errors.city && (
                         <p className="text-red-500 text-xs mt-1">{errors.city}</p>
@@ -439,7 +428,7 @@ export default function CheckoutPage() {
                         value={shippingData.postalCode} 
                         onChange={handleChange} 
                         onBlur={() => handleBlur('postalCode')}
-                        className={`w-full bg-[#111] border ${touched.postalCode && errors.postalCode ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.postalCode && errors.postalCode ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
                       />
                       {touched.postalCode && errors.postalCode && (
                         <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>
@@ -452,8 +441,8 @@ export default function CheckoutPage() {
                     disabled={!isFormValid}
                     className={`w-full py-4 mt-8 flex justify-center items-center gap-2 rounded-sm group transition-colors ${
                       isFormValid 
-                        ? 'bg-[var(--theme-accent)] hover:brightness-90 text-black cursor-pointer' 
-                        : 'bg-[#111] text-[rgba(var(--theme-text-rgb),0.3)] border border-[rgba(var(--theme-text-rgb),0.1)] cursor-not-allowed'
+                        ? 'bg-[var(--theme-accent)] hover:brightness-90 text-[var(--theme-bg)] cursor-pointer' 
+                        : 'bg-[rgba(var(--theme-text-rgb),0.05)] text-[rgba(var(--theme-text-rgb),0.3)] border border-[rgba(var(--theme-text-rgb),0.1)] cursor-not-allowed'
                     }`}
                   >
                     <span className="text-[12px] uppercase font-bold tracking-[0.2em]">Continue to Payment</span>
@@ -481,7 +470,7 @@ export default function CheckoutPage() {
                     {paymentMethods.map(method => (
                       <div 
                         key={method.id} 
-                        className={`border rounded-sm transition-all duration-300 overflow-hidden cursor-pointer ${selectedMethod === method.id ? 'border-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]' : 'border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[rgba(var(--theme-text-rgb),0.5)] bg-[#111]'}`}
+                        className={`border rounded-sm transition-all duration-300 overflow-hidden cursor-pointer ${selectedMethod === method.id ? 'border-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]' : 'border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[rgba(var(--theme-text-rgb),0.5)] bg-[rgba(var(--theme-text-rgb),0.02)]'}`}
                         onClick={() => setSelectedMethod(method.id)}
                       >
                         <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -541,7 +530,7 @@ export default function CheckoutPage() {
                     className={`w-full py-4 mt-4 flex justify-center items-center gap-2 rounded-sm group transition-all duration-300 ${
                       selectedMethod && !isProcessing
                         ? 'bg-[var(--theme-accent)] hover:brightness-90 text-[var(--theme-bg)] shadow-[0_4px_20px_-5px_rgba(var(--theme-accent-rgb),0.4)]' 
-                        : 'bg-[#111] text-[rgba(var(--theme-text-rgb),0.3)] cursor-not-allowed border border-[rgba(var(--theme-text-rgb),0.1)]'
+                        : 'bg-[rgba(var(--theme-text-rgb),0.05)] text-[rgba(var(--theme-text-rgb),0.3)] cursor-not-allowed border border-[rgba(var(--theme-text-rgb),0.1)]'
                     }`}
                   >
                     <Lock size={16} className={selectedMethod ? '' : 'opacity-50'} />
@@ -583,7 +572,7 @@ export default function CheckoutPage() {
                 </p>
                 <button 
                   onClick={() => navigate('/')}
-                  className="bg-[#111] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
+                  className="bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
                 >
                   Continue Browsing
                 </button>
@@ -595,7 +584,7 @@ export default function CheckoutPage() {
         {/* Right Column: Order Summary */}
         {step !== 4 && (
           <div className="lg:col-span-5">
-            <div className="bg-[#111] border border-[rgba(var(--theme-accent-rgb),0.2)] p-8 rounded-sm sticky top-32">
+            <div className="bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-accent-rgb),0.2)] p-8 rounded-sm sticky top-32">
               <h3 className="text-[13px] uppercase tracking-[0.3em] font-plex-mono text-[var(--theme-accent)] mb-8">Order Summary</h3>
               
               <div className="space-y-4 mb-8 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
@@ -603,7 +592,7 @@ export default function CheckoutPage() {
                   <div key={`${item.id}-${item.size}`} className="flex gap-4 group">
                     <div className="w-16 h-20 bg-[var(--theme-bg)] rounded-sm overflow-hidden border border-[rgba(var(--theme-text-rgb),0.05)] relative flex-shrink-0">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
-                      <div className="absolute top-0 right-0 bg-[var(--theme-accent)] text-black text-[9px] w-4 h-4 flex items-center justify-center font-bold">
+                      <div className="absolute top-0 right-0 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] w-4 h-4 flex items-center justify-center font-bold">
                         {item.quantity}
                       </div>
                     </div>
