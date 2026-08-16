@@ -238,7 +238,7 @@ return (
       {!location.pathname.startsWith('/admin') && (
       <nav 
         className={`fixed top-0 w-full z-40 transition-all duration-1000 ${
-          isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6 border-b border-[rgba(var(--theme-accent-rgb),0.1)]' : 'bg-transparent py-10'
+          isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6' : 'bg-transparent py-10'
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
