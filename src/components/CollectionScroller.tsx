@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
 import { useSetTheme } from '../theme/ThemeProvider';
+import { useCollectionTransition } from '../features/CollectionTransitionContext';
 import type { ThemeName } from '../theme/themeConfig';
 import clothingDefault from '../assets/static/image1.jpg';
 import menClothing from '../assets/static/zoom.jpg';
@@ -39,6 +40,8 @@ interface Collection {
   heroVignetteOpacity?: number;
   /** Hero image object-position. Falls back to --hero-object-position :root default ('center center'). */
   heroObjectPosition?: string;
+  /** CSS color used as the transition veil when switching TO this collection. */
+  veilColor: string;
 }
 
 const collections: Collection[] = [
@@ -53,6 +56,8 @@ const collections: Collection[] = [
     image: clothingDefault,
     menImage: menClothing,
     womenImage: womenClothing,
+    // Clothing is the darkest theme — use its bg as the veil when returning to it
+    veilColor: '#12100C',
   },
   {
     id: 'jewellery',
@@ -69,6 +74,7 @@ const collections: Collection[] = [
     heroBrightness: 0.75,
     heroVignetteOpacity: 0.10,
     heroObjectPosition: '30% center',
+    veilColor: '#FAEAB1',
   },
   {
     id: 'accessories',
@@ -85,6 +91,7 @@ const collections: Collection[] = [
     heroBrightness: 0.75,
     heroVignetteOpacity: 0.10,
     heroObjectPosition: 'center center',
+    veilColor: '#F5F5F5',
   },
 ];
 
@@ -188,6 +195,7 @@ export function CollectionScroller() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const setTheme = useSetTheme();
+  const { triggerTransition } = useCollectionTransition();
   const isAnimating = useRef(false);
 
   // Swipe gesture refs
@@ -238,8 +246,21 @@ export function CollectionScroller() {
     if (clamped === activeIdx) return;
 
     isAnimating.current = true;
-    setActiveIdx(clamped);
+    const incoming = collections[clamped];
 
+    // ── Veil transition ────────────────────────────────────────────────────
+    // The card-slide GSAP animation starts immediately (so the scroller
+    // feels responsive). The theme/hero swap is deferred into the
+    // triggerTransition callback so it happens while the veil is opaque.
+    triggerTransition(
+      () => {
+        // This runs while the veil covers the screen — update everything here
+        setActiveIdx(clamped);
+      },
+      incoming.veilColor,
+    );
+
+    // ── Slide the card track in parallel ──────────────────────────────────
     const track = trackRef.current;
     if (track) {
       const cards = track.querySelectorAll<HTMLElement>('.cs-card');
@@ -263,7 +284,7 @@ export function CollectionScroller() {
     } else {
       isAnimating.current = false;
     }
-  }, [activeIdx]);
+  }, [activeIdx, triggerTransition]);
 
   // Set initial track position on mount so first card is centered
   useEffect(() => {

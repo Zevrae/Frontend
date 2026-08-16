@@ -18,6 +18,7 @@ import { usePreloader } from './features/PreloaderContext';
 import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
+import { useCollectionTransition } from './features/CollectionTransitionContext';
 import heroImage from './assets/hero section.webp';
 import jewelleryHeroImage from './assets/jewellery hero section.png';
 import accessoriesHeroImage from './assets/accessories hero section.png';
@@ -71,6 +72,7 @@ export default function App() {
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
   const theme = useTheme();
+  const { isCollectionTransitioning } = useCollectionTransition();
   // Derive the hero background image from the active collection theme.
   // Each collection with its own heroImage switches the <img> src in sync;
   // clothing falls back to the default hero image.
@@ -91,7 +93,22 @@ export default function App() {
   
   // Hero animation refs
   const heroRef = useRef<HTMLDivElement>(null);
+  const heroImageRef = useRef<HTMLImageElement>(null);
   const heroAnimatedRef = useRef(false);
+
+  // Subtle hero-image scale pulse during collection transitions.
+  // Timed to match the veil: scale up as veil covers, reset as veil reveals.
+  useEffect(() => {
+    const img = heroImageRef.current;
+    if (!img) return;
+    if (isCollectionTransitioning) {
+      // Very subtle zoom-in as the veil sweeps over
+      gsap.to(img, { scale: 1.025, duration: 0.32, ease: 'power2.inOut', overwrite: true });
+    } else {
+      // Settle back to normal as veil lifts
+      gsap.to(img, { scale: 1, duration: 0.42, ease: 'power2.out', overwrite: true });
+    }
+  }, [isCollectionTransitioning]);
 
   // Keep isTransitioningRef in sync so event handlers always read latest value
   useEffect(() => {
@@ -555,11 +572,17 @@ return (
           >
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
+              ref={heroImageRef}
               src={activeHeroImage}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: 'brightness(var(--hero-brightness)) saturate(1.1)', objectPosition: 'var(--hero-object-position)' }}
+              style={{
+                filter: 'brightness(var(--hero-brightness)) saturate(1.1)',
+                objectPosition: 'var(--hero-object-position)',
+                transformOrigin: 'center center',
+                willChange: 'transform',
+              }}
             />
             {/* Warm amber vignette to enhance yellow-black feel */}
             <div
