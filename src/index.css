@@ -50,6 +50,13 @@ html[data-theme="clothing"] {
      by CollectionScroller when a collection with a heroImage is active.
      Removing the override (removeProperty) falls back to this default. */
   --hero-image: none;
+  /* Hero visual treatment — these are the EXACT current Clothing values.
+     CollectionScroller overrides them per-collection via style.setProperty,
+     then calls removeProperty when switching back so these defaults take over.
+     Clothing appearance is therefore IDENTICAL to the previous hardcoded values. */
+  --hero-brightness: 0.45;
+  --hero-vignette-opacity: 0.75;
+  --hero-object-position: center center;
 }
 
 html[data-theme="accessories"] {

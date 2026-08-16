@@ -555,12 +555,12 @@ return (
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
-               style={{ filter: 'brightness(0.45) saturate(1.1)' }}
+              style={{ filter: 'brightness(var(--hero-brightness)) saturate(1.1)', objectPosition: 'var(--hero-object-position)' }}
             />
             {/* Warm amber vignette to enhance yellow-black feel */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,0.75) 70%)' }}
+              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,var(--hero-vignette-opacity)) 70%)' }}
             />
 
             {/* All hero text — sits above background layers */}

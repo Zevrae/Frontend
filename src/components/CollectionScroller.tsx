@@ -31,6 +31,12 @@ interface Collection {
   isContain?: boolean;
   /** Optional hero section background image for the homepage hero when this collection is active. */
   heroImage?: string;
+  /** Hero image filter brightness (0–1+). Falls back to --hero-brightness :root default (clothing value). */
+  heroBrightness?: number;
+  /** Hero vignette outer stop opacity (0–1). Falls back to --hero-vignette-opacity :root default (clothing value). */
+  heroVignetteOpacity?: number;
+  /** Hero image object-position. Falls back to --hero-object-position :root default ('center center'). */
+  heroObjectPosition?: string;
 }
 
 const collections: Collection[] = [
@@ -58,6 +64,9 @@ const collections: Collection[] = [
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
     heroImage: jewelleryHero,
+    heroBrightness: 0.75,
+    heroVignetteOpacity: 0.10,
+    heroObjectPosition: '30% center',
   },
   {
     id: 'accessories',
@@ -182,9 +191,10 @@ export function CollectionScroller() {
   useEffect(() => {
     const active = collections[activeIdx];
     setTheme(active.id as ThemeName);
-    // Update the hero section background image CSS variable when the active
-    // collection changes. Collections without a heroImage clear the override
-    // so the CSS :root fallback (the default clothing hero) is used instead.
+
+    // ── Hero image ──────────────────────────────────────────────────────────
+    // Collections without a heroImage clear the override so the :root fallback
+    // (the default clothing hero img set in App.tsx) is used instead.
     if (active.heroImage) {
       document.documentElement.style.setProperty(
         '--hero-image',
@@ -192,6 +202,27 @@ export function CollectionScroller() {
       );
     } else {
       document.documentElement.style.removeProperty('--hero-image');
+    }
+
+    // ── Hero visual treatment (brightness / vignette / object-position) ─────
+    // Each collection may define its own values. removeProperty falls back to
+    // the :root defaults which preserve the exact current Clothing appearance.
+    if (active.heroBrightness !== undefined) {
+      document.documentElement.style.setProperty('--hero-brightness', String(active.heroBrightness));
+    } else {
+      document.documentElement.style.removeProperty('--hero-brightness');
+    }
+
+    if (active.heroVignetteOpacity !== undefined) {
+      document.documentElement.style.setProperty('--hero-vignette-opacity', String(active.heroVignetteOpacity));
+    } else {
+      document.documentElement.style.removeProperty('--hero-vignette-opacity');
+    }
+
+    if (active.heroObjectPosition) {
+      document.documentElement.style.setProperty('--hero-object-position', active.heroObjectPosition);
+    } else {
+      document.documentElement.style.removeProperty('--hero-object-position');
     }
   }, [activeIdx, setTheme]);
 
