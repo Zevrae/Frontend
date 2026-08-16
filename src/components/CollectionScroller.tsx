@@ -12,6 +12,8 @@ import jewelleryMen from '../assets/men jewellery.png';
 import jewelleryWomen from '../assets/women jewellery.jpeg';
 import accessoriesCover from '../assets/static/accessories cover page 1.png';
 import jewelleryHero from '../assets/jewellery hero section.png';
+import accessoriesHero from '../assets/accessories hero section.png';
+
 
 
 /* ---------------------------------------------------------
@@ -79,6 +81,10 @@ const collections: Collection[] = [
     image: accessoriesCover,
     menImage: 'https://i.ibb.co/k6VLyf0x/CARNAGE-FRONT.png',
     womenImage: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
+    heroImage: accessoriesHero,
+    heroBrightness: 0.75,
+    heroVignetteOpacity: 0.10,
+    heroObjectPosition: 'center center',
   },
 ];
 

@@ -20,6 +20,7 @@ import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.webp';
 import jewelleryHeroImage from './assets/jewellery hero section.png';
+import accessoriesHeroImage from './assets/accessories hero section.png';
 import { useTheme } from './theme/ThemeProvider';
 import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
@@ -71,9 +72,12 @@ export default function App() {
   const isHome = location.pathname === '/';
   const theme = useTheme();
   // Derive the hero background image from the active collection theme.
-  // When jewellery is selected the CollectionScroller updates --hero-image and
-  // this derived value switches the <img> src in sync.
-  const activeHeroImage = theme === 'jewellery' ? jewelleryHeroImage : heroImage;
+  // Each collection with its own heroImage switches the <img> src in sync;
+  // clothing falls back to the default hero image.
+  const activeHeroImage =
+    theme === 'jewellery' ? jewelleryHeroImage :
+    theme === 'accessories' ? accessoriesHeroImage :
+    heroImage;
 
   // Prevent scrolling during preloader (skip on admin)
   useEffect(() => {
