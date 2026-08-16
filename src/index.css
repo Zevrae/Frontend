@@ -46,6 +46,10 @@ html[data-theme="clothing"] {
   --theme-text-rgb: 234, 230, 225;
   --theme-accent: #C5A059;
   --theme-accent-rgb: 197, 160, 89;
+  /* Hero section background image — overridden via JS (style.setProperty)
+     by CollectionScroller when a collection with a heroImage is active.
+     Removing the override (removeProperty) falls back to this default. */
+  --hero-image: none;
 }
 
 html[data-theme="accessories"] {

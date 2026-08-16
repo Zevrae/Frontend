@@ -19,6 +19,8 @@ import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import heroImage from './assets/hero section.webp';
+import jewelleryHeroImage from './assets/jewellery hero section.png';
+import { useTheme } from './theme/ThemeProvider';
 import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
 import TryOnReviewTicker from './components/TryOnReviewTicker';
@@ -67,6 +69,11 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
+  const theme = useTheme();
+  // Derive the hero background image from the active collection theme.
+  // When jewellery is selected the CollectionScroller updates --hero-image and
+  // this derived value switches the <img> src in sync.
+  const activeHeroImage = theme === 'jewellery' ? jewelleryHeroImage : heroImage;
 
   // Prevent scrolling during preloader (skip on admin)
   useEffect(() => {
@@ -544,11 +551,11 @@ return (
           >
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
-              src={heroImage}
+              src={activeHeroImage}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: 'brightness(0.45) saturate(1.1)' }}
+               style={{ filter: 'brightness(0.45) saturate(1.1)' }}
             />
             {/* Warm amber vignette to enhance yellow-black feel */}
             <div

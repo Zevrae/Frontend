@@ -11,6 +11,7 @@ import jewelleryCover from '../assets/jewellery cover page .jpeg';
 import jewelleryMen from '../assets/men jewellery.png';
 import jewelleryWomen from '../assets/women jewellery.jpeg';
 import accessoriesCover from '../assets/static/accessories cover page 1.png';
+import jewelleryHero from '../assets/jewellery hero section.png';
 
 
 /* ---------------------------------------------------------
@@ -28,6 +29,8 @@ interface Collection {
   menImage: string;
   womenImage: string;
   isContain?: boolean;
+  /** Optional hero section background image for the homepage hero when this collection is active. */
+  heroImage?: string;
 }
 
 const collections: Collection[] = [
@@ -54,6 +57,7 @@ const collections: Collection[] = [
     image: jewelleryCover,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
+    heroImage: jewelleryHero,
   },
   {
     id: 'accessories',
@@ -176,7 +180,19 @@ export function CollectionScroller() {
   const touchEndX = useRef<number | null>(null);
 
   useEffect(() => {
-    setTheme(collections[activeIdx].id as ThemeName);
+    const active = collections[activeIdx];
+    setTheme(active.id as ThemeName);
+    // Update the hero section background image CSS variable when the active
+    // collection changes. Collections without a heroImage clear the override
+    // so the CSS :root fallback (the default clothing hero) is used instead.
+    if (active.heroImage) {
+      document.documentElement.style.setProperty(
+        '--hero-image',
+        `url("${active.heroImage}")`
+      );
+    } else {
+      document.documentElement.style.removeProperty('--hero-image');
+    }
   }, [activeIdx, setTheme]);
 
   const goTo = useCallback((idx: number) => {
