@@ -182,12 +182,12 @@ export default function BagPage() {
     // Start them hidden below their clipping containers
     gsap.set([headline, sub, cta], { yPercent: 120 });
 
-    // Timeline starts after the 'YOUR BAG' header animation finishes (which takes ~1.5s total)
-    const tl = gsap.timeline({ delay: 1.2 });
+    // Timeline starts sooner to sync with the 'YOUR BAG' header reveal
+    const tl = gsap.timeline({ delay: 0.4 });
 
-    tl.to(headline, { yPercent: 0, duration: 0.9, ease: 'power4.out' })
-      .to(sub, { yPercent: 0, duration: 0.9, ease: 'power4.out' }, '-=0.7')
-      .to(cta, { yPercent: 0, duration: 0.9, ease: 'power4.out' }, '-=0.7');
+    tl.to(headline, { yPercent: 0, duration: 0.8, ease: 'power4.out' })
+      .to(sub, { yPercent: 0, duration: 0.8, ease: 'power4.out' }, '-=0.65')
+      .to(cta, { yPercent: 0, duration: 0.8, ease: 'power4.out' }, '-=0.65');
 
     return () => { tl.kill(); };
   }, [mounted, isEmpty]);
