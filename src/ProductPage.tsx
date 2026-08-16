@@ -908,7 +908,7 @@ export default function ProductPage() {
                   {parsedDescriptionSections.map((section, i) => (
                     <AccordionSection key={section.title + i} title={section.title} defaultOpen={i === 0}>
                       <div
-                        className="text-[13px] leading-relaxed text-[rgba(var(--theme-text-rgb),0.6)] font-sans [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                        className="text-[15px] leading-relaxed text-[rgba(var(--theme-text-rgb),0.6)] font-sans [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
                         dangerouslySetInnerHTML={{ __html: section.content }}
                       />
                     </AccordionSection>
