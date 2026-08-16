@@ -32,7 +32,7 @@ export const Navbar: React.FC = () => {
           <button className="lg:hidden">
             <Menu className="w-[24px] h-[24px]" />
           </button>
-          <div className="hidden lg:flex items-center gap-8 text-[14.4px] tracking-[0.2em] uppercase">
+          <div className="hidden lg:flex items-center gap-8 text-[12px] tracking-[0.2em] uppercase">
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setIsClothingOpen(!isClothingOpen)}

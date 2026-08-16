@@ -242,7 +242,7 @@ return (
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
-          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+          <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
             <div 
               className="relative" 
               ref={clothingDropdownRef}
@@ -386,9 +386,9 @@ return (
             ZEVRAE
           </motion.button>
 
-          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+          <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
             {isAdmin && (
-              <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] text-[10px] font-bold transition-colors duration-700">
+              <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] text-[12px] font-bold transition-colors duration-700">
                 ADMIN PANEL
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[var(--theme-accent)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
               </button>
@@ -402,7 +402,7 @@ return (
                 <ShinyText
                   text="AI WARDROBE"
                   speed={2.2}
-                  className="text-[10px] uppercase tracking-[0.3em] font-plex-mono"
+                  className="text-[12px] uppercase tracking-[0.3em] font-plex-mono"
                   color="var(--theme-accent)"
                   shineColor="#FFFFFF"
                 />
