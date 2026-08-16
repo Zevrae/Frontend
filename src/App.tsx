@@ -570,11 +570,6 @@ return (
             {/* All hero text — sits above background layers */}
             <div className="relative z-10 flex flex-col items-center">
 
-            {/* Season label */}
-            <p className="text-[10px] uppercase tracking-[0.4em] text-[rgba(var(--theme-text-rgb),0.6)] font-plex-mono mb-8">
-              AUTUMN / WINTER 2026
-            </p>
-
             {/* ZEVRAE block: text + white line (line = same width as text) */}
             <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'stretch' }}>
 

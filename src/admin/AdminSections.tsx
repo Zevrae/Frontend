@@ -1515,9 +1515,6 @@ export function CollectionsSection() {
                 <AlertCircle size={14} /> {formError}
               </div>
             )}
-            <FormField label="Collection Name *">
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Autumn / Winter 2026" className={inputCls} />
-            </FormField>
             <FormField label="Description">
               <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="A short description of this collection..." rows={3} className={`${inputCls} resize-none`} />
             </FormField>
