@@ -10,6 +10,7 @@ import womenClothing from '../assets/static/front.jpeg';
 import jewelleryCover from '../assets/jewellery cover page .jpeg';
 import jewelleryMen from '../assets/men jewellery.png';
 import jewelleryWomen from '../assets/women jewellery.jpeg';
+import accessoriesCover from '../assets/static/accessories cover page 1.png';
 
 
 /* ---------------------------------------------------------
@@ -62,10 +63,9 @@ const collections: Collection[] = [
     sub: 'Each piece is crafted to be a statement of identity. Details that define the silhouette.',
     menRoute: '/accessories',
     womenRoute: '/accessories',
-    image: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
+    image: accessoriesCover,
     menImage: 'https://i.ibb.co/k6VLyf0x/CARNAGE-FRONT.png',
     womenImage: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
-    isContain: true,
   },
 ];
 
