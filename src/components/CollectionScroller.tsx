@@ -9,9 +9,9 @@ import clothingDefault from '../assets/static/image1.jpg';
 import menClothing from '../assets/static/zoom.jpg';
 import womenClothing from '../assets/static/front.jpeg';
 import jewelleryCover from '../assets/jewellery cover page .jpeg';
-import jewelleryMen from '../assets/men jewellery.png';
+import jewelleryMen from '../assets/men jewellery.jpeg';
 import jewelleryWomen from '../assets/women jewellery.jpeg';
-import accessoriesCover from '../assets/static/accessories cover page 1.png';
+import accessoriesCover from '../assets/static/accessories cover page.jpg';
 import jewelleryHero from '../assets/jewellery hero section.png';
 import accessoriesHero from '../assets/accessories hero section.png';
 
