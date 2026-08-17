@@ -86,7 +86,76 @@ html {
   /* Crossfade whenever data-theme changes. Kept slow enough to still be
      mid-flight while the page-transition curtain covers the screen, so
      the swap reads as a deliberate transition rather than a flash. */
-  transition: background-color 0.9s ease;
+  transition: background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ═══════════════════════════════════════════════
+   LUXURY THEME TRANSITION SYSTEM
+   ───────────────────────────────────────────────
+   Smoothly animates every visual property that is
+   driven by the dynamic theme variables when the
+   user switches collection cards.
+
+   Rules:
+   - Only transition relevant visual properties, never `all`
+   - 700ms ease-out cubic-bezier for a premium feel
+   - Applied globally so every element participates
+   - Does NOT affect hero images, layout, or typography
+   ═══════════════════════════════════════════════ */
+
+/* Shared easing token (comment only — used inline below) */
+/* --theme-ease: cubic-bezier(0.22, 1, 0.36, 1); */
+/* --theme-duration: 700ms; */
+
+*,
+*::before,
+*::after {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    box-shadow,
+    outline-color;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Restore element-specific override transitions so they still work ──────
+   Elements that already have fine-grained transitions (transform, opacity,
+   filter, width, etc.) need those preserved. We re-declare them here with
+   the theme properties added, keeping all animation timing intact.         */
+
+/* Generic hover/interactive elements — restore transform & opacity */
+button,
+a,
+[role="button"] {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    box-shadow,
+    outline-color,
+    opacity,
+    transform;
+  transition-duration: 700ms, 700ms, 700ms, 700ms, 700ms, 0.3s, 0.3s;
+  transition-timing-function:
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    ease,
+    ease;
+}
+
+/* Images, SVGs, canvas — exclude from color transitions entirely */
+img,
+video,
+canvas,
+svg {
+  transition-property: opacity, transform, filter;
+  transition-duration: inherit;
+  transition-timing-function: inherit;
 }
 
 @layer base {
@@ -94,9 +163,8 @@ html {
     background-color: var(--theme-bg);
     color: var(--theme-text);
     @apply font-sans antialiased;
-    transition: background-color 0.9s ease, color 0.9s ease;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-archivo font-bold uppercase;
   }
