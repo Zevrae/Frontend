@@ -87,6 +87,28 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
 // ─── Shared section heading ───────────────────────────────────────────────────
 const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    const eyebrowLower = eyebrow.toLowerCase();
+    const currentPath = window.location.pathname;
+
+    if (eyebrowLower === "men's jewellery") {
+      navigate('/jewellery/men');
+    } else if (eyebrowLower === "women's jewellery") {
+      navigate('/jewellery/women');
+    } else if (eyebrowLower === "men's collection") {
+      navigate('/men');
+    } else if (eyebrowLower === "women's collection") {
+      navigate('/women');
+    } else if (currentPath.startsWith('/jewellery')) {
+      navigate('/#jewellery');
+    } else if (currentPath.startsWith('/accessories')) {
+      navigate('/#accessories');
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
       <motion.h2
@@ -96,7 +118,7 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
         transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
         className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
       >
-        <button onClick={() => navigate(-1)} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
+        <button onClick={handleBack} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
           <ChevronLeft className="w-4 h-4 mr-2" />
           {eyebrow}
         </button>
@@ -134,6 +156,7 @@ export default function ProductGrid({
   const [isLoading, setIsLoading] = useState(!cachedDbProducts);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     const fetchDbProducts = async () => {
       if (cachedDbProducts) {
         setDbProducts(cachedDbProducts);

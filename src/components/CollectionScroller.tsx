@@ -193,7 +193,13 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
    --------------------------------------------------------- */
 export function CollectionScroller() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hash === '#jewellery') return 1;
+      if (window.location.hash === '#accessories') return 2;
+    }
+    return 0;
+  });
   const setTheme = useSetTheme();
   const { triggerTransition } = useCollectionTransition();
   const isAnimating = useRef(false);
@@ -286,12 +292,12 @@ export function CollectionScroller() {
     }
   }, [activeIdx, triggerTransition]);
 
-  // Set initial track position on mount so first card is centered
+  // Set initial track position on mount so the active card is centered
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
     const cards = track.querySelectorAll<HTMLElement>('.cs-card');
-    const card = cards[0];
+    const card = cards[activeIdx];
     if (!card) return;
     const cardRect   = card.getBoundingClientRect();
     const currentX   = gsap.getProperty(track, 'x') as number || 0;
@@ -299,7 +305,17 @@ export function CollectionScroller() {
     const viewCenter = window.innerWidth / 2;
     const targetX    = currentX + (viewCenter - cardCenter);
     gsap.set(track, { x: targetX });
-  }, []);
+
+    // Scroll directly to the collection scroller if returning to a subcategory
+    if (typeof window !== 'undefined' && window.location.hash) {
+      setTimeout(() => {
+        const element = document.getElementById('collection');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [activeIdx]);
 
   const goPrev = () => goTo(activeIdx - 1);
   const goNext = () => goTo(activeIdx + 1);
