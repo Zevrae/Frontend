@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { useCart } from './CartContext';
+import { useCart, CartItem } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { cartApi } from './api/cart';
-import { ordersApi } from './api/orders';
+import { ordersApi, Order } from './api/orders';
 import { paymentsApi } from './api/payments';
 import { discountsApi, Discount } from './api/discounts';
-import { ChevronLeft, ShieldCheck, Lock, Truck, CreditCard, Wallet, ArrowRight, CheckCircle2, Smartphone, Tag, X as XIcon } from 'lucide-react';
+import { ChevronLeft, ShieldCheck, Lock, Truck, CreditCard, Wallet, ArrowRight, CheckCircle2, Smartphone, Tag, X as XIcon, Home } from 'lucide-react';
+import {
+  ReceiptPrinter,
+  type ReceiptPrinterStage,
+} from './features/ReceiptPrinter';
+import { jsPDF } from 'jspdf';
 
 const loadScript = (src: string) => {
   return new Promise((resolve) => {
@@ -28,6 +33,138 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedMethod, setSelectedMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // ── Receipt Printer state ──────────────────────────────────────────
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [completedItems, setCompletedItems] = useState<CartItem[]>([]);
+  const [completedPaymentMethod, setCompletedPaymentMethod] = useState<string>('');
+  const [receiptStage, setReceiptStage] = useState<ReceiptPrinterStage>('processing');
+  const receiptTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Clean up receipt animation timers on unmount
+  useEffect(() => {
+    return () => {
+      receiptTimers.current.forEach(clearTimeout);
+    };
+  }, []);
+
+  /**
+   * Kick off the receipt-printer stage transitions and schedule the
+   * redirect home.  Called once after a successful order.
+   */
+  const startReceiptAnimation = useCallback(() => {
+    setReceiptStage('processing');
+
+    // processing → printing after 1.5s
+    const t1 = setTimeout(() => setReceiptStage('printing'), 1500);
+    // printing → complete after the paper-feed animation (≈1.75s)
+    const t2 = setTimeout(() => setReceiptStage('complete'), 3500);
+    // No auto-redirect — the user navigates home by clicking "Continue Browsing"
+
+    receiptTimers.current = [t1, t2];
+  }, []);
+
+  /** Generate and download a receipt as a PDF file */
+  const downloadReceipt = useCallback(() => {
+    if (!completedOrder) return;
+    
+    // Create custom height based on number of items to simulate a continuous receipt roll
+    const baseHeight = 130;
+    const itemHeight = completedOrder.items.length * 9;
+    const totalHeight = baseHeight + itemHeight;
+
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: [80, totalHeight]
+    });
+
+    // Set font to monospace for clean receipt alignment
+    doc.setFont('Courier', 'normal');
+    doc.setFontSize(8);
+    
+    let y = 12;
+    doc.setFont('Courier', 'bold');
+    doc.setFontSize(10);
+    doc.text('ZEVRAE', 40, y, { align: 'center' });
+    y += 4;
+    doc.setFont('Courier', 'normal');
+    doc.setFontSize(8);
+    doc.text('LUXURY APPAREL', 40, y, { align: 'center' });
+    y += 5;
+    doc.text('========================================', 40, y, { align: 'center' });
+    y += 5;
+    
+    doc.text(`ORDER   : #${completedOrder.id.slice(-8).toUpperCase()}`, 8, y);
+    y += 4;
+    doc.text(`DATE    : ${new Date(completedOrder.created_at).toLocaleString('en-IN')}`, 8, y);
+    y += 4;
+    doc.text(`PAYMENT : ${completedPaymentMethod}`, 8, y);
+    y += 5;
+    doc.text('----------------------------------------', 40, y, { align: 'center' });
+    y += 4;
+    doc.setFont('Courier', 'bold');
+    doc.text('ITEMS', 8, y);
+    doc.setFont('Courier', 'normal');
+    y += 4;
+    doc.text('----------------------------------------', 40, y, { align: 'center' });
+    y += 5;
+
+    completedOrder.items.forEach((item) => {
+      const name = item.name.toUpperCase();
+      const qtyPrice = `${item.quantity} x Rs.${item.price.toLocaleString('en-IN')}${item.size ? ' [Size: ' + item.size + ']' : ''}`;
+      const totalItemVal = `Rs.${(item.price * item.quantity).toLocaleString('en-IN')}`;
+      
+      const truncatedName = name.length > 25 ? name.substring(0, 22) + '...' : name;
+      
+      doc.setFont('Courier', 'bold');
+      doc.text(truncatedName, 8, y);
+      doc.setFont('Courier', 'normal');
+      y += 4;
+      doc.text(qtyPrice, 10, y);
+      doc.text(totalItemVal, 72, y, { align: 'right' });
+      y += 5;
+    });
+
+    doc.text('----------------------------------------', 40, y, { align: 'center' });
+    y += 5;
+    
+    // Totals
+    doc.text('SUBTOTAL:', 8, y);
+    doc.text(`Rs.${completedOrder.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
+    y += 4;
+    
+    doc.text('SHIPPING:', 8, y);
+    doc.text(completedOrder.shipping_fee === 0 ? 'FREE' : `Rs.${completedOrder.shipping_fee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
+    y += 4;
+    
+    if (completedOrder.handling_fee > 0) {
+      doc.text('HANDLING (COD):', 8, y);
+      doc.text(`Rs.${completedOrder.handling_fee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
+      y += 4;
+    }
+
+    if (completedOrder.discount_code && completedOrder.discount_amount > 0) {
+      doc.text(`DISCOUNT (${completedOrder.discount_code}):`, 8, y);
+      doc.text(`-Rs.${completedOrder.discount_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
+      y += 4;
+    }
+    
+    doc.text('========================================', 40, y, { align: 'center' });
+    y += 5;
+    
+    doc.setFont('Courier', 'bold');
+    doc.text('TOTAL:', 8, y);
+    doc.text(`Rs.${completedOrder.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
+    doc.setFont('Courier', 'normal');
+    y += 5;
+    doc.text('========================================', 40, y, { align: 'center' });
+    y += 6;
+    
+    doc.text('Thank you for shopping with ZEVRAE', 40, y, { align: 'center' });
+    
+    doc.save(`ZEVRAE-Receipt-${completedOrder.id.slice(-8).toUpperCase()}.pdf`);
+  }, [completedOrder, completedPaymentMethod]);
 
   useEffect(() => {
     if (!user) {
@@ -194,11 +331,13 @@ export default function CheckoutPage() {
                 razorpay_signature: response.razorpay_signature,
               });
 
+              // Snapshot the order + cart before clearing
+              setCompletedOrder(orderRes.data);
+              setCompletedItems([...items]);
+              setCompletedPaymentMethod('PAID ONLINE');
               clearCart();
               setStep(4);
-              setTimeout(() => {
-                navigate("/");
-              }, 2000);
+              startReceiptAnimation();
             } catch (err: any) {
               alert('Payment verification failed: ' + (err?.response?.data?.message || err.message));
               setIsProcessing(false);
@@ -237,17 +376,19 @@ export default function CheckoutPage() {
 
     } else if (selectedMethod === 'COD') {
       try {
-        await ordersApi.create({
+        const codRes = await ordersApi.create({
           shipping_address: buildShippingAddress(),
           payment_method: 'cod',
           discount_code: appliedDiscount?.code,
         });
 
+        // Snapshot the order + cart before clearing
+        setCompletedOrder(codRes.data);
+        setCompletedItems([...items]);
+        setCompletedPaymentMethod('CASH ON DELIVERY');
         clearCart();
         setStep(4);
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+        startReceiptAnimation();
       } catch (err: any) {
         alert('Order failed: ' + (err?.response?.data?.message || err.message));
         setIsProcessing(false);
@@ -329,7 +470,7 @@ export default function CheckoutPage() {
       <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
         
         {/* Left Column: Form/Steps */}
-        <div className="lg:col-span-7">
+        <div className={step === 4 ? "lg:col-span-12" : "lg:col-span-7"}>
           <AnimatePresence mode="wait">
             {step === 2 && (
               <motion.div
@@ -576,26 +717,159 @@ export default function CheckoutPage() {
               </motion.div>
             )}
 
-            {step === 4 && (
+            {step === 4 && completedOrder && (
               <motion.div
                 key="step4"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center text-center py-20"
+                className="flex flex-col items-center justify-center py-8"
               >
-                <div className="w-24 h-24 rounded-full border border-[var(--theme-accent)] flex items-center justify-center mb-8 relative">
-                  <div className="absolute inset-0 bg-[rgba(var(--theme-accent-rgb),0.1)] rounded-full animate-pulse" />
-                  <CheckCircle2 size={40} className="text-[var(--theme-accent)]" />
+                {/* Receipt printer + download button side-by-side */}
+                <div className="flex items-start gap-6 justify-center w-full">
+                  <ReceiptPrinter.Root stage={receiptStage}>
+                    <ReceiptPrinter.Machine>
+                      <ReceiptPrinter.Header>
+                        <span className="text-[10px] font-plex-mono tracking-[0.2em] uppercase text-grayscale-8 dark:text-grayscale-11 flex items-center gap-1.5">
+                          ZEVRAE
+                        </span>
+                        <button
+                          onClick={() => {
+                            receiptTimers.current.forEach(clearTimeout);
+                            navigate('/');
+                          }}
+                          className="flex items-center gap-1.5 text-[10px] font-plex-mono tracking-[0.15em] uppercase rounded-md border border-grayscale-12 dark:border-grayscale-1 px-2.5 py-1.5 text-grayscale-8 dark:text-grayscale-11 hover:text-grayscale-12 dark:hover:text-grayscale-1 transition-colors"
+                        >
+                          <Home size={13} />
+                          Home
+                        </button>
+                      </ReceiptPrinter.Header>
+
+                      <ReceiptPrinter.Screen>
+                        <div className="space-y-4 text-white">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-xs font-bold text-white">Order #{completedOrder.id.slice(-8).toUpperCase()}</p>
+                              <p className="text-[10px] text-white/70 mt-0.5">{completedPaymentMethod}</p>
+                            </div>
+                            <strong className="text-sm tabular-nums text-white">₹{completedOrder.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                          </div>
+                          <ReceiptPrinter.Status />
+                        </div>
+                      </ReceiptPrinter.Screen>
+                    </ReceiptPrinter.Machine>
+
+                    <ReceiptPrinter.Output>
+                      <ReceiptPrinter.Paper>
+                        {/* All paper text is forced black for legibility */}
+                        {/* Receipt header */}
+                        <div className="text-center mb-4 text-black">
+                          <h2 className="text-sm font-bold tracking-[0.15em] uppercase text-black">ZEVRAE</h2>
+                          <p className="text-[9px] tracking-wider text-black/50 mt-1">LUXURY APPAREL</p>
+                        </div>
+
+                        <hr className="border-dashed border-black/20 my-3" />
+
+                        {/* Order ID */}
+                        <div className="flex justify-between text-[10px] mb-3 text-black">
+                          <span className="text-black/50">ORDER</span>
+                          <span className="font-bold text-black">#{completedOrder.id.slice(-8).toUpperCase()}</span>
+                        </div>
+
+                        <hr className="border-dashed border-black/20 my-3" />
+
+                        {/* Items */}
+                        <div className="space-y-2 mb-3">
+                          {completedOrder.items.map((item, idx) => (
+                            <div key={idx} className="text-[10px]">
+                              <div className="flex justify-between">
+                                <span className="flex-1 pr-2 uppercase leading-snug text-black">{item.name}</span>
+                                <span className="tabular-nums whitespace-nowrap text-black">₹{(item.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                              <div className="text-[9px] mt-0.5 text-black/50">
+                                {item.quantity} × ₹{item.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {item.size ? ` · Size ${item.size}` : ''}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <hr className="border-dashed border-black/20 my-3" />
+
+                        {/* Totals */}
+                        <dl className="space-y-1.5 text-[10px] text-black">
+                          <div className="flex justify-between">
+                            <dt className="text-black/50">SUBTOTAL</dt>
+                            <dd className="tabular-nums text-black">₹{completedOrder.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</dd>
+                          </div>
+                          <div className="flex justify-between">
+                            <dt className="text-black/50">SHIPPING</dt>
+                            <dd className="tabular-nums text-black">{completedOrder.shipping_fee === 0 ? 'FREE' : `₹${completedOrder.shipping_fee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</dd>
+                          </div>
+                          {completedOrder.handling_fee > 0 && (
+                            <div className="flex justify-between">
+                              <dt className="text-black/50">HANDLING (COD)</dt>
+                              <dd className="tabular-nums text-black">₹{completedOrder.handling_fee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</dd>
+                            </div>
+                          )}
+                          {completedOrder.discount_code && completedOrder.discount_amount > 0 && (
+                            <div className="flex justify-between">
+                              <dt className="text-black/50">DISCOUNT ({completedOrder.discount_code})</dt>
+                              <dd className="tabular-nums text-black">−₹{completedOrder.discount_amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</dd>
+                            </div>
+                          )}
+                        </dl>
+
+                        <hr className="border-black/40 my-3" />
+
+                        {/* Grand total */}
+                        <div className="flex justify-between text-xs font-bold text-black">
+                          <span>TOTAL</span>
+                          <span className="tabular-nums">₹{completedOrder.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+
+                        <hr className="border-dashed border-black/20 my-3" />
+
+                        {/* Payment method */}
+                        <div className="flex justify-between text-[10px] mb-4 text-black">
+                          <span className="text-black/50">PAYMENT</span>
+                          <span className="font-bold text-black">{completedPaymentMethod}</span>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="text-center mt-4">
+                          <p className="text-[10px] text-black/50">Thank you for shopping with ZEVRAE</p>
+                          <p className="text-[9px] text-black/30 mt-1">{new Date(completedOrder.created_at).toLocaleString('en-IN')}</p>
+                        </div>
+                      </ReceiptPrinter.Paper>
+                    </ReceiptPrinter.Output>
+                  </ReceiptPrinter.Root>
+
+                  {/* Download button — shown beside the printer once receipt is complete */}
+                  {receiptStage === 'complete' && (
+                    <motion.button
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.3 }}
+                      onClick={downloadReceipt}
+                      title="Download receipt"
+                      className="mt-2 flex flex-col items-center gap-2 px-4 py-5 rounded-lg border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-300 group"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-y-0.5 transition-transform duration-200">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                      <span className="text-[9px] uppercase tracking-[0.15em] font-plex-mono writing-mode-vertical" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Download</span>
+                    </motion.button>
+                  )}
                 </div>
-                <h2 className="text-3xl md:text-4xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] mb-4 uppercase">
-                  Your Order Has Been Placed Successfully
-                </h2>
-                <p className="text-[14px] text-[var(--theme-accent)] uppercase tracking-[0.2em] font-plex-mono mb-12">
-                  Thank you for shopping with ZEVRAE
-                </p>
-                <button 
-                  onClick={() => navigate('/')}
-                  className="bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
+
+                <button
+                  onClick={() => {
+                    receiptTimers.current.forEach(clearTimeout);
+                    navigate('/');
+                  }}
+                  className="mt-8 bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
                 >
                   Continue Browsing
                 </button>
