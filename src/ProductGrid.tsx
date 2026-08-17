@@ -71,7 +71,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
               className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+            <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
             <div className="absolute inset-0 flex items-center justify-center">
               <h3 className="text-sm md:text-2xl font-archivo font-bold tracking-[0.08em] md:tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-1 break-words">
                 {item.name}
@@ -290,7 +290,7 @@ export default function ProductGrid({
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                     </div>
@@ -369,7 +369,7 @@ export default function ProductGrid({
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                     </div>
@@ -415,7 +415,7 @@ export default function ProductGrid({
                 >
                   <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-text)]'}`}>{item.name}</h3>
                     </div>
