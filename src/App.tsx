@@ -299,10 +299,10 @@ return (
               onMouseLeave={() => setIsClothingOpen(false)}
             >
               <button 
-                className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
+                className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
               >
                 CLOTHING
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
               </button>
 
               <AnimatePresence>
@@ -343,10 +343,10 @@ return (
               onMouseLeave={() => setIsJewelleryOpen(false)}
             >
               <button
-                className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
+                className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
               >
                 JEWELLERY
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
               </button>
 
               <AnimatePresence>
@@ -386,9 +386,9 @@ return (
               onMouseEnter={() => setIsAccessoriesOpen(true)}
               onMouseLeave={() => setIsAccessoriesOpen(false)}
             >
-              <button className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
+              <button className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
                 ACCESSORIES
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
               </button>
 
               <AnimatePresence>
@@ -441,15 +441,15 @@ return (
             {isLiveMode ? (
               <>
                 {isAdmin && (
-                  <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] text-[12px] font-bold transition-colors duration-700">
+                  <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative pb-1 hover:text-[var(--theme-accent)] text-[12px] font-bold transition-colors duration-700">
                     ADMIN PANEL
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[var(--theme-accent)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[var(--theme-accent)] nav-underline" />
                   </button>
                 )}
                 {!isAdmin && (
                   <button
                     type="button"
-                    className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[var(--theme-text)]"
+                    className="group relative pb-1 font-plex-mono transition-colors duration-700 hover:text-[var(--theme-text)]"
                     onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
                   >
                     <ShinyText
@@ -459,7 +459,7 @@ return (
                       color="var(--theme-accent)"
                       shineColor="#FFFFFF"
                     />
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                   </button>
                 )}
                 {user ? (
@@ -470,10 +470,10 @@ return (
                     onMouseLeave={() => setIsProfileOpen(false)}
                   >
                     <button 
-                      className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 uppercase"
+                      className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 uppercase"
                     >
                       {displayName}
-                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                     </button>
                     <AnimatePresence>
                       {isProfileOpen && (
@@ -507,27 +507,27 @@ return (
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
+                  <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
                     LOGIN
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                   </button>
                 )}
-                <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
+                <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
                   BAG({items.reduce((total, item) => total + item.quantity, 0)})
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                 </button>
               </>
             ) : (
               <>
                 {user ? (
-                  <button onClick={() => logout()} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] transition-colors duration-700">
+                  <button onClick={() => logout()} className="group relative pb-1 hover:text-[var(--theme-accent)] transition-colors duration-700">
                     LOGOUT
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                   </button>
                 ) : (
-                  <button onClick={() => setIsLoginModalOpen(true)} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] transition-colors duration-700">
+                  <button onClick={() => setIsLoginModalOpen(true)} className="group relative pb-1 hover:text-[var(--theme-accent)] transition-colors duration-700">
                     ADMIN LOGIN
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                   </button>
                 )}
               </>
@@ -808,3 +808,5 @@ return (
     </div>
   );
 }
+
+
