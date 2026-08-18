@@ -69,8 +69,8 @@ html[data-theme="accessories"] {
   --theme-text-rgb: 23, 40, 45;
   --theme-accent: #C81E3A;
   --theme-accent-rgb: 200, 30, 58;
-  --hero-tint-opacity: 0.15;
-  --hero-tint-color-rgb: var(--theme-accent-rgb);
+  --hero-tint-opacity: 0.50;
+  --hero-tint-color-rgb: 255, 255, 255;
 }
 
 html[data-theme="jewellery"] {
