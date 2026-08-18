@@ -11,6 +11,7 @@ import { PageTransitionProvider } from './features/PageTransitionContext.tsx';
 import { ThemeProvider } from './theme/ThemeProvider.tsx';
 import { CollectionTransitionProvider } from './features/CollectionTransitionContext.tsx';
 
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
