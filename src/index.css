@@ -35,7 +35,6 @@
    can tint the palette without hardcoding a color.
    ═══════════════════════════════════════════════ */
 :root,
-:root,
 html[data-theme="clothing"] {
   /* Original brand palette — Dark Luxury */
   --theme-bg: #12100C;
@@ -57,6 +56,7 @@ html[data-theme="clothing"] {
   --hero-brightness: 0.45;
   --hero-vignette-opacity: 0.75;
   --hero-object-position: center center;
+  --hero-tint-opacity: 0;
 }
 
 html[data-theme="accessories"] {
@@ -69,6 +69,8 @@ html[data-theme="accessories"] {
   --theme-text-rgb: 23, 40, 45;
   --theme-accent: #C81E3A;
   --theme-accent-rgb: 200, 30, 58;
+  --hero-tint-opacity: 0.15;
+  --hero-tint-color-rgb: var(--theme-accent-rgb);
 }
 
 html[data-theme="jewellery"] {
@@ -81,6 +83,7 @@ html[data-theme="jewellery"] {
   --theme-text-rgb: 44, 59, 58;
   --theme-accent: #34656D;
   --theme-accent-rgb: 52, 101, 109;
+  --hero-tint-opacity: 0.4;
 }
 html {
   /* Crossfade whenever data-theme changes. Kept slow enough to still be

@@ -589,6 +589,14 @@ return (
               className="absolute inset-0 pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,var(--hero-vignette-opacity)) 70%)' }}
             />
+            {/* Theme background tint overlay for image readability */}
+            <div
+              className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.1)]"
+              style={{
+                backgroundColor: 'rgba(var(--hero-tint-color-rgb, var(--theme-bg-rgb)), var(--hero-tint-opacity, 0))',
+                transition: 'background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
+              }}
+            />
 
             {/* All hero text — sits above background layers */}
             <div className="relative z-10 flex flex-col items-center">
