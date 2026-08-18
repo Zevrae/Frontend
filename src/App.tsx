@@ -27,7 +27,7 @@ import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
 import TryOnReviewTicker from './components/TryOnReviewTicker';
 import HeroCountdown from './features/HeroCountdown';
-import { LAUNCH_CONFIG } from './config/launch';
+import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from './config/launch';
 
 // Code-split everything that isn't the core "browse the storefront /
 // view a product" path most visitors are on — the admin panel alone
