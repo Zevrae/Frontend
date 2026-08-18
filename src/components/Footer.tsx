@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Instagram,
   Twitter,
@@ -35,12 +35,9 @@ interface NavLink {
    Data
 ───────────────────────────────────────────── */
 const SHOP_LINKS: NavLink[] = [
-  { label: 'New In', to: '/' },
-  { label: 'Best Sellers', to: '/' },
-  { label: 'Clothing', to: '/men' },
-  { label: 'Accessories', to: '/accessories' },
-  { label: 'Collections', to: '/women' },
-  { label: 'Gift Cards', to: '/' },
+  { label: 'Clothing', to: '/#clothing' },
+  { label: 'Jewellery', to: '/#jewellery' },
+  { label: 'Accessories', to: '/#accessories' },
 ];
 
 const CARE_LINKS: NavLink[] = [
@@ -48,15 +45,12 @@ const CARE_LINKS: NavLink[] = [
   { label: 'Shipping', to: '/shipping-returns' },
   { label: 'Returns & Exchanges', to: '/shipping-returns' },
   { label: 'Size Guide', to: '/size-guide' },
-  { label: 'Track Your Order', to: '/customer-care' },
-  { label: 'FAQ', to: '/customer-care' },
+
 ];
 
 const LEGAL_LINKS: NavLink[] = [
   { label: 'Privacy Policy', to: '/privacy-policy' },
   { label: 'Terms & Conditions', to: '/terms-of-service' },
-  { label: 'Cookie Policy', to: '/privacy-policy' },
-  { label: 'Disclaimer', to: '/terms-of-service' },
 ];
 
 const FEATURE_CARDS = [
@@ -149,10 +143,35 @@ const PaymentIcons = () => (
 function FooterNavLink({ label, to }: NavLink) {
   const { trigger } = usePageTransition();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClick = () => {
+    // Handle hash-only links like /#clothing, /#jewellery, /#accessories
+    if (to.startsWith('/#')) {
+      const hash = to.slice(1); // e.g. "#clothing"
+      if (location.pathname === '/') {
+        // Already on homepage — just update hash and fire the event manually
+        window.location.hash = hash;
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      } else {
+        // Navigate to homepage first, then set hash
+        trigger(() => {
+          navigate('/');
+          setTimeout(() => {
+            window.location.hash = hash;
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+          }, 400);
+        });
+      }
+    } else {
+      trigger(() => navigate(to));
+    }
+  };
+
   return (
     <li>
       <button
-        onClick={() => trigger(() => navigate(to))}
+        onClick={handleClick}
         className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 zf-nav-link"
       >
         {label}
@@ -283,7 +302,7 @@ export const Footer: React.FC = () => {
                 </div>
                 <div>
                   <p className="zf-support-card-title">Contact Us</p>
-                  <p className="zf-support-card-sub">support@zevrae.com</p>
+                  <p className="zf-support-card-sub">zevraeofficial@gmail.com</p>
                 </div>
               </div>
 
