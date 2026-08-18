@@ -440,7 +440,7 @@ export default function ProductGrid({
                     <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-text)]'}`}>{item.name}</h3>
+                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 text-[var(--theme-text)]">{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>

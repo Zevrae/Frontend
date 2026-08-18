@@ -259,7 +259,7 @@
 
 .cs-card__heading {
   @apply font-archivo font-bold uppercase;
-  font-size: 2.1rem;
+  font-size: 1.75rem;
   letter-spacing: 0.04em;
   color: rgba(var(--theme-text-rgb),0.9);
   line-height: 1.15;
@@ -428,7 +428,7 @@
   }
 
   .cs-card__heading {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
   }
 
   .cs-header {
@@ -468,7 +468,7 @@
   }
 
   .cs-card__heading {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     margin-bottom: 12px;
   }
 
