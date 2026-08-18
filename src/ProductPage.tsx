@@ -122,15 +122,19 @@ export default function ProductPage() {
 
   // ─── DYNAMIC SIZES EXTRACTION ───
   const availableSizes = useMemo(() => {
-    // If it's jewellery or accessories, strictly return empty array to disable sizes
-    if (!product || isNonApparel) return [];
+    if (!product) return [];
     
-    let sizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
-    // Fallback to default apparel sizes if not defined in DB but categorized as apparel
-    if (sizes.length === 0) {
-      sizes = DEFAULT_SIZES;
+    // Check if the product has explicitly defined sizes/stock in DB
+    const dbSizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
+    if (dbSizes.length > 0) {
+      return dbSizes;
     }
-    return sizes;
+
+    // If it has no sizes defined, and is categorized as non-apparel (like jewellery or accessories), return empty array
+    if (isNonApparel) return [];
+    
+    // Fallback to default apparel sizes if not defined in DB but categorized as apparel
+    return DEFAULT_SIZES;
   }, [product, isNonApparel]);
 
   const requireSizeSelection = availableSizes.length > 0;
