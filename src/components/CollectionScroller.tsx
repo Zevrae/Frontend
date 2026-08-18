@@ -121,7 +121,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
         <img
           src={col.image}
           alt={col.label}
-          className={`cs-card__img cs-card__img--default ${hovered === null ? 'cs-card__img--visible' : ''}`}
+          className="cs-card__img cs-card__img--default cs-card__img--visible"
           loading="lazy"
           draggable={false}
         />
