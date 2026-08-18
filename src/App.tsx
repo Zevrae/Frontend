@@ -4,7 +4,7 @@ import './components/CollectionScroller.css';
 import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ChevronDown, Menu, X } from 'lucide-react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import ProductGrid from './ProductGrid';
 import CartDrawer from './CartDrawer';
@@ -18,10 +18,16 @@ import { usePreloader } from './features/PreloaderContext';
 import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
+import { useCollectionTransition } from './features/CollectionTransitionContext';
 import heroImage from './assets/hero section.webp';
+import jewelleryHeroImage from './assets/jewellery hero section.png';
+import accessoriesHeroImage from './assets/accessories hero section.png';
+import { useTheme } from './theme/ThemeProvider';
 import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
 import TryOnReviewTicker from './components/TryOnReviewTicker';
+import HeroCountdown from './features/HeroCountdown';
+import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from './config/launch';
 
 // Code-split everything that isn't the core "browse the storefront /
 // view a product" path most visitors are on — the admin panel alone
@@ -59,6 +65,34 @@ export default function App() {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const [isLiveMode, setIsLiveMode] = useState(() => {
+    const now = Date.now();
+    const start = COUNTDOWN_START_TIMESTAMP.getTime();
+    const end = LAUNCH_CONFIG.brandLaunch.getTime();
+    return isAdmin || now < start || now >= end;
+  });
+
+  useEffect(() => {
+    if (isAdmin) {
+      setIsLiveMode(true);
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    const checkLive = () => {
+      const now = Date.now();
+      const start = COUNTDOWN_START_TIMESTAMP.getTime();
+      const end = LAUNCH_CONFIG.brandLaunch.getTime();
+      if (isAdmin || now < start || now >= end) {
+        setIsLiveMode(true);
+      } else {
+        setIsLiveMode(false);
+      }
+    };
+    checkLive();
+    const interval = setInterval(checkLive, 1000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
   const { scrollY } = useScroll();
   const { setIsCartOpen, items } = useCart();
   const { isLoading, hasCompletedOnce } = usePreloader();
@@ -67,6 +101,15 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
+  const theme = useTheme();
+  const { isCollectionTransitioning } = useCollectionTransition();
+  // Derive the hero background image from the active collection theme.
+  // Each collection with its own heroImage switches the <img> src in sync;
+  // clothing falls back to the default hero image.
+  const activeHeroImage =
+    theme === 'jewellery' ? jewelleryHeroImage :
+    theme === 'accessories' ? accessoriesHeroImage :
+    heroImage;
 
   // Prevent scrolling during preloader (skip on admin)
   useEffect(() => {
@@ -80,7 +123,22 @@ export default function App() {
   
   // Hero animation refs
   const heroRef = useRef<HTMLDivElement>(null);
+  const heroImageRef = useRef<HTMLImageElement>(null);
   const heroAnimatedRef = useRef(false);
+
+  // Subtle hero-image scale pulse during collection transitions.
+  // Timed to match the veil: scale up as veil covers, reset as veil reveals.
+  useEffect(() => {
+    const img = heroImageRef.current;
+    if (!img) return;
+    if (isCollectionTransitioning) {
+      // Very subtle zoom-in as the veil sweeps over
+      gsap.to(img, { scale: 1.025, duration: 0.32, ease: 'power2.inOut', overwrite: true });
+    } else {
+      // Settle back to normal as veil lifts
+      gsap.to(img, { scale: 1, duration: 0.42, ease: 'power2.out', overwrite: true });
+    }
+  }, [isCollectionTransitioning]);
 
   // Keep isTransitioningRef in sync so event handlers always read latest value
   useEffect(() => {
@@ -227,13 +285,15 @@ return (
       {!location.pathname.startsWith('/admin') && (
       <nav 
         className={`fixed top-0 w-full z-40 transition-all duration-1000 ${
-          isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6 border-b border-[rgba(var(--theme-accent-rgb),0.1)]' : 'bg-transparent py-10'
+          isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6' : 'bg-transparent py-10'
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
-          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
-            <div 
-              className="relative" 
+          <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+            {isLiveMode && (
+              <>
+                <div 
+                  className="relative" 
               ref={clothingDropdownRef}
               onMouseEnter={() => setIsClothingOpen(true)}
               onMouseLeave={() => setIsClothingOpen(false)}
@@ -362,7 +422,9 @@ return (
                 )}
               </AnimatePresence>
             </div>
-          </div>
+          </>
+        )}
+      </div>
 
           <motion.button 
             onClick={() => navTransition(() => { navigate('/'); })}
@@ -375,91 +437,118 @@ return (
             ZEVRAE
           </motion.button>
 
-          <div className="hidden md:flex space-x-16 text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
-            {isAdmin && (
-              <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] text-[10px] font-bold transition-colors duration-700">
-                ADMIN PANEL
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[var(--theme-accent)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-              </button>
-            )}
-            {!isAdmin && (
-              <button
-                type="button"
-                className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[var(--theme-text)]"
-                onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
-              >
-                <ShinyText
-                  text="AI WARDROBE"
-                  speed={2.2}
-                  className="text-[10px] uppercase tracking-[0.3em] font-plex-mono"
-                  color="var(--theme-accent)"
-                  shineColor="#FFFFFF"
-                />
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-              </button>
-            )}
-            {user ? (
-              <div 
-                className="relative" 
-                ref={profileDropdownRef}
-                onMouseEnter={() => setIsProfileOpen(true)}
-                onMouseLeave={() => setIsProfileOpen(false)}
-              >
-                <button 
-                  className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 uppercase"
-                >
-                  {displayName}
+          <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+            {isLiveMode ? (
+              <>
+                {isAdmin && (
+                  <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] text-[12px] font-bold transition-colors duration-700">
+                    ADMIN PANEL
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[var(--theme-accent)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  </button>
+                )}
+                {!isAdmin && (
+                  <button
+                    type="button"
+                    className="group relative overflow-hidden pb-1 font-plex-mono transition-colors duration-700 hover:text-[var(--theme-text)]"
+                    onClick={() => navTransition(() => navigate('/ai-wardrobe'))}
+                  >
+                    <ShinyText
+                      text="AI WARDROBE"
+                      speed={2.2}
+                      className="text-[12px] uppercase tracking-[0.3em] font-plex-mono"
+                      color="var(--theme-accent)"
+                      shineColor="#FFFFFF"
+                    />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  </button>
+                )}
+                {user ? (
+                  <div 
+                    className="relative" 
+                    ref={profileDropdownRef}
+                    onMouseEnter={() => setIsProfileOpen(true)}
+                    onMouseLeave={() => setIsProfileOpen(false)}
+                  >
+                    <button 
+                      className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700 uppercase"
+                    >
+                      {displayName}
+                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                    </button>
+                    <AnimatePresence>
+                      {isProfileOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute top-[calc(100%+1.5rem)] right-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
+                        >
+                          <button 
+                            onClick={() => {
+                              setIsProfileOpen(false);
+                              navTransition(() => navigate('/profile'));
+                            }}
+                            className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
+                          >
+                            PROFILE
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setIsProfileOpen(false);
+                              logout();
+                            }}
+                            className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
+                          >
+                            LOGOUT
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
+                    LOGIN
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  </button>
+                )}
+                <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
+                  BAG({items.reduce((total, item) => total + item.quantity, 0)})
                   <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
                 </button>
-                <AnimatePresence>
-                  {isProfileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.3 }}
-                      className="absolute top-[calc(100%+1.5rem)] right-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
-                    >
-                      <button 
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          navTransition(() => navigate('/profile'));
-                        }}
-                        className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
-                      >
-                        PROFILE
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          logout();
-                        }}
-                        className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
-                      >
-                        LOGOUT
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              </>
             ) : (
-              <button onClick={() => navTransition(() => setIsLoginModalOpen(true))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
-                LOGIN
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-              </button>
+              <>
+                {user ? (
+                  <button onClick={() => logout()} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] transition-colors duration-700">
+                    LOGOUT
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  </button>
+                ) : (
+                  <button onClick={() => setIsLoginModalOpen(true)} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-accent)] transition-colors duration-700">
+                    ADMIN LOGIN
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
+                  </button>
+                )}
+              </>
             )}
-            <button onClick={() => navTransition(() => navigate('/bag'))} className="group relative overflow-hidden pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
-              BAG({items.reduce((total, item) => total + item.quantity, 0)})
-              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] transform origin-left scale-x-0 transition-transform duration-700 ease-out group-hover:scale-x-100" />
-            </button>
           </div>
 
-          <button 
-            className="md:hidden z-40 relative text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300"
-            onClick={() => setIsMenuOpen(true)}
-          >
-            <Menu size={28} strokeWidth={1} />
-          </button>
+          {isLiveMode ? (
+            <button 
+              className="md:hidden z-40 relative text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu size={28} strokeWidth={1} />
+            </button>
+          ) : (
+            <button 
+              onClick={() => user ? logout() : setIsLoginModalOpen(true)}
+              className="md:hidden z-40 relative text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300 text-[10px] tracking-[0.2em] font-plex-mono uppercase"
+            >
+              {user ? 'LOGOUT' : 'ADMIN LOGIN'}
+            </button>
+          )}
         </div>
       </nav>
       )}
@@ -544,25 +633,34 @@ return (
           >
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
-              src={heroImage}
+              ref={heroImageRef}
+              src={activeHeroImage}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: 'brightness(0.45) saturate(1.1)' }}
+              style={{
+                filter: 'brightness(var(--hero-brightness)) saturate(1.1)',
+                objectPosition: 'var(--hero-object-position)',
+                transformOrigin: 'center center',
+                willChange: 'transform',
+              }}
             />
             {/* Warm amber vignette to enhance yellow-black feel */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,0.75) 70%)' }}
+              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(var(--theme-accent-rgb),0.08) 0%, rgba(10,10,10,var(--hero-vignette-opacity)) 70%)' }}
+            />
+            {/* Theme background tint overlay for image readability */}
+            <div
+              className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.1)]"
+              style={{
+                backgroundColor: 'rgba(var(--hero-tint-color-rgb, var(--theme-bg-rgb)), var(--hero-tint-opacity, 0))',
+                transition: 'background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
+              }}
             />
 
             {/* All hero text — sits above background layers */}
             <div className="relative z-10 flex flex-col items-center">
-
-            {/* Season label */}
-            <p className="text-[10px] uppercase tracking-[0.4em] text-[rgba(var(--theme-text-rgb),0.6)] font-plex-mono mb-8">
-              AUTUMN / WINTER 2026
-            </p>
 
             {/* ZEVRAE block: text + white line (line = same width as text) */}
             <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'stretch' }}>
@@ -610,6 +708,11 @@ return (
                 Luxury is a Matter of Choice
               </p>
 
+              {/* Countdown embedded directly below quote */}
+              {!isLiveMode && (
+                <HeroCountdown onLive={() => setIsLiveMode(true)} />
+              )}
+
               {/* Bottom row: links left + gold dot right */}
               
 
@@ -618,13 +721,17 @@ return (
             </div>{/* end z-10 wrapper */}
           </section>
 
-          {/* Collection Scroller */}
-          <CollectionScroller />
+          {isLiveMode && (
+            <>
+              {/* Collection Scroller */}
+              <CollectionScroller />
 
-          {/* Trust / About section — explains what Zevrae does and why
-              Google Sign-In is offered, required for Google OAuth
-              verification. Styled to match the rest of the homepage. */}
-          <TrustSection />
+              {/* Trust / About section — explains what Zevrae does and why
+                  Google Sign-In is offered, required for Google OAuth
+                  verification. Styled to match the rest of the homepage. */}
+              <TrustSection />
+            </>
+          )}
         </>
       )}
 
@@ -637,35 +744,49 @@ return (
         }
       >
         <Routes>
-        <Route path="/" element={<ProductGrid categoryFilter="all" />} />
-        <Route path="/men" element={<ProductGrid categoryFilter="men" />} />
-        <Route path="/men/tshirts" element={<ProductGrid categoryFilter="men-tshirts" />} />
-        <Route path="/men/lowers" element={<ProductGrid categoryFilter="men-lowers" />} />
-        <Route path="/women" element={<ProductGrid categoryFilter="women" />} />
-        <Route path="/women/tshirts" element={<ProductGrid categoryFilter="women-tshirts" />} />
-        <Route path="/women/lowers" element={<ProductGrid categoryFilter="women-lowers" />} />
-        <Route path="/jewellery" element={<ProductGrid categoryFilter="jewellery-men" />} />
-        {/* Men's Jewellery */}
-        <Route path="/jewellery/men" element={<ProductGrid categoryFilter="jewellery-men" />} />
-        <Route path="/jewellery/men/rings" element={<ProductGrid categoryFilter="men-rings" />} />
-        <Route path="/jewellery/men/pendants" element={<ProductGrid categoryFilter="men-pendants" />} />
-        <Route path="/jewellery/men/bracelets" element={<ProductGrid categoryFilter="men-bracelets" />} />
-        <Route path="/jewellery/men/earrings" element={<ProductGrid categoryFilter="men-earrings" />} />
-        {/* Women's Jewellery */}
-        <Route path="/jewellery/women" element={<ProductGrid categoryFilter="jewellery-women" />} />
-        <Route path="/jewellery/women/rings" element={<ProductGrid categoryFilter="women-rings" />} />
-        <Route path="/jewellery/women/pendants" element={<ProductGrid categoryFilter="women-pendants" />} />
-        <Route path="/jewellery/women/bracelets" element={<ProductGrid categoryFilter="women-bracelets" />} />
-        <Route path="/jewellery/women/earrings" element={<ProductGrid categoryFilter="women-earrings" />} />
-        <Route path="/accessories" element={<ProductGrid categoryFilter="accessories" />} />
-        <Route path="/accessories/keychain" element={<ProductGrid categoryFilter="keychains" />} />
-        <Route path="/accessories/keychains" element={<ProductGrid categoryFilter="keychains" />} />
-        <Route path="/accessories/toys" element={<ProductGrid categoryFilter="soft-toys" />} />
-        <Route path="/accessories/soft-toys" element={<ProductGrid categoryFilter="soft-toys" />} />
-        <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/bag" element={<BagPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        {isLiveMode ? (
+          <>
+            <Route path="/" element={<ProductGrid categoryFilter="all" />} />
+            <Route path="/men" element={<ProductGrid categoryFilter="men" />} />
+            <Route path="/men/tshirts" element={<ProductGrid categoryFilter="men-tshirts" />} />
+            <Route path="/men/lowers" element={<ProductGrid categoryFilter="men-lowers" />} />
+            <Route path="/women" element={<ProductGrid categoryFilter="women" />} />
+            <Route path="/women/tshirts" element={<ProductGrid categoryFilter="women-tshirts" />} />
+            <Route path="/women/lowers" element={<ProductGrid categoryFilter="women-lowers" />} />
+            <Route path="/jewellery" element={<ProductGrid categoryFilter="jewellery-men" />} />
+            {/* Men's Jewellery */}
+            <Route path="/jewellery/men" element={<ProductGrid categoryFilter="jewellery-men" />} />
+            <Route path="/jewellery/men/rings" element={<ProductGrid categoryFilter="men-rings" />} />
+            <Route path="/jewellery/men/pendants" element={<ProductGrid categoryFilter="men-pendants" />} />
+            <Route path="/jewellery/men/bracelets" element={<ProductGrid categoryFilter="men-bracelets" />} />
+            <Route path="/jewellery/men/earrings" element={<ProductGrid categoryFilter="men-earrings" />} />
+            {/* Women's Jewellery */}
+            <Route path="/jewellery/women" element={<ProductGrid categoryFilter="jewellery-women" />} />
+            <Route path="/jewellery/women/rings" element={<ProductGrid categoryFilter="women-rings" />} />
+            <Route path="/jewellery/women/pendants" element={<ProductGrid categoryFilter="women-pendants" />} />
+            <Route path="/jewellery/women/bracelets" element={<ProductGrid categoryFilter="women-bracelets" />} />
+            <Route path="/jewellery/women/earrings" element={<ProductGrid categoryFilter="women-earrings" />} />
+            <Route path="/accessories" element={<ProductGrid categoryFilter="accessories" />} />
+            <Route path="/accessories/keychain" element={<ProductGrid categoryFilter="keychains" />} />
+            <Route path="/accessories/keychains" element={<ProductGrid categoryFilter="keychains" />} />
+            <Route path="/accessories/toys" element={<ProductGrid categoryFilter="soft-toys" />} />
+            <Route path="/accessories/soft-toys" element={<ProductGrid categoryFilter="soft-toys" />} />
+            <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/bag" element={<BagPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/customer-care" element={<CustomerCare />} />
+            <Route path="/size-guide" element={<SizeGuide />} />
+            <Route path="/shipping-returns" element={<ShippingReturns />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/ai-wardrobe" element={<ComingSoon />} />
+          </>
+        ) : (
+          <Route path="*" element={<Navigate to="/" replace />} />
+        )}
         <Route path="/admin" element={<AdminGate />} />
         <Route path="/admin/orders" element={<AdminGate />} />
         <Route path="/admin/products" element={<AdminGate />} />
@@ -673,26 +794,14 @@ return (
         <Route path="/admin/categories" element={<AdminGate />} />
         <Route path="/admin/discounts" element={<AdminGate />} />
         <Route path="/admin/analysis" element={<AdminGate />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/customer-care" element={<CustomerCare />} />
-        <Route path="/size-guide" element={<SizeGuide />} />
-        <Route path="/shipping-returns" element={<ShippingReturns />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        
-        <Route path="/ai-wardrobe" element={<ComingSoon />} />
-
       </Routes>
       </Suspense>
       </div>
 
-
-      {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}
-      {!location.pathname.startsWith('/admin') && <TryOnReviewTicker />}
-
+      {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}
+      {!location.pathname.startsWith('/admin') && isLiveMode && <TryOnReviewTicker />}
       {/* Footer */}
-      {!location.pathname.startsWith('/admin') && <Footer />}
+      {!location.pathname.startsWith('/admin') && isLiveMode && <Footer />}
 
       <CartDrawer />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />

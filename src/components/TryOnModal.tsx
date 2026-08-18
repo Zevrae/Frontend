@@ -39,6 +39,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
+  const [shareImage, setShareImage] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imgPreviewRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -92,6 +93,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       setReviewSubmitted(false);
       setReviewError('');
       setReviewHoverRating(0);
+      setShareImage(true);
       setImgRect(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -271,14 +273,16 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
     setReviewError('');
     try {
       let imageFiles: File[] = [];
-      try {
-        const res = await fetch(buildImageProxyUrl(generatedImage));
-        if (!res.ok) throw new Error('Image proxy request failed');
-        const blob = await res.blob();
-        const ext = blob.type.includes('png') ? 'png' : 'jpg';
-        imageFiles = [new File([blob], `tryon-review.${ext}`, { type: blob.type })];
-      } catch {
-        // If fetching the image fails just submit without attaching it.
+      if (shareImage) {
+        try {
+          const res = await fetch(buildImageProxyUrl(generatedImage));
+          if (!res.ok) throw new Error('Image proxy request failed');
+          const blob = await res.blob();
+          const ext = blob.type.includes('png') ? 'png' : 'jpg';
+          imageFiles = [new File([blob], `tryon-review.${ext}`, { type: blob.type })];
+        } catch {
+          // If fetching the image fails just submit without attaching it.
+        }
       }
       await reviewsApi.create(productId, reviewRating, reviewComment, imageFiles);
       setReviewSubmitted(true);
@@ -733,14 +737,45 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                     className="w-full bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-lg p-3.5 text-[12px] font-plex-mono text-[var(--theme-text)]/80 placeholder:text-[rgba(var(--theme-text-rgb),0.25)] focus:outline-none focus:border-[var(--theme-accent)]/45 transition-colors resize-none"
                                   />
 
-                                  {/* Attached image preview */}
-                                  <div className="flex items-center gap-2.5">
-                                    <div className="w-11 h-11 rounded-lg overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.25)] flex-shrink-0">
+                                  {/* Share try-on image toggle */}
+                                  <div className="flex items-center gap-3 p-3 rounded-xl border border-[rgba(var(--theme-text-rgb),0.07)] bg-[rgba(var(--theme-accent-rgb),0.03)]">
+                                    {/* Image preview */}
+                                    <div
+                                      className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border transition-all duration-300 ${
+                                        shareImage
+                                          ? 'border-[rgba(var(--theme-accent-rgb),0.4)] opacity-100'
+                                          : 'border-[rgba(var(--theme-text-rgb),0.1)] opacity-30 grayscale'
+                                      }`}
+                                    >
                                       <img src={generatedImage!} alt="Try-on" className="w-full h-full object-cover" />
                                     </div>
-                                    <span className="text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] tracking-[0.12em] uppercase">
-                                      Your try-on photo will be attached
-                                    </span>
+                                    {/* Label */}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[11px] font-plex-mono text-[var(--theme-text)]/70 tracking-wide">
+                                        Share my try-on photo
+                                      </p>
+                                      <p className="text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] tracking-[0.1em] uppercase mt-0.5">
+                                        {shareImage ? 'Photo will be attached to your review' : 'Review without photo'}
+                                      </p>
+                                    </div>
+                                    {/* Toggle switch */}
+                                    <button
+                                      type="button"
+                                      onClick={() => setShareImage((v) => !v)}
+                                      className={`relative flex-shrink-0 w-10 h-5.5 rounded-full transition-all duration-300 focus:outline-none ${
+                                        shareImage
+                                          ? 'bg-[var(--theme-accent)]'
+                                          : 'bg-[rgba(var(--theme-text-rgb),0.15)]'
+                                      }`}
+                                      style={{ height: '22px', width: '40px' }}
+                                      aria-label={shareImage ? 'Remove photo from review' : 'Attach photo to review'}
+                                    >
+                                      <span
+                                        className={`absolute top-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-all duration-300 ${
+                                          shareImage ? 'left-[19px]' : 'left-[2px]'
+                                        }`}
+                                      />
+                                    </button>
                                   </div>
 
                                   {reviewError && (

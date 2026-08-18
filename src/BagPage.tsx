@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ChevronLeft } from 'lucide-react';
-import { useCart } from './CartContext';
+import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { usePageTransition } from './features/PageTransitionContext';
 import './BagPage.css';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
+
 
 // "YOUR BAG" — only the 7 letter chars (space rendered separately)
 const BAG_CHARS = 'YOUR BAG'.split('');
@@ -182,12 +184,12 @@ export default function BagPage() {
     // Start them hidden below their clipping containers
     gsap.set([headline, sub, cta], { yPercent: 120 });
 
-    // Timeline starts after the 'YOUR BAG' header animation finishes (which takes ~1.5s total)
-    const tl = gsap.timeline({ delay: 1.2 });
+    // Timeline starts sooner to sync with the 'YOUR BAG' header reveal
+    const tl = gsap.timeline({ delay: 0.4 });
 
-    tl.to(headline, { yPercent: 0, duration: 0.9, ease: 'power4.out' })
-      .to(sub, { yPercent: 0, duration: 0.9, ease: 'power4.out' }, '-=0.7')
-      .to(cta, { yPercent: 0, duration: 0.9, ease: 'power4.out' }, '-=0.7');
+    tl.to(headline, { yPercent: 0, duration: 0.8, ease: 'power4.out' })
+      .to(sub, { yPercent: 0, duration: 0.8, ease: 'power4.out' }, '-=0.65')
+      .to(cta, { yPercent: 0, duration: 0.8, ease: 'power4.out' }, '-=0.65');
 
     return () => { tl.kill(); };
   }, [mounted, isEmpty]);
@@ -322,7 +324,9 @@ export default function BagPage() {
                   </span>
                   {item.size && item.size !== 'One Size' && (
                     <span className="bag-item-size mask-reveal">
-                      <span className="mask-reveal-inner">{item.size}</span>
+                      <span className="mask-reveal-inner">
+                        {isSoftToy(item.category) ? formatSoftToySize(item.size) : item.size}
+                      </span>
                     </span>
                   )}
                   <span className="bag-item-price mask-reveal">
@@ -365,6 +369,7 @@ export default function BagPage() {
                     <button
                       className="bag-qty-btn"
                       onClick={() => updateQuantity(item.id, item.size, 1)}
+                      disabled={item.quantity >= MAX_QTY_PER_SIZE}
                       aria-label="Increase quantity"
                     >
                       +

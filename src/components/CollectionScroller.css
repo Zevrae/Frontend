@@ -202,16 +202,26 @@
   opacity: 0;
   transform: scale(1.04);
   transition:
-    opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity 0.65s cubic-bezier(0.25, 0.1, 0.25, 1),
+    transform 0.65s cubic-bezier(0.25, 0.1, 0.25, 1);
   user-select: none;
+}
+
+/* Default image is base layer */
+.cs-card__img--default {
+  z-index: 1;
+}
+
+/* Subcategory images (Men, Women) are on top */
+.cs-card__img--men,
+.cs-card__img--women {
+  z-index: 2;
 }
 
 /* Visible layer: full opacity + no extra scale */
 .cs-card__img--visible {
   opacity: 1;
   transform: scale(1);
-  z-index: 1;
 }
 
 /* Subtle scale-up on active card hover (only default layer) */
@@ -249,7 +259,7 @@
 
 .cs-card__heading {
   @apply font-archivo font-bold uppercase;
-  font-size: 2.1rem;
+  font-size: 1.75rem;
   letter-spacing: 0.04em;
   color: rgba(var(--theme-text-rgb),0.9);
   line-height: 1.15;
@@ -418,7 +428,7 @@
   }
 
   .cs-card__heading {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
   }
 
   .cs-header {
@@ -458,7 +468,7 @@
   }
 
   .cs-card__heading {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     margin-bottom: 12px;
   }
 

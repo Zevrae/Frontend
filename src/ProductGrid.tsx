@@ -68,10 +68,10 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
             <img 
               src={item.image} 
               alt={item.name} 
-              className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
+              className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+            <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
             <div className="absolute inset-0 flex items-center justify-center">
               <h3 className="text-sm md:text-2xl font-archivo font-bold tracking-[0.08em] md:tracking-[0.2em] text-[var(--theme-text)] uppercase text-center w-full px-1 break-words">
                 {item.name}
@@ -87,6 +87,28 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
 // ─── Shared section heading ───────────────────────────────────────────────────
 const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    const eyebrowLower = eyebrow.toLowerCase();
+    const currentPath = window.location.pathname;
+
+    if (eyebrowLower === "men's jewellery") {
+      navigate('/jewellery/men');
+    } else if (eyebrowLower === "women's jewellery") {
+      navigate('/jewellery/women');
+    } else if (eyebrowLower === "men's collection") {
+      navigate('/men');
+    } else if (eyebrowLower === "women's collection") {
+      navigate('/women');
+    } else if (currentPath.startsWith('/jewellery')) {
+      navigate('/#jewellery');
+    } else if (currentPath.startsWith('/accessories')) {
+      navigate('/#accessories');
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
       <motion.h2
@@ -96,7 +118,7 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
         transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
         className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
       >
-        <button onClick={() => navigate(-1)} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
+        <button onClick={handleBack} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
           <ChevronLeft className="w-4 h-4 mr-2" />
           {eyebrow}
         </button>
@@ -134,6 +156,7 @@ export default function ProductGrid({
   const [isLoading, setIsLoading] = useState(!cachedDbProducts);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     const fetchDbProducts = async () => {
       if (cachedDbProducts) {
         setDbProducts(cachedDbProducts);
@@ -289,8 +312,8 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                     </div>
@@ -368,8 +391,8 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                     </div>
@@ -414,10 +437,10 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                    <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className={`text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 ${item.id === 'toys' ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-text)]'}`}>{item.name}</h3>
+                      <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 text-[var(--theme-text)]">{item.name}</h3>
                     </div>
                   </div>
                 </motion.div>

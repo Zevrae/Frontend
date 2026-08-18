@@ -291,6 +291,15 @@
   color: var(--theme-text);
 }
 
+.bag-qty-btn:disabled {
+  color: rgba(var(--theme-text-rgb), 0.2);
+  cursor: not-allowed;
+}
+
+.bag-qty-btn:disabled:hover {
+  color: rgba(var(--theme-text-rgb), 0.2);
+}
+
 .bag-qty-value {
   font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(0.85rem, 1.2vw, 1rem);

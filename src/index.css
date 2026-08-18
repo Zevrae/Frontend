@@ -35,7 +35,6 @@
    can tint the palette without hardcoding a color.
    ═══════════════════════════════════════════════ */
 :root,
-:root,
 html[data-theme="clothing"] {
   /* Original brand palette — Dark Luxury */
   --theme-bg: #12100C;
@@ -46,6 +45,18 @@ html[data-theme="clothing"] {
   --theme-text-rgb: 234, 230, 225;
   --theme-accent: #C5A059;
   --theme-accent-rgb: 197, 160, 89;
+  /* Hero section background image — overridden via JS (style.setProperty)
+     by CollectionScroller when a collection with a heroImage is active.
+     Removing the override (removeProperty) falls back to this default. */
+  --hero-image: none;
+  /* Hero visual treatment — these are the EXACT current Clothing values.
+     CollectionScroller overrides them per-collection via style.setProperty,
+     then calls removeProperty when switching back so these defaults take over.
+     Clothing appearance is therefore IDENTICAL to the previous hardcoded values. */
+  --hero-brightness: 0.45;
+  --hero-vignette-opacity: 0.75;
+  --hero-object-position: center center;
+  --hero-tint-opacity: 0;
 }
 
 html[data-theme="accessories"] {
@@ -58,6 +69,8 @@ html[data-theme="accessories"] {
   --theme-text-rgb: 23, 40, 45;
   --theme-accent: #C81E3A;
   --theme-accent-rgb: 200, 30, 58;
+  --hero-tint-opacity: 0.50;
+  --hero-tint-color-rgb: 255, 255, 255;
 }
 
 html[data-theme="jewellery"] {
@@ -70,12 +83,82 @@ html[data-theme="jewellery"] {
   --theme-text-rgb: 44, 59, 58;
   --theme-accent: #34656D;
   --theme-accent-rgb: 52, 101, 109;
+  --hero-tint-opacity: 0.4;
 }
 html {
   /* Crossfade whenever data-theme changes. Kept slow enough to still be
      mid-flight while the page-transition curtain covers the screen, so
      the swap reads as a deliberate transition rather than a flash. */
-  transition: background-color 0.9s ease;
+  transition: background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ═══════════════════════════════════════════════
+   LUXURY THEME TRANSITION SYSTEM
+   ───────────────────────────────────────────────
+   Smoothly animates every visual property that is
+   driven by the dynamic theme variables when the
+   user switches collection cards.
+
+   Rules:
+   - Only transition relevant visual properties, never `all`
+   - 700ms ease-out cubic-bezier for a premium feel
+   - Applied globally so every element participates
+   - Does NOT affect hero images, layout, or typography
+   ═══════════════════════════════════════════════ */
+
+/* Shared easing token (comment only — used inline below) */
+/* --theme-ease: cubic-bezier(0.22, 1, 0.36, 1); */
+/* --theme-duration: 700ms; */
+
+*,
+*::before,
+*::after {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    box-shadow,
+    outline-color;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Restore element-specific override transitions so they still work ──────
+   Elements that already have fine-grained transitions (transform, opacity,
+   filter, width, etc.) need those preserved. We re-declare them here with
+   the theme properties added, keeping all animation timing intact.         */
+
+/* Generic hover/interactive elements — restore transform & opacity */
+button,
+a,
+[role="button"] {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    box-shadow,
+    outline-color,
+    opacity,
+    transform;
+  transition-duration: 700ms, 700ms, 700ms, 700ms, 700ms, 0.3s, 0.3s;
+  transition-timing-function:
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    cubic-bezier(0.22, 1, 0.36, 1),
+    ease,
+    ease;
+}
+
+/* Images, SVGs, canvas — exclude from color transitions entirely */
+img,
+video,
+canvas,
+svg {
+  transition-property: opacity, transform, filter;
+  transition-duration: inherit;
+  transition-timing-function: inherit;
 }
 
 @layer base {
@@ -83,9 +166,8 @@ html {
     background-color: var(--theme-bg);
     color: var(--theme-text);
     @apply font-sans antialiased;
-    transition: background-color 0.9s ease, color 0.9s ease;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-archivo font-bold uppercase;
   }

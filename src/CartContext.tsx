@@ -3,6 +3,12 @@ import { useAuth } from './hooks/UseAuth';
 import { cartApi, Cart } from './api/cart';
 import { productsApi } from './api/products';
 
+// Maximum quantity a customer may order of a single size of a single
+// product. Mirrors MAX_QTY_PER_SIZE enforced on the backend (see
+// backend/models/Cart.js) — kept here so the UI can cap and message
+// before ever hitting the network.
+export const MAX_QTY_PER_SIZE = 2;
+
 export interface CartItem {
   id: string;
   name: string;
@@ -15,7 +21,9 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (item: CartItem) => void;
+  // Returns the quantity actually added (may be less than requested, or 0,
+  // if the MAX_QTY_PER_SIZE cap for that product+size was already reached).
+  addToCart: (item: CartItem) => number;
   removeFromCart: (id: string, size: string) => void;
   updateQuantity: (id: string, size: string, delta: number) => void;
   clearCart: () => void;
@@ -114,30 +122,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
       .catch((err) => console.error('Failed to load cart:', err));
   }, [token]);
 
-  const addToCart = (newItem: CartItem) => {
+  // Adds an item to the cart, capping the combined quantity for that
+  // product+size at MAX_QTY_PER_SIZE. Returns the quantity actually added
+  // (0 if the size was already at the cap) so callers can let the user know.
+  const addToCart = (newItem: CartItem): number => {
+    let addedQty = 0;
+
     setItems((currentItems) => {
       const existingItemIndex = currentItems.findIndex(
         (item) => item.id === newItem.id && item.size === newItem.size
       );
+      const currentQty = existingItemIndex > -1 ? currentItems[existingItemIndex].quantity : 0;
+      const allowedQty = Math.max(0, Math.min(newItem.quantity, MAX_QTY_PER_SIZE - currentQty));
+      addedQty = allowedQty;
+
+      if (allowedQty === 0) {
+        return currentItems;
+      }
 
       if (existingItemIndex > -1) {
         const updatedItems = [...currentItems];
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + newItem.quantity,
+          quantity: updatedItems[existingItemIndex].quantity + allowedQty,
         };
         return updatedItems;
       }
 
-      return [...currentItems, newItem];
+      return [...currentItems, { ...newItem, quantity: allowedQty }];
     });
-    setIsCartOpen(true);
 
-    if (token) {
-      cartApi.addItem(newItem.id, newItem.size, newItem.quantity).catch((err) => {
-        console.error('Failed to sync cart addition:', err);
-      });
+    if (addedQty > 0) {
+      setIsCartOpen(true);
+      if (token) {
+        cartApi.addItem(newItem.id, newItem.size, addedQty).catch((err) => {
+          console.error('Failed to sync cart addition:', err);
+        });
+      }
     }
+
+    return addedQty;
   };
 
   const removeFromCart = (id: string, size: string) => {
@@ -159,7 +183,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       currentItems
         .map((item) => {
           if (item.id === id && item.size === size) {
-            return { ...item, quantity: item.quantity + delta };
+            const nextQty = Math.min(item.quantity + delta, MAX_QTY_PER_SIZE);
+            return { ...item, quantity: nextQty };
           }
           return item;
         })
@@ -173,7 +198,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const match = cart.items.find((i) => i.product === id && i.size === size);
           if (!match) return;
           const itemId = match.id!;
-          const newQty = match.quantity + delta;
+          const newQty = Math.min(match.quantity + delta, MAX_QTY_PER_SIZE);
           return newQty > 0 ? cartApi.updateItem(itemId, newQty) : cartApi.removeItem(itemId);
         })
         .catch((err) => console.error('Failed to sync cart quantity:', err));

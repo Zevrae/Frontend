@@ -4,6 +4,7 @@ import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/UseAuth';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 
 export default function CartDrawer() {
   const { items, removeFromCart, isCartOpen, setIsCartOpen, cartTotal } = useCart();
@@ -79,7 +80,7 @@ export default function CartDrawer() {
                           </button>
                         </div>
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
-                          Size: {item.size}
+                          Size: {isSoftToy(item.category) ? formatSoftToySize(item.size) : item.size}
                         </p>
                       </div>
                       <div className="flex justify-between items-end">

@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Minus, Plus, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCart } from './CartContext';
+import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/UseAuth';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 
 interface Product {
   id: string;
@@ -26,12 +27,13 @@ interface ProductModalProps {
   onClose: () => void;
 }
 
-const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 export default function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState<'front' | 'back' | 'top'>('front');
+  const [qtyLimitNote, setQtyLimitNote] = useState(false);
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token } = useAuth();
@@ -43,8 +45,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
-    
-    addToCart({
+
+    const addedQty = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -53,7 +55,13 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
       image: product.frontImg,
       category: product.category || 'unknown'
     });
-    
+
+    if (addedQty === 0) {
+      setQtyLimitNote(true);
+      setTimeout(() => setQtyLimitNote(false), 2500);
+      return;
+    }
+
     onClose();
     // Reset state for next time
     setSelectedSize('');
@@ -266,7 +274,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         : 'border-[rgba(var(--theme-text-rgb),0.2)] text-[rgba(var(--theme-text-rgb),0.7)] hover:border-[rgba(var(--theme-text-rgb),0.5)]'
                     }`}
                   >
-                    {size}
+                    {isSoftToy(product?.category) ? formatSoftToySize(size) : size}
                   </button>
                 )})}
               </div>
@@ -288,12 +296,16 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                   </button>
                   <span className="w-12 text-center font-mono text-[13px]">{quantity}</span>
                   <button 
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 text-[rgba(var(--theme-text-rgb),0.7)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-text-rgb),0.05)] transition-colors"
+                    onClick={() => setQuantity(Math.min(MAX_QTY_PER_SIZE, quantity + 1))}
+                    disabled={quantity >= MAX_QTY_PER_SIZE}
+                    className="p-3 text-[rgba(var(--theme-text-rgb),0.7)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-text-rgb),0.05)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <Plus size={16} />
                   </button>
                 </div>
+                <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] mt-2">
+                  {qtyLimitNote ? `Max ${MAX_QTY_PER_SIZE} per size already in your bag.` : `Limit ${MAX_QTY_PER_SIZE} per size`}
+                </p>
               </div>
               
               {/* Total Price (Mobile) / Desktop */}

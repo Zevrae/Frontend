@@ -26,13 +26,13 @@ export const Navbar: React.FC = () => {
   }, []);
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isHome ? 'bg-transparent text-white' : 'bg-[#12100C] text-white border-b border-white/10'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${isHome ? 'bg-transparent text-white' : 'bg-[#12100C] text-white'}`}>
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <button className="lg:hidden">
             <Menu className="w-[24px] h-[24px]" />
           </button>
-          <div className="hidden lg:flex items-center gap-8 text-[14.4px] tracking-[0.2em] uppercase">
+          <div className="hidden lg:flex items-center gap-8 text-[12px] tracking-[0.2em] uppercase">
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setIsClothingOpen(!isClothingOpen)}

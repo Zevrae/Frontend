@@ -3,13 +3,18 @@ import gsap from 'gsap';
 import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
 import { useSetTheme } from '../theme/ThemeProvider';
+import { useCollectionTransition } from '../features/CollectionTransitionContext';
 import type { ThemeName } from '../theme/themeConfig';
-import clothingDefault from '../assets/static/image1.jpg';
-import menClothing from '../assets/static/zoom.jpg';
-import womenClothing from '../assets/static/front.jpeg';
+import clothingDefault from '../assets/static/clothing cover page.png';
+import menClothing from '../assets/static/men cloth cover.png';
+import womenClothing from '../assets/static/women cloth cover.png';
 import jewelleryCover from '../assets/jewellery cover page .jpeg';
-import jewelleryMen from '../assets/men jewellery.png';
+import jewelleryMen from '../assets/men jewellery.jpeg';
 import jewelleryWomen from '../assets/women jewellery.jpeg';
+import accessoriesCover from '../assets/static/accessories cover page.jpg';
+import jewelleryHero from '../assets/jewellery hero section.png';
+import accessoriesHero from '../assets/accessories hero section.png';
+
 
 
 /* ---------------------------------------------------------
@@ -27,6 +32,16 @@ interface Collection {
   menImage: string;
   womenImage: string;
   isContain?: boolean;
+  /** Optional hero section background image for the homepage hero when this collection is active. */
+  heroImage?: string;
+  /** Hero image filter brightness (0–1+). Falls back to --hero-brightness :root default (clothing value). */
+  heroBrightness?: number;
+  /** Hero vignette outer stop opacity (0–1). Falls back to --hero-vignette-opacity :root default (clothing value). */
+  heroVignetteOpacity?: number;
+  /** Hero image object-position. Falls back to --hero-object-position :root default ('center center'). */
+  heroObjectPosition?: string;
+  /** CSS color used as the transition veil when switching TO this collection. */
+  veilColor: string;
 }
 
 const collections: Collection[] = [
@@ -41,6 +56,8 @@ const collections: Collection[] = [
     image: clothingDefault,
     menImage: menClothing,
     womenImage: womenClothing,
+    // Clothing is the darkest theme — use its bg as the veil when returning to it
+    veilColor: '#12100C',
   },
   {
     id: 'jewellery',
@@ -53,6 +70,11 @@ const collections: Collection[] = [
     image: jewelleryCover,
     menImage: jewelleryMen,
     womenImage: jewelleryWomen,
+    heroImage: jewelleryHero,
+    heroBrightness: 0.75,
+    heroVignetteOpacity: 0.10,
+    heroObjectPosition: '30% center',
+    veilColor: '#FAEAB1',
   },
   {
     id: 'accessories',
@@ -62,10 +84,14 @@ const collections: Collection[] = [
     sub: 'Each piece is crafted to be a statement of identity. Details that define the silhouette.',
     menRoute: '/accessories',
     womenRoute: '/accessories',
-    image: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
+    image: accessoriesCover,
     menImage: 'https://i.ibb.co/k6VLyf0x/CARNAGE-FRONT.png',
     womenImage: 'https://i.ibb.co/PzPQ3vgB/Gold-Sunflower-Pendant.png',
-    isContain: true,
+    heroImage: accessoriesHero,
+    heroBrightness: 0.75,
+    heroVignetteOpacity: 0.10,
+    heroObjectPosition: 'center center',
+    veilColor: '#F5F5F5',
   },
 ];
 
@@ -95,7 +121,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
         <img
           src={col.image}
           alt={col.label}
-          className={`cs-card__img cs-card__img--default ${hovered === null ? 'cs-card__img--visible' : ''}`}
+          className="cs-card__img cs-card__img--default cs-card__img--visible"
           loading="lazy"
           draggable={false}
         />
@@ -167,8 +193,15 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
    --------------------------------------------------------- */
 export function CollectionScroller() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hash === '#jewellery') return 1;
+      if (window.location.hash === '#accessories') return 2;
+    }
+    return 0;
+  });
   const setTheme = useSetTheme();
+  const { triggerTransition } = useCollectionTransition();
   const isAnimating = useRef(false);
 
   // Swipe gesture refs
@@ -176,7 +209,41 @@ export function CollectionScroller() {
   const touchEndX = useRef<number | null>(null);
 
   useEffect(() => {
-    setTheme(collections[activeIdx].id as ThemeName);
+    const active = collections[activeIdx];
+    setTheme(active.id as ThemeName);
+
+    // ── Hero image ──────────────────────────────────────────────────────────
+    // Collections without a heroImage clear the override so the :root fallback
+    // (the default clothing hero img set in App.tsx) is used instead.
+    if (active.heroImage) {
+      document.documentElement.style.setProperty(
+        '--hero-image',
+        `url("${active.heroImage}")`
+      );
+    } else {
+      document.documentElement.style.removeProperty('--hero-image');
+    }
+
+    // ── Hero visual treatment (brightness / vignette / object-position) ─────
+    // Each collection may define its own values. removeProperty falls back to
+    // the :root defaults which preserve the exact current Clothing appearance.
+    if (active.heroBrightness !== undefined) {
+      document.documentElement.style.setProperty('--hero-brightness', String(active.heroBrightness));
+    } else {
+      document.documentElement.style.removeProperty('--hero-brightness');
+    }
+
+    if (active.heroVignetteOpacity !== undefined) {
+      document.documentElement.style.setProperty('--hero-vignette-opacity', String(active.heroVignetteOpacity));
+    } else {
+      document.documentElement.style.removeProperty('--hero-vignette-opacity');
+    }
+
+    if (active.heroObjectPosition) {
+      document.documentElement.style.setProperty('--hero-object-position', active.heroObjectPosition);
+    } else {
+      document.documentElement.style.removeProperty('--hero-object-position');
+    }
   }, [activeIdx, setTheme]);
 
   const goTo = useCallback((idx: number) => {
@@ -185,8 +252,21 @@ export function CollectionScroller() {
     if (clamped === activeIdx) return;
 
     isAnimating.current = true;
-    setActiveIdx(clamped);
+    const incoming = collections[clamped];
 
+    // ── Veil transition ────────────────────────────────────────────────────
+    // The card-slide GSAP animation starts immediately (so the scroller
+    // feels responsive). The theme/hero swap is deferred into the
+    // triggerTransition callback so it happens while the veil is opaque.
+    triggerTransition(
+      () => {
+        // This runs while the veil covers the screen — update everything here
+        setActiveIdx(clamped);
+      },
+      incoming.veilColor,
+    );
+
+    // ── Slide the card track in parallel ──────────────────────────────────
     const track = trackRef.current;
     if (track) {
       const cards = track.querySelectorAll<HTMLElement>('.cs-card');
@@ -210,14 +290,14 @@ export function CollectionScroller() {
     } else {
       isAnimating.current = false;
     }
-  }, [activeIdx]);
+  }, [activeIdx, triggerTransition]);
 
-  // Set initial track position on mount so first card is centered
+  // Set initial track position on mount so the active card is centered
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
     const cards = track.querySelectorAll<HTMLElement>('.cs-card');
-    const card = cards[0];
+    const card = cards[activeIdx];
     if (!card) return;
     const cardRect   = card.getBoundingClientRect();
     const currentX   = gsap.getProperty(track, 'x') as number || 0;
@@ -225,7 +305,17 @@ export function CollectionScroller() {
     const viewCenter = window.innerWidth / 2;
     const targetX    = currentX + (viewCenter - cardCenter);
     gsap.set(track, { x: targetX });
-  }, []);
+
+    // Scroll directly to the collection scroller if returning to a subcategory
+    if (typeof window !== 'undefined' && window.location.hash) {
+      setTimeout(() => {
+        const element = document.getElementById('collection');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [activeIdx]);
 
   const goPrev = () => goTo(activeIdx - 1);
   const goNext = () => goTo(activeIdx + 1);

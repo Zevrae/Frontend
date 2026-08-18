@@ -13,6 +13,8 @@ import ReviewSection from './components/ReviewSection';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
+import { MAX_QTY_PER_SIZE } from './CartContext';
 
 type ProductDetail = {
   id: string;
@@ -32,7 +34,7 @@ type ProductDetail = {
   images?: string[];
 };
 
-const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 function AccordionSection({
   title,
@@ -104,6 +106,7 @@ export default function ProductPage() {
   const [activeImg, setActiveImg] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [added, setAdded] = useState(false);
+  const [qtyLimitNote, setQtyLimitNote] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>([]);
   const [tryOnOpen, setTryOnOpen] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -113,21 +116,28 @@ export default function ProductPage() {
     if (!product) return false;
     const cat = (product.category || '').toLowerCase();
     const type = (product.type || '').toLowerCase();
-    const nonApparelKeys = ['jewellery', 'rings', 'pendants', 'ears', 'bracelets', 'keychains', 'earrings'];
+    const nonApparelKeys = [
+      'jewellery', 'rings', 'pendants', 'ears', 'bracelets', 'keychains', 'earrings',
+      'accessories', 'soft toys', 'soft toy'
+    ];
     return nonApparelKeys.includes(cat) || nonApparelKeys.includes(type);
   }, [product]);
 
   // ─── DYNAMIC SIZES EXTRACTION ───
   const availableSizes = useMemo(() => {
-    // If it's jewellery or accessories, strictly return empty array to disable sizes
-    if (!product || isNonApparel) return [];
+    if (!product) return [];
     
-    let sizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
-    // Fallback to default apparel sizes if not defined in DB but categorized as apparel
-    if (sizes.length === 0) {
-      sizes = DEFAULT_SIZES;
+    // Check if the product has explicitly defined sizes/stock in DB
+    const dbSizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
+    if (dbSizes.length > 0) {
+      return dbSizes;
     }
-    return sizes;
+
+    // If it has no sizes defined, and is categorized as non-apparel (like jewellery or accessories), return empty array
+    if (isNonApparel) return [];
+    
+    // Fallback to default apparel sizes if not defined in DB but categorized as apparel
+    return DEFAULT_SIZES;
   }, [product, isNonApparel]);
 
   const requireSizeSelection = availableSizes.length > 0;
@@ -393,15 +403,20 @@ export default function ProductPage() {
 
   const handleAddToCart = () => {
     if (!product || (requireSizeSelection && !selectedSize)) return;
-    addToCart({
+    const addedQty = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       size: requireSizeSelection ? selectedSize : 'One Size',
       quantity,
       image: images[0] || product.frontImg || '',
-      category: product.category || 'unknown',
+      category: product.category === 'accessories' ? (product.type || 'accessories') : (product.category || 'unknown'),
     });
+    if (addedQty === 0) {
+      setQtyLimitNote(true);
+      setTimeout(() => setQtyLimitNote(false), 2500);
+      return;
+    }
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -489,7 +504,7 @@ export default function ProductPage() {
               >
                 {/* Discount badge */}
                 {product.discount && (
-                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
+                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] uppercase tracking-[0.2em] font-bold font-plex-mono">
                     {product.discount}% OFF
                   </div>
                 )}
@@ -676,7 +691,9 @@ export default function ProductPage() {
                               : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
                           }`}
                         >
-                          <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>{size}</span>
+                          <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>
+                            {isSoftToy(product?.category, product?.type) ? formatSoftToySize(size) : size}
+                          </span>
                         </button>
                       );
                     })}
@@ -778,13 +795,19 @@ export default function ProductPage() {
                     </span>
                     <button
                       id="qty-plus"
-                      onClick={() => setQuantity((q) => q + 1)}
-                      className="w-10 h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-200"
+                      onClick={() => setQuantity((q) => Math.min(MAX_QTY_PER_SIZE, q + 1))}
+                      disabled={quantity >= MAX_QTY_PER_SIZE}
+                      className="w-10 h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <Plus size={12} strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
+                <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] text-right -mt-2">
+                  {qtyLimitNote
+                    ? `Max ${MAX_QTY_PER_SIZE} per size already in your bag.`
+                    : `Limit ${MAX_QTY_PER_SIZE} per size`}
+                </p>
 
                 {/* Total line */}
                 <div className="flex items-center justify-between py-3 border-t border-b border-[rgba(var(--theme-text-rgb),0.08)]">
@@ -905,7 +928,7 @@ export default function ProductPage() {
                   {parsedDescriptionSections.map((section, i) => (
                     <AccordionSection key={section.title + i} title={section.title} defaultOpen={i === 0}>
                       <div
-                        className="text-[13px] leading-relaxed text-[rgba(var(--theme-text-rgb),0.6)] font-sans [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                        className="text-[15px] leading-relaxed text-[rgba(var(--theme-text-rgb),0.6)] font-sans [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
                         dangerouslySetInnerHTML={{ __html: section.content }}
                       />
                     </AccordionSection>

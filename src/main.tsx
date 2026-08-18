@@ -9,22 +9,26 @@ import { AuthProvider } from './context/AuthContext.tsx';
 import { PreloaderProvider } from './features/PreloaderContext.tsx';
 import { PageTransitionProvider } from './features/PageTransitionContext.tsx';
 import { ThemeProvider } from './theme/ThemeProvider.tsx';
+import { CollectionTransitionProvider } from './features/CollectionTransitionContext.tsx';
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <PreloaderProvider>
-          <PageTransitionProvider>
-            <AuthProvider>
-              <CartProvider>
-                <AuthModalProvider>
-                  <App />
-                </AuthModalProvider>
-              </CartProvider>
-            </AuthProvider>
-          </PageTransitionProvider>
-        </PreloaderProvider>
+        <CollectionTransitionProvider>
+          <PreloaderProvider>
+            <PageTransitionProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <AuthModalProvider>
+                    <App />
+                  </AuthModalProvider>
+                </CartProvider>
+              </AuthProvider>
+            </PageTransitionProvider>
+          </PreloaderProvider>
+        </CollectionTransitionProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
