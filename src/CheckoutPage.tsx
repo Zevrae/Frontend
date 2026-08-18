@@ -14,6 +14,8 @@ import {
   type ReceiptPrinterStage,
 } from './features/ReceiptPrinter';
 import { jsPDF } from 'jspdf';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
+
 
 const loadScript = (src: string) => {
   return new Promise((resolve) => {
@@ -787,7 +789,7 @@ export default function CheckoutPage() {
                               </div>
                               <div className="text-[9px] mt-0.5 text-black/50">
                                 {item.quantity} × ₹{item.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                {item.size ? ` · Size ${item.size}` : ''}
+                                {item.size ? ` · Size ${formatSoftToySize(item.size)}` : ''}
                               </div>
                             </div>
                           ))}
@@ -895,7 +897,9 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 flex flex-col justify-center">
                       <h4 className="text-[12px] uppercase font-plex-mono tracking-[0.1em] text-[var(--theme-text)] mb-1 line-clamp-1">{item.name}</h4>
-                      <div className="text-[10px] uppercase font-mono text-[rgba(var(--theme-text-rgb),0.5)] mb-1">Size: {item.size}</div>
+                      <div className="text-[10px] uppercase font-mono text-[rgba(var(--theme-text-rgb),0.5)] mb-1">
+                        Size: {isSoftToy(item.category) ? formatSoftToySize(item.size, true) : item.size}
+                      </div>
                       <div className="text-[12px] font-mono text-[var(--theme-text)]">{formatVal(item.price * item.quantity)}</div>
                     </div>
                   </div>

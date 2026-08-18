@@ -13,6 +13,7 @@ import ReviewSection from './components/ReviewSection';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 
 type ProductDetail = {
   id: string;
@@ -407,7 +408,7 @@ export default function ProductPage() {
       size: requireSizeSelection ? selectedSize : 'One Size',
       quantity,
       image: images[0] || product.frontImg || '',
-      category: product.category || 'unknown',
+      category: product.category === 'accessories' ? (product.type || 'accessories') : (product.category || 'unknown'),
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -683,7 +684,9 @@ export default function ProductPage() {
                               : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
                           }`}
                         >
-                          <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>{size}</span>
+                          <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>
+                            {isSoftToy(product?.category, product?.type) ? formatSoftToySize(size) : size}
+                          </span>
                         </button>
                       );
                     })}

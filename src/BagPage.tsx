@@ -7,6 +7,8 @@ import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { usePageTransition } from './features/PageTransitionContext';
 import './BagPage.css';
+import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
+
 
 // "YOUR BAG" — only the 7 letter chars (space rendered separately)
 const BAG_CHARS = 'YOUR BAG'.split('');
@@ -322,7 +324,9 @@ export default function BagPage() {
                   </span>
                   {item.size && item.size !== 'One Size' && (
                     <span className="bag-item-size mask-reveal">
-                      <span className="mask-reveal-inner">{item.size}</span>
+                      <span className="mask-reveal-inner">
+                        {isSoftToy(item.category) ? formatSoftToySize(item.size) : item.size}
+                      </span>
                     </span>
                   )}
                   <span className="bag-item-price mask-reveal">

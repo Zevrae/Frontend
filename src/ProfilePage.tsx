@@ -9,6 +9,8 @@ import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
 import { ordersApi, Order } from './api/orders';
 import { tryonApi, TryonResult } from './api/tryon';
+import { formatSoftToySize } from './utils/sizeFormatter';
+
 
 const formatVal = (val: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
@@ -134,7 +136,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                 <div className="space-y-2">
                   {order.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
-                      <span>{item.name} {item.size ? `(${item.size})` : ''} × {item.quantity}</span>
+                      <span>{item.name} {item.size ? `(${formatSoftToySize(item.size)})` : ''} × {item.quantity}</span>
                       <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
                     </div>
                   ))}
