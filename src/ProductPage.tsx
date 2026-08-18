@@ -497,7 +497,7 @@ export default function ProductPage() {
               >
                 {/* Discount badge */}
                 {product.discount && (
-                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] uppercase tracking-[0.2em] font-bold font-plex-mono">
+                  <div className="absolute top-5 right-5 z-10 px-3 py-1.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] uppercase tracking-[0.2em] font-bold font-plex-mono">
                     {product.discount}% OFF
                   </div>
                 )}
