@@ -230,7 +230,7 @@ export default function TryOnReviewTicker() {
   useEffect(() => {
     reviewsApi.listAll({ limit: 40 }).then((data) => {
       // Only show reviews that have a comment (or at least a rating)
-      const filtered = data.filter((r) => r.comment || r.rating > 0);
+      const filtered = data.filter((r) => r.rating >= 4 && (r.comment || r.rating > 0));
       setReviews(filtered);
     });
   }, []);
