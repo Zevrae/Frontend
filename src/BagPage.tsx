@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ChevronLeft } from 'lucide-react';
-import { useCart } from './CartContext';
+import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { usePageTransition } from './features/PageTransitionContext';
@@ -369,6 +369,7 @@ export default function BagPage() {
                     <button
                       className="bag-qty-btn"
                       onClick={() => updateQuantity(item.id, item.size, 1)}
+                      disabled={item.quantity >= MAX_QTY_PER_SIZE}
                       aria-label="Increase quantity"
                     >
                       +

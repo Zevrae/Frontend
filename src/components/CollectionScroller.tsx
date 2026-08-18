@@ -317,32 +317,6 @@ export function CollectionScroller() {
     }
   }, [activeIdx]);
 
-  useEffect(() => {
-    const handleHash = () => {
-      const hash = typeof window !== 'undefined' ? window.location.hash : '';
-      if (!hash) return;
-
-      let index = -1;
-      if (hash === '#clothing') index = 0;
-      else if (hash === '#jewellery') index = 1;
-      else if (hash === '#accessories') index = 2;
-
-      if (index !== -1) {
-        goTo(index);
-        setTimeout(() => {
-          const element = document.getElementById('collection');
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 150);
-      }
-    };
-
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
-  }, [goTo]);
-
   const goPrev = () => goTo(activeIdx - 1);
   const goNext = () => goTo(activeIdx + 1);
 

@@ -560,7 +560,7 @@ function dbProductPayload(form: Omit<DbProduct, 'id' | 'created_at' | 'is_delete
   };
 }
 
-const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 const PRODUCT_TEMPLATE = `
   <h2>Materials & Construction</h2>

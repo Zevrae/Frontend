@@ -14,6 +14,7 @@ import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
+import { MAX_QTY_PER_SIZE } from './CartContext';
 
 type ProductDetail = {
   id: string;
@@ -33,7 +34,7 @@ type ProductDetail = {
   images?: string[];
 };
 
-const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 function AccordionSection({
   title,
@@ -105,6 +106,7 @@ export default function ProductPage() {
   const [activeImg, setActiveImg] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [added, setAdded] = useState(false);
+  const [qtyLimitNote, setQtyLimitNote] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>([]);
   const [tryOnOpen, setTryOnOpen] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -401,7 +403,7 @@ export default function ProductPage() {
 
   const handleAddToCart = () => {
     if (!product || (requireSizeSelection && !selectedSize)) return;
-    addToCart({
+    const addedQty = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -410,6 +412,11 @@ export default function ProductPage() {
       image: images[0] || product.frontImg || '',
       category: product.category === 'accessories' ? (product.type || 'accessories') : (product.category || 'unknown'),
     });
+    if (addedQty === 0) {
+      setQtyLimitNote(true);
+      setTimeout(() => setQtyLimitNote(false), 2500);
+      return;
+    }
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -788,13 +795,19 @@ export default function ProductPage() {
                     </span>
                     <button
                       id="qty-plus"
-                      onClick={() => setQuantity((q) => q + 1)}
-                      className="w-10 h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-200"
+                      onClick={() => setQuantity((q) => Math.min(MAX_QTY_PER_SIZE, q + 1))}
+                      disabled={quantity >= MAX_QTY_PER_SIZE}
+                      className="w-10 h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <Plus size={12} strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
+                <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] text-right -mt-2">
+                  {qtyLimitNote
+                    ? `Max ${MAX_QTY_PER_SIZE} per size already in your bag.`
+                    : `Limit ${MAX_QTY_PER_SIZE} per size`}
+                </p>
 
                 {/* Total line */}
                 <div className="flex items-center justify-between py-3 border-t border-b border-[rgba(var(--theme-text-rgb),0.08)]">
