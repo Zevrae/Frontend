@@ -16,4 +16,4 @@ export const LAUNCH_CONFIG = {
 
 /** Kept for backward compatibility with LaunchGate and ProgressLine */
 export const LAUNCH_TIMESTAMP = LAUNCH_CONFIG.countdownEnd;
-export const COUNTDOWN_START_TIMESTAMP = new Date('2026-08-19T01:30:00+05:30');
+export const COUNTDOWN_START_TIMESTAMP = new Date('2026-08-19T01:35:00+05:30');
