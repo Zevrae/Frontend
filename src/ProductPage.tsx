@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -117,8 +117,8 @@ export default function ProductPage() {
     const cat = (product.category || '').toLowerCase();
     const type = (product.type || '').toLowerCase();
     const nonApparelKeys = [
-      'jewellery', 'rings', 'pendants', 'ears', 'bracelets', 'keychains', 'earrings',
-      'accessories', 'soft toys', 'soft toy'
+      'jewellery', 'rings', 'pendants', 'ears', 'bracelets', 'earrings',
+       'soft toys', 'soft toy'
     ];
     return nonApparelKeys.includes(cat) || nonApparelKeys.includes(type);
   }, [product]);
@@ -401,6 +401,56 @@ export default function ProductPage() {
     setNotifyError('');
   }, [selectedSize]);
 
+  // ─── PER-SIZE "NOTIFY ME" (shown right on the out-of-stock size swatch) ───
+  // Same underlying signup as handleNotifyMe above (same endpoint, same
+  // demand-tracking on the backend) — the only difference is it targets
+  // whichever out-of-stock size the shopper clicked, without requiring them
+  // to first select that size and scroll down to the main CTA area.
+  const [sizeNotify, setSizeNotify] = useState<{
+    size: string | null;
+    email: string;
+    status: 'idle' | 'submitting' | 'done' | 'error';
+    error: string;
+  }>({ size: null, email: '', status: 'idle', error: '' });
+  const [notifiedSizes, setNotifiedSizes] = useState<Set<string>>(new Set());
+
+  const toggleSizeNotify = (size: string) => {
+    setSizeNotify(prev =>
+      prev.size === size
+        ? { size: null, email: '', status: 'idle', error: '' }
+        : { size, email: '', status: notifiedSizes.has(size) ? 'done' : 'idle', error: '' }
+    );
+  };
+
+  const handleSizeNotifySubmit = async (size: string) => {
+    if (!product) return;
+    const email = user?.email || sizeNotify.email.trim();
+    if (!email) {
+      setSizeNotify(prev => ({ ...prev, error: 'Enter your email to get notified.' }));
+      return;
+    }
+    setSizeNotify(prev => ({ ...prev, status: 'submitting', error: '' }));
+    try {
+      await productsApi.notifyMe(product.id, {
+        email: user ? undefined : email,
+        size,
+      });
+      setSizeNotify(prev => ({ ...prev, status: 'done' }));
+      setNotifiedSizes(prev => new Set(prev).add(size));
+    } catch (err: any) {
+      setSizeNotify(prev => ({
+        ...prev,
+        status: 'error',
+        error: err?.response?.data?.message || 'Something went wrong. Please try again.',
+      }));
+    }
+  };
+
+  useEffect(() => {
+    setSizeNotify({ size: null, email: '', status: 'idle', error: '' });
+    setNotifiedSizes(new Set());
+  }, [params.id]);
+
   const handleAddToCart = () => {
     if (!product || (requireSizeSelection && !selectedSize)) return;
     const addedQty = addToCart({
@@ -675,26 +725,94 @@ export default function ProductPage() {
                   <div className="flex flex-wrap gap-2.5">
                     {availableSizes.map((size) => {
                       const outOfStock = isSizeOutOfStock(size);
+                      const isNotifiedForSize = notifiedSizes.has(size);
                       return (
-                        <button
-                          key={size}
-                          id={`size-${size.replace(/\s+/g, '-')}`}
-                          onClick={() => {
-                            setSelectedSize(size);
-                            setSizeError(false);
-                          }}
-                          className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
-                            selectedSize === size
-                              ? 'border-[var(--theme-accent)] text-[var(--theme-bg)] bg-[var(--theme-accent)]'
-                              : outOfStock
-                              ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
-                              : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
-                          }`}
-                        >
-                          <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>
-                            {isSoftToy(product?.category, product?.type) ? formatSoftToySize(size) : size}
-                          </span>
-                        </button>
+                        <div key={size} className="relative">
+                          <button
+                            id={`size-${size.replace(/\s+/g, '-')}`}
+                            onClick={() => {
+                              setSelectedSize(size);
+                              setSizeError(false);
+                            }}
+                            className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
+                              selectedSize === size
+                                ? 'border-[var(--theme-accent)] text-[var(--theme-bg)] bg-[var(--theme-accent)]'
+                                : outOfStock
+                                ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
+                                : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
+                            } ${outOfStock ? 'pr-6' : ''}`}
+                          >
+                            <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>
+                              {isSoftToy(product?.category, product?.type) ? formatSoftToySize(size) : size}
+                            </span>
+                          </button>
+
+                          {/* Notify Me — directly on the unavailable size swatch */}
+                          {outOfStock && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSizeNotify(size);
+                              }}
+                              title={isNotifiedForSize ? `You'll be notified for size ${size}` : `Notify me when size ${size} is back`}
+                              className={`absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center rounded-full transition-colors duration-200 ${
+                                isNotifiedForSize
+                                  ? 'text-[var(--theme-accent)]'
+                                  : 'text-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-accent)]'
+                              }`}
+                            >
+                              {isNotifiedForSize ? <Check size={11} strokeWidth={2} /> : <Bell size={11} strokeWidth={1.75} />}
+                            </button>
+                          )}
+
+                          {/* Inline compact notify popover for this size */}
+                          <AnimatePresence>
+                            {sizeNotify.size === size && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute z-20 top-full mt-2 left-0 w-64 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.15)] shadow-xl p-4"
+                              >
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] mb-1">
+                                  Size {isSoftToy(product?.category, product?.type) ? formatSoftToySize(size) : size} is Out of Stock
+                                </p>
+                                {sizeNotify.status === 'done' ? (
+                                  <p className="text-[10px] font-plex-mono text-[var(--theme-accent)] mt-2">
+                                    You're on the list — we'll email you when it's back.
+                                  </p>
+                                ) : (
+                                  <>
+                                    <p className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-3">
+                                      We'll email you the moment it's restocked.
+                                    </p>
+                                    {!user && (
+                                      <input
+                                        type="email"
+                                        value={sizeNotify.email}
+                                        onChange={(e) => setSizeNotify(prev => ({ ...prev, email: e.target.value }))}
+                                        placeholder="you@example.com"
+                                        className="w-full bg-transparent border border-[rgba(var(--theme-text-rgb),0.15)] px-3 py-2.5 text-[11px] font-plex-mono text-[var(--theme-text)] placeholder:text-[rgba(var(--theme-text-rgb),0.25)] focus:border-[rgba(var(--theme-accent-rgb),0.5)] focus:outline-none mb-2"
+                                      />
+                                    )}
+                                    <button
+                                      onClick={() => handleSizeNotifySubmit(size)}
+                                      disabled={sizeNotify.status === 'submitting'}
+                                      className="w-full px-4 py-2.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase tracking-[0.2em] font-plex-mono font-bold hover:brightness-110 transition-colors disabled:opacity-50"
+                                    >
+                                      {sizeNotify.status === 'submitting' ? 'Submitting...' : 'Notify Me'}
+                                    </button>
+                                    {sizeNotify.error && (
+                                      <p className="text-[10px] text-red-400 font-sans mt-2">{sizeNotify.error}</p>
+                                    )}
+                                  </>
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       );
                     })}
                   </div>
