@@ -127,16 +127,16 @@ export default function ProductPage() {
   const availableSizes = useMemo(() => {
     if (!product) return [];
     
-    // Check if the product has explicitly defined sizes/stock in DB
+    // 1. If it is categorized as non-apparel (jewellery, keychains, etc.), ALWAYS return an empty array (no sizes)
+    if (isNonApparel) return [];
+
+    // 2. Check if the product has explicitly defined sizes/stock in DB
     const dbSizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
     if (dbSizes.length > 0) {
       return dbSizes;
     }
-
-    // If it has no sizes defined, and is categorized as non-apparel (like jewellery or accessories), return empty array
-    if (isNonApparel) return [];
     
-    // Fallback to default apparel sizes if not defined in DB but categorized as apparel
+    // 3. Fallback to default apparel sizes if not defined in DB but categorized as apparel
     return DEFAULT_SIZES;
   }, [product, isNonApparel]);
 
