@@ -284,10 +284,22 @@ return (
       {/* Navigation — hidden on /admin */}
       {!location.pathname.startsWith('/admin') && (
       <nav 
-        className={`fixed top-0 w-full z-40 transition-all duration-1000 ${
-          isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6' : 'bg-transparent py-10'
-        }`}
+        className="fixed top-0 w-full z-40 flex flex-col"
       >
+        {/* Announcement black strip */}
+        <div 
+          className="w-full bg-black text-white text-center py-2.5 text-[10px] md:text-[12px] tracking-[0.15em] font-sans font-medium uppercase border-b border-white/5"
+          style={{ color: '#FFFFFF', backgroundColor: '#000000' }}
+        >
+          Use coupon <span style={{ color: '#C5A059' }} className="font-semibold">ZEV10</span> (applicable for first 100 customers)
+        </div>
+
+        {/* Main Navbar */}
+        <div 
+          className={`w-full transition-all duration-1000 ${
+            isScrolled ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md py-6' : 'bg-transparent py-10'
+          }`}
+        >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
             {isLiveMode && (
@@ -549,6 +561,7 @@ return (
               {user ? 'LOGOUT' : 'ADMIN LOGIN'}
             </button>
           )}
+        </div>
         </div>
       </nav>
       )}
