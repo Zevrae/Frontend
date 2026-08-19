@@ -118,7 +118,7 @@ export default function ProductPage() {
     const type = (product.type || '').toLowerCase();
     const nonApparelKeys = [
       'jewellery', 'rings', 'pendants', 'ears', 'bracelets', 'keychains', 'earrings',
-      'accessories', 'soft toys', 'soft toy'
+       'soft toys', 'soft toy'
     ];
     return nonApparelKeys.includes(cat) || nonApparelKeys.includes(type);
   }, [product]);
