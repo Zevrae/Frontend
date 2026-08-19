@@ -291,7 +291,7 @@ return (
           className="w-full bg-black text-white text-center py-2.5 text-[10px] md:text-[12px] tracking-[0.15em] font-sans font-medium uppercase border-b border-white/5"
           style={{ color: '#FFFFFF', backgroundColor: '#000000' }}
         >
-          Use coupon <span style={{ color: '#C5A059' }} className="font-semibold">ZEV10</span> (applicable for first 100 customers)
+          Use coupon <span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums' }} className="font-semibold lining-nums">ZEV10</span> (applicable for first <span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums' }} className="font-semibold lining-nums">100</span> customers)
         </div>
 
         {/* Main Navbar */}
