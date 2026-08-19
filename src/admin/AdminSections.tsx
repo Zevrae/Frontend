@@ -2175,6 +2175,11 @@ export function AnalysisSection() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-sans text-[var(--theme-text)] truncate">{item.product?.name || 'Unknown product'}</p>
                       <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)]">{item.product?.category} / {item.product?.subcategory}</p>
+                      {item.topDemandedSize && (
+                        <p className="text-[9px] font-mono text-[var(--theme-accent)] mt-0.5">
+                          Most requested size: {item.topDemandedSize} ({item.topDemandedSizeCount})
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 text-[var(--theme-accent)] flex-shrink-0">
                       <Bell size={12} />
@@ -2207,7 +2212,11 @@ export function AnalysisSection() {
                       </div>
                       <div className="flex items-center gap-3 text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)] flex-shrink-0">
                         <span title="Units ordered">{item.demandCounter} sold</span>
-                        {item.notifyCounter > 0 && <span className="text-[var(--theme-accent)]" title="Notify-me signups">{item.notifyCounter} waiting</span>}
+                        {item.notifyCounter > 0 && (
+                          <span className="text-[var(--theme-accent)]" title="Notify-me signups">
+                            {item.notifyCounter} waiting{item.topDemandedSize ? ` (mostly ${item.topDemandedSize})` : ''}
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}

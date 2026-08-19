@@ -14,6 +14,12 @@ export interface AnalysisItem {
   demandCounter: number;
   notifyCounter: number;
   combinedScore?: number;
+  // Per-size breakdown of "notify me" signups, e.g. { M: 3, L: 7 }, plus the
+  // single most-demanded size derived from it. Empty/undefined for products
+  // that don't use sizing (jewellery, accessories, etc.).
+  sizeDemand?: Record<string, number>;
+  topDemandedSize?: string | null;
+  topDemandedSizeCount?: number;
   created_at?: string;
   updated_at?: string;
   product: AnalysisProduct | null;

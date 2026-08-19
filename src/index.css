@@ -123,6 +123,19 @@ html {
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Custom smooth navbar underline transition */
+.nav-underline {
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.group:hover .nav-underline,
+button:hover .nav-underline,
+a:hover .nav-underline {
+  transform: scaleX(1) !important;
+}
+
 /* ── Restore element-specific override transitions so they still work ──────
    Elements that already have fine-grained transitions (transform, opacity,
    filter, width, etc.) need those preserved. We re-declare them here with
