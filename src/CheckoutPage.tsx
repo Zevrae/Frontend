@@ -198,8 +198,22 @@ export default function CheckoutPage() {
     if (!shippingData.email) errors.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shippingData.email)) errors.email = 'Valid email is required';
 
-    if (!shippingData.phone) errors.phone = 'Phone number is required';
-    else if (!/^\d{10}$/.test(shippingData.phone)) errors.phone = 'Exactly 10 digits required';
+    if (!shippingData.phone) {
+      errors.phone = 'Phone number is required';
+    } else {
+      const isLeadingZero = shippingData.phone.startsWith('0') || (shippingData.phone.startsWith('+91') && shippingData.phone.slice(3).startsWith('0'));
+      if (isLeadingZero) {
+        errors.phone = '0 cannot be the leading number';
+      } else if (shippingData.phone.startsWith('+91')) {
+        if (!/^\+91[1-9]\d{9}$/.test(shippingData.phone)) {
+          errors.phone = 'Exactly 10 digits required after +91';
+        }
+      } else {
+        if (!/^[1-9]\d{9}$/.test(shippingData.phone)) {
+          errors.phone = 'Exactly 10 digits required';
+        }
+      }
+    }
 
     if (!shippingData.address) errors.address = 'Address is required';
     else if (shippingData.address.length < 10) errors.address = 'Min 10 characters required';
@@ -400,6 +414,14 @@ export default function CheckoutPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'phone') {
+      let sanitized = value.replace(/[^\d+]/g, '');
+      if (sanitized.indexOf('+') > 0) {
+        sanitized = sanitized.slice(0, 1) + sanitized.slice(1).replace(/\+/g, '');
+      }
+      setShippingData(prev => ({ ...prev, [name]: sanitized }));
+      return;
+    }
     setShippingData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -544,14 +566,65 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <label className="block text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] mb-2">Phone Number</label>
-                      <input 
-                        type="tel" 
-                        name="phone" 
-                        value={shippingData.phone} 
-                        onChange={handleChange} 
-                        onBlur={() => handleBlur('phone')}
-                        className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.phone && errors.phone ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
-                      />
+                      <div className="relative">
+                        <input 
+                          type="tel" 
+                          name="phone" 
+                          placeholder="e.g. +919876543210 or 9876543210"
+                          value={shippingData.phone} 
+                          onChange={handleChange} 
+                          onBlur={() => handleBlur('phone')}
+                          maxLength={13}
+                          className={`w-full bg-[rgba(var(--theme-text-rgb),0.02)] border ${touched.phone && errors.phone ? 'border-red-500' : 'border-[rgba(var(--theme-text-rgb),0.1)]'} text-[var(--theme-text)] px-4 py-3 text-sm focus:border-[var(--theme-accent)] outline-none transition-colors rounded-sm`} 
+                        />
+                      </div>
+                      
+                      {/* Real-time Phone Number Verification Checklist */}
+                      {shippingData.phone && (
+                        <div className="mt-2.5 p-3 rounded-md bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-text-rgb),0.05)] space-y-2">
+                          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-plex-mono">
+                            {(() => {
+                              const startsWithPlus91 = shippingData.phone.startsWith('+91');
+                              const mainNumber = startsWithPlus91 ? shippingData.phone.slice(3) : shippingData.phone;
+                              const isLeadingZero = shippingData.phone.startsWith('0') || mainNumber.startsWith('0');
+                              return (
+                                <>
+                                  <span className={isLeadingZero ? "text-red-500 font-bold" : "text-emerald-500"}>
+                                    {isLeadingZero ? "✗" : "✓"}
+                                  </span>
+                                  <span className={isLeadingZero ? "text-red-500 font-bold" : "text-[rgba(var(--theme-text-rgb),0.6)]"}>
+                                    No leading zero
+                                  </span>
+                                </>
+                              );
+                            })()}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-plex-mono">
+                            {(() => {
+                              const startsWithPlus91 = shippingData.phone.startsWith('+91');
+                              const targetLength = startsWithPlus91 ? 13 : 10;
+                              const currentLength = shippingData.phone.length;
+                              const isLengthOk = currentLength === targetLength;
+                              const lengthLabel = startsWithPlus91 
+                                ? `10 digits after +91 (${Math.max(0, currentLength - 3)}/10)` 
+                                : `Exactly 10 digits (${currentLength}/10)`;
+                              
+                              return (
+                                <>
+                                  <span className={isLengthOk ? "text-emerald-500" : "text-[rgba(var(--theme-text-rgb),0.4)]"}>
+                                    {isLengthOk ? "✓" : "○"}
+                                  </span>
+                                  <span className={isLengthOk ? "text-[rgba(var(--theme-text-rgb),0.6)]" : "text-[rgba(var(--theme-text-rgb),0.45)]"}>
+                                    {lengthLabel}
+                                  </span>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      )}
+
                       {touched.phone && errors.phone && (
                         <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
                       )}

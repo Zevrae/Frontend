@@ -12,7 +12,7 @@ import SpecularButton from './components/specularbutton';
 import ReviewSection from './components/ReviewSection';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
+import SEO from './components/SEO';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 import { MAX_QTY_PER_SIZE } from './CartContext';
 
@@ -88,17 +88,85 @@ export default function ProductPage() {
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token, user } = useAuth();
-  
+
   const [product, setProduct] = useState<ProductDetail | null>(
     (location.state as { product?: ProductDetail } | null)?.product || null
   );
 
-  useDocumentTitle(
-    product?.name,
-    product
-      ? `${product.name} — ${product.label || 'ZEVRAE'}. ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}. Shop now with virtual try-on.`
-      : undefined
-  );
+  // ── Product-page SEO ──────────────────────────────────────────────────────
+  // Build title, description, and canonical from real product data once loaded.
+  // Falls back to minimal values while still loading.
+  const productTitle = product?.name ? `${product.name} | ZEVRAE` : 'ZEVRAE';
+  const rawDescription = product?.description || '';
+  // Trim description to ~160 chars for meta description
+  const productDescription = rawDescription.length > 160
+    ? `${rawDescription.slice(0, 157).trimEnd()}...`
+    : rawDescription || (product?.name ? `${product.name} — shop at ZEVRAE.` : '');
+  const productCanonical = params.id ? `https://zevrae.com/product/${params.id}` : undefined;
+
+  // ── Product JSON-LD structured data ──────────────────────────────────────
+  // Builds a schema.org/Product object from actual product data only.
+  // No values are invented — properties are omitted when data is unavailable.
+  // The SEO component manages the <script> tag lifecycle (no duplicates, no
+  // stale schema left behind on SPA navigation).
+  const productJsonLd = useMemo((): Record<string, unknown> | undefined => {
+    if (!product) return undefined;
+
+    // Determine availability from real stock data
+    const sizeStock = product.size_stock || {};
+    const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+    const inStock = hasSizes
+      ? product.sizes!.some(s => (sizeStock[s] ?? 0) > 0)
+      : (product.stock_quantity ?? 0) > 0;
+    const availability = inStock
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock';
+
+    // Collect real product image URLs (same logic as the images useMemo below)
+    const imgs: string[] = [];
+    if (product.frontImg) imgs.push(product.frontImg);
+    if (product.backImg && product.backImg !== product.frontImg) imgs.push(product.backImg);
+    if (Array.isArray(product.images)) {
+      imgs.push(...product.images);
+    } else if (typeof product.images === 'string') {
+      try { imgs.push(...JSON.parse(product.images as unknown as string)); } catch { /**/ }
+    }
+    const imageUrls = Array.from(new Set(imgs)).filter(u => typeof u === 'string' && u.trim() !== '');
+
+    const schema: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      brand: {
+        '@type': 'Brand',
+        name: 'ZEVRAE',
+      },
+    };
+
+    // Only add description if meaningful (not HTML-heavy; raw description is used)
+    if (product.name) {
+      schema.description = productDescription || `${product.name} — shop at ZEVRAE.`;
+    }
+
+    if (imageUrls.length > 0) {
+      schema.image = imageUrls;
+    }
+
+    // Use product id as SKU
+    if (product.id) {
+      schema.sku = String(product.id);
+    }
+
+    schema.offers = {
+      '@type': 'Offer',
+      url: productCanonical || `https://zevrae.com/product/${product.id}`,
+      priceCurrency: 'INR',
+      price: product.price,
+      availability,
+    };
+
+    return schema;
+  }, [product, productCanonical, productDescription]);
 
   const [selectedSize, setSelectedSize] = useState('');
   const [sizeError, setSizeError] = useState(false);
@@ -126,7 +194,7 @@ export default function ProductPage() {
   // ─── DYNAMIC SIZES EXTRACTION ───
   const availableSizes = useMemo(() => {
     if (!product) return [];
-    
+
     // 1. If it is categorized as non-apparel (jewellery, keychains, etc.), ALWAYS return an empty array (no sizes)
     if (isNonApparel) return [];
 
@@ -135,7 +203,7 @@ export default function ProductPage() {
     if (dbSizes.length > 0) {
       return dbSizes;
     }
-    
+
     // 3. Fallback to default apparel sizes if not defined in DB but categorized as apparel
     return DEFAULT_SIZES;
   }, [product, isNonApparel]);
@@ -162,9 +230,9 @@ export default function ProductPage() {
           while (hasMore) {
             const response: any = await productsApi.list({ limit: 100, page: currentPage });
             const items = response.data || [];
-            
+
             p = items.find((item: any) => String(item.id) === String(params.id) || String(item.$id) === String(params.id));
-            
+
             if (p) break;
 
             const pagination = response.pagination;
@@ -177,16 +245,16 @@ export default function ProductPage() {
             }
           }
         }
-        
+
         if (p) {
           let parsedImages: string[] = [];
           if (Array.isArray(p.images)) {
             parsedImages = p.images;
           } else if (typeof p.images === 'string') {
-            try { 
-              parsedImages = JSON.parse(p.images); 
-            } catch { 
-              parsedImages = p.images.split(',').map((s: string) => s.trim()); 
+            try {
+              parsedImages = JSON.parse(p.images);
+            } catch {
+              parsedImages = p.images.split(',').map((s: string) => s.trim());
             }
           }
 
@@ -218,7 +286,7 @@ export default function ProductPage() {
     if (routeProduct) {
       setProduct(routeProduct);
     }
-    
+
     hydrateProduct();
   }, [params.id, location.state]);
 
@@ -226,25 +294,25 @@ export default function ProductPage() {
   const images = useMemo(() => {
     if (!product) return [];
     const imgs: string[] = [];
-    
+
     if (product.frontImg) imgs.push(product.frontImg);
     if (product.backImg) imgs.push(product.backImg);
-    
+
     if (product.images && Array.isArray(product.images)) {
       imgs.push(...product.images);
     } else if (typeof product.images === 'string') {
-      try { 
-        imgs.push(...JSON.parse(product.images)); 
-      } catch (e) {}
+      try {
+        imgs.push(...JSON.parse(product.images));
+      } catch (e) { }
     }
-    
+
     return Array.from(new Set(imgs)).filter(img => typeof img === 'string' && img.trim() !== '');
   }, [product]);
 
   // ─── PARSE RICH TEXT INTO ACCORDIONS ───
   const parsedDescriptionSections = useMemo(() => {
     if (!product?.description) return null;
-    
+
     if (!product.description.includes('<h2>')) {
       return [{ title: 'Details', content: product.description }];
     }
@@ -271,7 +339,7 @@ export default function ProductPage() {
         });
       }
     }
-    
+
     return sections.length > 0 ? sections : null;
   }, [product?.description]);
 
@@ -491,6 +559,7 @@ export default function ProductPage() {
   if (!product) {
     return (
       <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex items-center justify-center px-6">
+        <SEO title="ZEVRAE" description="Loading product..." />
         <div className="max-w-lg text-center space-y-6">
           <p className="text-[10px] uppercase tracking-[0.4em] text-[var(--theme-accent)]">Loading product...</p>
         </div>
@@ -501,17 +570,25 @@ export default function ProductPage() {
   const sizeStock = product.size_stock || {};
   const isNoSizeProduct = !requireSizeSelection;
   const isSizeOutOfStock = (size: string) => (sizeStock[size] ?? 0) <= 0;
-  
+
   const overallInStock = isNoSizeProduct
     ? (product.stock_quantity ?? 0) > 0
     : availableSizes.some(s => !isSizeOutOfStock(s));
-    
+
   const showNotifyMe = isNoSizeProduct
     ? !overallInStock
     : !!selectedSize && isSizeOutOfStock(selectedSize);
 
   return (
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
+      {/* Product-page SEO — sets title, description, canonical, OG tags, and Product JSON-LD */}
+      <SEO
+        title={productTitle}
+        description={productDescription}
+        canonical={productCanonical}
+        jsonLd={productJsonLd}
+      />
+
       {/* Film grain overlay */}
       <div
         className="fixed inset-0 opacity-[0.018] pointer-events-none z-[1] mix-blend-difference"
@@ -627,11 +704,10 @@ export default function ProductPage() {
                       key={i}
                       id={`thumbnail-${i}`}
                       onClick={() => switchImage(i)}
-                      className={`relative flex-shrink-0 w-[72px] h-[90px] bg-[#0d0d0d] overflow-hidden transition-all duration-300 ${
-                        activeImg === i
+                      className={`relative flex-shrink-0 w-[72px] h-[90px] bg-[#0d0d0d] overflow-hidden transition-all duration-300 ${activeImg === i
                           ? 'ring-1 ring-[var(--theme-accent)] opacity-100'
                           : 'opacity-50 hover:opacity-80 ring-1 ring-transparent hover:ring-[rgba(var(--theme-text-rgb),0.2)]'
-                      }`}
+                        }`}
                     >
                       <img
                         src={img}
@@ -715,8 +791,8 @@ export default function ProductPage() {
                     <span className="text-[10px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)]">
                       Size
                     </span>
-                    <button 
-                      className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4" 
+                    <button
+                      className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4"
                       onClick={() => navigate('/size-guide')}
                     >
                       Size Guide
@@ -734,13 +810,12 @@ export default function ProductPage() {
                               setSelectedSize(size);
                               setSizeError(false);
                             }}
-                            className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${
-                              selectedSize === size
+                            className={`relative min-w-[3.2rem] px-4 py-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-200 border ${selectedSize === size
                                 ? 'border-[var(--theme-accent)] text-[var(--theme-bg)] bg-[var(--theme-accent)]'
                                 : outOfStock
-                                ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
-                                : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
-                            } ${outOfStock ? 'pr-6' : ''}`}
+                                  ? 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.3)] hover:border-[rgba(var(--theme-text-rgb),0.3)]'
+                                  : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.5)] hover:border-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-text)]/80'
+                              } ${outOfStock ? 'pr-6' : ''}`}
                           >
                             <span className={outOfStock ? 'line-through decoration-[rgba(var(--theme-text-rgb),0.3)]' : ''}>
                               {isSoftToy(product?.category, product?.type) ? formatSoftToySize(size) : size}
@@ -756,11 +831,10 @@ export default function ProductPage() {
                                 toggleSizeNotify(size);
                               }}
                               title={isNotifiedForSize ? `You'll be notified for size ${size}` : `Notify me when size ${size} is back`}
-                              className={`absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center rounded-full transition-colors duration-200 ${
-                                isNotifiedForSize
+                              className={`absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center rounded-full transition-colors duration-200 ${isNotifiedForSize
                                   ? 'text-[var(--theme-accent)]'
                                   : 'text-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-accent)]'
-                              }`}
+                                }`}
                             >
                               {isNotifiedForSize ? <Check size={11} strokeWidth={2} /> : <Bell size={11} strokeWidth={1.75} />}
                             </button>
@@ -990,11 +1064,10 @@ export default function ProductPage() {
                       id="add-to-bag"
                       onClick={handleAddToCart}
                       disabled={requireSizeSelection && !selectedSize}
-                      className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${
-                        (!requireSizeSelection || selectedSize)
+                      className={`relative w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold overflow-hidden transition-all duration-300 ${(!requireSizeSelection || selectedSize)
                           ? 'bg-[var(--theme-text)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent)] cursor-pointer'
                           : 'bg-[rgba(var(--theme-text-rgb),0.08)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       <AnimatePresence mode="wait">
                         {added ? (
@@ -1027,11 +1100,10 @@ export default function ProductPage() {
                       id="buy-now"
                       onClick={handleBuyNow}
                       disabled={requireSizeSelection && !selectedSize}
-                      className={`w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${
-                        (!requireSizeSelection || selectedSize)
+                      className={`w-full h-[54px] flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.25em] font-plex-mono font-bold border transition-all duration-300 ${(!requireSizeSelection || selectedSize)
                           ? 'border-[var(--theme-text)] text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] cursor-pointer'
                           : 'border-[rgba(var(--theme-text-rgb),0.12)] text-[rgba(var(--theme-text-rgb),0.25)] cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       Buy Now
                       <ArrowRight size={14} strokeWidth={1.5} />

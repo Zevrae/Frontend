@@ -10,7 +10,7 @@ export const termsOfServiceHtml = `<h1>ZEVRAE TERMS OF SERVICE</h1><p><strong>La
 </ul>
 
 <h2>3. GOOGLE SIGN-IN</h2>
-<p>If you choose to sign in with Google, you authorize Google to share your name, email address, and profile picture with ZEVRAE for the purpose of creating and authenticating your account. Your use of Google Sign-In is also subject to Google's own Terms of Service and Privacy Policy. You can disconnect Zevrae's access at any time from your Google Account settings.</p>
+<p>If you choose to sign in with Google, you authorize Google to share your name, email address, and profile picture with ZEVRAE for the purpose of creating and authenticating your account. Your use of Google Sign-In is also subject to Google's own Terms of Service and Privacy Policy. You can disconnect ZEVRAE's access at any time from your Google Account settings.</p>
 
 <h2>4. ORDERS &amp; PAYMENT</h2>
 <ul>

@@ -34,6 +34,9 @@ export interface Order {
   razorpay_payment_id?: string;
   order_status: 'payment_pending' | 'placed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   created_at: string;
+  // Estimated delivery date — defaults to 7 days after the order date on
+  // the backend, but an admin can override it.
+  expected_delivery_date?: string | null;
 }
 
 export interface RazorpayPaymentInfo {
@@ -78,7 +81,7 @@ export const ordersApi = {
     return response.data.data;
   },
 
-  updateStatus: async (id: string, updates: { order_status?: string; payment_status?: string }): Promise<Order> => {
+  updateStatus: async (id: string, updates: { order_status?: string; payment_status?: string; expected_delivery_date?: string | null }): Promise<Order> => {
     const response = await api.patch(`/orders/${id}/status`, updates);
     return response.data.data;
   },

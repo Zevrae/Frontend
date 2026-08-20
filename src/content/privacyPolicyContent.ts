@@ -32,7 +32,7 @@ export const privacyPolicyHtml = `<h1>ZEVRAE PRIVACY POLICY</h1><p><strong>Last 
 <p>We do not sell your personal information. We share it only with:</p>
 <ul>
 <li><strong>Service providers</strong> who help us operate the Service — payment processing, cloud hosting/storage, email delivery, and the AI model used to generate try-on images — under contractual obligations to protect your data and use it only for the service they provide us.</li>
-<li><strong>Google</strong>, solely to authenticate you when you choose Google Sign-In. We do not share your Zevrae order or browsing history with Google.</li>
+<li><strong>Google</strong>, solely to authenticate you when you choose Google Sign-In. We do not share your ZEVRAE order or browsing history with Google.</li>
 <li><strong>Law enforcement or regulators</strong>, only when required by applicable law or to protect the rights, safety, or property of ZEVRAE or our users.</li>
 </ul>
 
@@ -47,7 +47,7 @@ export const privacyPolicyHtml = `<h1>ZEVRAE PRIVACY POLICY</h1><p><strong>Last 
 <li><strong>Access &amp; correction:</strong> update your account details at any time from your profile page.</li>
 <li><strong>Deletion:</strong> request deletion of your account and personal data by contacting us (Section 9).</li>
 <li><strong>Marketing communications:</strong> unsubscribe from marketing emails using the link in any such email.</li>
-<li><strong>Disconnecting Google Sign-In:</strong> you can revoke Zevrae's access from your Google Account's security settings at any time; this does not delete your Zevrae account, which you can do separately by contacting us.</li>
+<li><strong>Disconnecting Google Sign-In:</strong> you can revoke ZEVRAE's access from your Google Account's security settings at any time; this does not delete your ZEVRAE account, which you can do separately by contacting us.</li>
 </ul>
 
 <h2>8. CHILDREN'S PRIVACY</h2>

@@ -11,9 +11,9 @@ export const LAUNCH_CONFIG = {
   /** Phase 1: Countdown reaches zero. 5-minute launch sequence begins. */
   countdownEnd: new Date('2026-08-19T13:30:00+05:30'),
   /** Phase 2: Brand goes live. Normal site unlocks for everyone. */
-  brandLaunch: new Date('2026-08-19T13:35:00+05:30'),
+  brandLaunch: new Date('2026-08-19T13:46:00+05:30'),
 };
 
 /** Kept for backward compatibility with LaunchGate and ProgressLine */
 export const LAUNCH_TIMESTAMP = LAUNCH_CONFIG.countdownEnd;
-export const COUNTDOWN_START_TIMESTAMP = new Date('2026-08-19T01:35:00+05:30');
+export const COUNTDOWN_START_TIMESTAMP = new Date('2026-08-19T01:46:00+05:30');

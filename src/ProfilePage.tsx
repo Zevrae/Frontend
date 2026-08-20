@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
@@ -103,6 +103,13 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                 )}
               </React.Fragment>
             ))}
+          </div>
+        )}
+
+        {!isCancelled && order.order_status !== 'delivered' && order.expected_delivery_date && (
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.6)]">
+            <CalendarClock size={12} className="text-[var(--theme-accent)]" />
+            <span>Expected delivery by <span className="text-[var(--theme-text)]">{formatDate(order.expected_delivery_date)}</span></span>
           </div>
         )}
 
