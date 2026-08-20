@@ -5,15 +5,23 @@ interface SEOProps {
   description: string;
   canonical?: string;
   noindex?: boolean;
+  /** Optional JSON-LD structured data object. Injected as a managed
+   *  <script type="application/ld+json"> tag; cleaned up on unmount so
+   *  navigating between routes never leaves stale schema behind. */
+  jsonLd?: Record<string, unknown>;
 }
 
 const BASE_URL = 'https://zevrae.com';
+
+/** Attribute used to identify the dynamic JSON-LD script tag */
+const JSON_LD_ATTR = 'data-seo-jsonld';
 
 export default function SEO({
   title,
   description,
   canonical,
   noindex = false,
+  jsonLd,
 }: SEOProps) {
   useEffect(() => {
     document.title = title;
@@ -69,6 +77,33 @@ export default function SEO({
 
     canonicalLink.setAttribute('href', canonicalUrl);
   }, [title, description, canonical, noindex]);
+
+  // ── JSON-LD structured data management ────────────────────────────────────
+  // A single [data-seo-jsonld] script tag is created/updated whenever jsonLd
+  // changes, and removed on cleanup — prevents stale Product schema when the
+  // user navigates between product pages or back to a non-product route.
+  useEffect(() => {
+    if (!jsonLd) return;
+
+    let script = document.head.querySelector(
+      `script[${JSON_LD_ATTR}]`
+    ) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute(JSON_LD_ATTR, 'true');
+      document.head.appendChild(script);
+    }
+
+    script.textContent = JSON.stringify(jsonLd, null, 0);
+
+    return () => {
+      // Remove on unmount (route change) so no stale schema lingers
+      const el = document.head.querySelector(`script[${JSON_LD_ATTR}]`);
+      if (el) el.remove();
+    };
+  }, [jsonLd]);
 
   return null;
 }

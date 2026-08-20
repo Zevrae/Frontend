@@ -11,15 +11,15 @@ import { usePageTransition } from '../features/PageTransitionContext';
 const PILLARS = [
   {
     icon: Sparkles,
-    title: 'What Zevrae Is',
+    title: 'What ZEVRAE Is',
     body:
-      'Zevrae is a minimalist fashion and jewellery label — shop new arrivals, try garments on virtually with AI before you buy, and check out in a few taps.',
+      'ZEVRAE is a contemporary luxury fashion and jewellery label — shop new arrivals, try garments on virtually with AI before you buy, and check out in a few taps.',
   },
   {
     icon: Lock,
     title: 'Secure Sign-In',
     body:
-      'Signing in with Google means Zevrae never sees or stores your password. Google verifies your identity; we only receive your name and email to open your account.',
+      'Signing in with Google means ZEVRAE never sees or stores your password. Google verifies your identity; we only receive your name and email to open your account.',
   },
   {
     icon: RefreshCw,
@@ -54,7 +54,7 @@ export function TrustSection() {
           transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
           className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 text-center md:text-left"
         >
-          Why Zevrae
+          Why ZEVRAE
         </motion.h2>
         <motion.h3
           initial={{ opacity: 0, y: 20 }}

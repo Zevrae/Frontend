@@ -69,7 +69,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         <Link to="/" className="text-2xl font-archivo font-bold tracking-widest uppercase absolute left-1/2 -translate-x-1/2">
-          Zevrae
+          ZEVRAE
         </Link>
 
         <div className="flex items-center gap-6">
