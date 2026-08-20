@@ -110,15 +110,15 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
+    <div className="relative z-[9999] max-w-[1400px] mx-auto px-6 md:px-12 mb-16 pointer-events-none">
       <motion.h2
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
+        className="relative z-[9999] pointer-events-auto text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
       >
-        <button onClick={handleBack} className="relative z-50 flex items-center hover:text-white transition-colors duration-300 outline-none">
+        <button onClick={handleBack} className="relative z-[9999] pointer-events-auto flex items-center hover:text-white transition-colors duration-300 outline-none cursor-pointer">
           <ChevronLeft className="w-4 h-4 mr-2" />
           {eyebrow}
         </button>
@@ -128,7 +128,7 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
+        className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase pointer-events-auto"
       >
         {title}
       </motion.h3>
