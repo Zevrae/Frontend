@@ -6,7 +6,7 @@ import {
   Tag, Percent, Plus, Edit2, Trash2,
   Search, X, Image, ToggleLeft, ToggleRight,
   Star, AlertCircle, TrendingUp, Users, ArrowUpRight,
-  Save, Upload, RefreshCw, Bell, BarChart3,
+  Save, Upload, RefreshCw, Bell, BarChart3, CalendarClock,
 } from 'lucide-react';
 import {
   useReactTable,
@@ -201,11 +201,71 @@ export function DashboardSection({ orders }: { orders: Order[] }) {
 
 // ─── Orders Section ───────────────────────────────────────────────────────────
 
+// Formats an ISO date string into the yyyy-mm-dd shape a <input type="date">
+// expects. Falls back to '' if the value is missing/invalid.
+const toDateInputValue = (d?: string | null) => {
+  if (!d) return '';
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+};
+
+// Lets an admin view and override an order's estimated delivery date.
+// Defaults to 7 days from the order date on the backend; this widget just
+// exposes that value for editing.
+function DeliveryDateEditor({ order, onUpdateStatus }: {
+  order: Order;
+  onUpdateStatus: (id: string, updates: { order_status?: string; payment_status?: string; expected_delivery_date?: string | null }) => void;
+}) {
+  const [value, setValue] = useState(toDateInputValue(order.expected_delivery_date));
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setValue(toDateInputValue(order.expected_delivery_date));
+  }, [order.expected_delivery_date]);
+
+  const dirty = value !== toDateInputValue(order.expected_delivery_date);
+
+  const handleSave = async () => {
+    if (!value) return;
+    setSaving(true);
+    try {
+      await onUpdateStatus(order.id, { expected_delivery_date: new Date(value).toISOString() });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-5">
+      <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 flex items-center gap-1.5">
+        <CalendarClock size={12} /> Expected Delivery Date
+      </p>
+      <div className="flex items-center gap-2">
+        <input
+          type="date"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          className={`${inputCls} max-w-[180px]`}
+        />
+        <button
+          onClick={handleSave}
+          disabled={!dirty || !value || saving}
+          className="px-3 py-2.5 text-[9px] uppercase tracking-[0.1em] font-sans border rounded-sm transition-colors border-[var(--theme-accent)] text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.08)] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+      <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-1.5">Defaults to 7 days from the order date. Override it here if needed.</p>
+    </div>
+  );
+}
+
 export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
   orders: Order[];
   loading: boolean;
   errorMsg: string;
-  onUpdateStatus: (id: string, updates: { order_status?: string; payment_status?: string }) => void;
+  onUpdateStatus: (id: string, updates: { order_status?: string; payment_status?: string; expected_delivery_date?: string | null }) => void;
 }) {
   const [filter, setFilter] = useState('All');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -437,6 +497,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                   {order.payment_method === 'cod' && (
                                     <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-2">Mark Cash on Delivery orders "Paid" once payment is collected at delivery.</p>
                                   )}
+                                  <DeliveryDateEditor order={order} onUpdateStatus={onUpdateStatus} />
                                 </div>
                                 <div>
                                   <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3">Products Ordered</p>
