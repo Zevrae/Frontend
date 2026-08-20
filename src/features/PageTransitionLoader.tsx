@@ -34,6 +34,28 @@ export function PageTransitionLoader() {
     };
   }, [phase, setPhase]);
 
+  // ── Browser back/forward: clean up GSAP immediately ───────────────────────
+  // If the browser navigates (popstate) while a curtain animation is running,
+  // GSAP inline styles (opacity:0, y:-60) may be left on [data-page-content],
+  // making the newly-rendered page invisible. Kill the timeline and clear all
+  // props so the incoming route renders at full visibility.
+  useEffect(() => {
+    const handlePopstate = () => {
+      tlRef.current?.kill();
+      tlRef.current = null;
+      const pageContent = document.querySelector<HTMLElement>("[data-page-content]");
+      if (pageContent) {
+        gsap.set(pageContent, { clearProps: "y,opacity,transform" });
+      }
+      // Also hide the curtain overlay immediately
+      if (curtainRef.current) {
+        gsap.set(curtainRef.current, { yPercent: 100 });
+      }
+    };
+    window.addEventListener("popstate", handlePopstate);
+    return () => window.removeEventListener("popstate", handlePopstate);
+  }, []);
+
   useIsoLayoutEffect(() => {
     if (phase === "idle" || !rootRef.current || !curtainRef.current) return;
 
@@ -172,6 +194,9 @@ export function PageTransitionLoader() {
   }, [phase, setPhase]);
 
   const isVisible = phase !== "idle";
+  // Only block pointer events while the curtain is covering the screen.
+  // During "exiting" the curtain is sweeping away upward — don't block clicks.
+  const blockPointer = phase === "entering" || phase === "holding";
 
   return createPortal(
     <div
@@ -180,7 +205,7 @@ export function PageTransitionLoader() {
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        pointerEvents: isVisible ? "auto" : "none",
+        pointerEvents: blockPointer ? "auto" : "none",
         visibility: isVisible ? "visible" : "hidden",
       }}
       aria-hidden="true"
