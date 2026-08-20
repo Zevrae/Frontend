@@ -62,7 +62,7 @@ const FEATURE_CARDS = [
   {
     icon: RotateCcw,
     title: 'EASY RETURNS',
-    desc: '30-day hassle-free returns.',
+    desc: 'Within 2 days from the date of delivery.',
   },
   {
     icon: Lock,
