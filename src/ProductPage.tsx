@@ -12,7 +12,7 @@ import SpecularButton from './components/specularbutton';
 import ReviewSection from './components/ReviewSection';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
+import SEO from './components/SEO';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 import { MAX_QTY_PER_SIZE } from './CartContext';
 
@@ -93,12 +93,16 @@ export default function ProductPage() {
     (location.state as { product?: ProductDetail } | null)?.product || null
   );
 
-  useDocumentTitle(
-    product?.name,
-    product
-      ? `${product.name} — ${product.label || 'ZEVRAE'}. ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}. Shop now with virtual try-on.`
-      : undefined
-  );
+  // ── Product-page SEO ──────────────────────────────────────────────────────
+  // Build title, description, and canonical from real product data once loaded.
+  // Falls back to minimal values while still loading.
+  const productTitle = product?.name ? `${product.name} | ZEVRAE` : 'ZEVRAE';
+  const rawDescription = product?.description || '';
+  // Trim description to ~160 chars for meta description
+  const productDescription = rawDescription.length > 160
+    ? `${rawDescription.slice(0, 157).trimEnd()}...`
+    : rawDescription || (product?.name ? `${product.name} — shop at ZEVRAE.` : '');
+  const productCanonical = params.id ? `https://zevrae.com/product/${params.id}` : undefined;
 
   const [selectedSize, setSelectedSize] = useState('');
   const [sizeError, setSizeError] = useState(false);
@@ -491,6 +495,7 @@ export default function ProductPage() {
   if (!product) {
     return (
       <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex items-center justify-center px-6">
+        <SEO title="ZEVRAE" description="Loading product..." />
         <div className="max-w-lg text-center space-y-6">
           <p className="text-[10px] uppercase tracking-[0.4em] text-[var(--theme-accent)]">Loading product...</p>
         </div>
@@ -512,6 +517,13 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
+      {/* Product-page SEO — sets title, description, canonical and OG tags */}
+      <SEO
+        title={productTitle}
+        description={productDescription}
+        canonical={productCanonical}
+      />
+
       {/* Film grain overlay */}
       <div
         className="fixed inset-0 opacity-[0.018] pointer-events-none z-[1] mix-blend-difference"

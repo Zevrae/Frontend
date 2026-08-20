@@ -35,9 +35,12 @@ interface NavLink {
    Data
 ───────────────────────────────────────────── */
 const SHOP_LINKS: NavLink[] = [
-  { label: 'Clothing', to: '/#clothing' },
-  { label: 'Jewellery', to: '/#jewellery' },
-  { label: 'Accessories', to: '/#accessories' },
+  { label: 'Men', to: '/men' },
+  { label: 'Women', to: '/women' },
+  { label: "Men's Jewellery", to: '/jewellery/men' },
+  { label: "Women's Jewellery", to: '/jewellery/women' },
+  { label: 'Keychains', to: '/accessories/keychains' },
+  { label: 'Soft Toys', to: '/accessories/soft-toys' },
 ];
 
 const CARE_LINKS: NavLink[] = [

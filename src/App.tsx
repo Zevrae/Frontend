@@ -1,10 +1,19 @@
+import SEO from './components/SEO';
+import { SEO_CONFIG } from './config/seo';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import { CollectionScroller } from './components/CollectionScroller';
 import './components/CollectionScroller.css';
 import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ChevronDown, Menu, X } from 'lucide-react';
-import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useLocation,
+  Navigate
+} from 'react-router-dom';
 import LoginModal from './LoginModal';
 import ProductGrid from './ProductGrid';
 import CartDrawer from './CartDrawer';
@@ -100,7 +109,19 @@ export default function App() {
   const isTransitioningRef = useRef(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const currentSEO = SEO_CONFIG[location.pathname as keyof typeof SEO_CONFIG] ?? SEO_CONFIG['/'];
   const isHome = location.pathname === '/';
+
+  // Determine whether the current route should be excluded from indexing.
+  // Private routes (checkout, bag, profile, admin, auth tokens) should never
+  // appear in search results.
+  const isPrivateRoute =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/checkout') ||
+    location.pathname.startsWith('/bag') ||
+    location.pathname.startsWith('/profile') ||
+    location.pathname.startsWith('/verify-email') ||
+    location.pathname.startsWith('/reset-password');
   const theme = useTheme();
   const { isCollectionTransitioning } = useCollectionTransition();
   // Derive the hero background image from the active collection theme.
@@ -269,7 +290,18 @@ export default function App() {
 return (
   <div data-page-content className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans">
     {/* Premium custom cursor — hidden on touch devices */}
-    <CustomCursor />
+    {currentSEO && (
+      <SEO
+        title={currentSEO.title}
+        description={currentSEO.description}
+        canonical={
+          (currentSEO as any).canonicalOverride ||
+          `https://zevrae.com${location.pathname === '/' ? '/' : location.pathname}`
+        }
+        noindex={isPrivateRoute}
+      />
+    )}
+    <CustomCursor />  
     {/* Preloader Overlay — self-manages slide-up exit, never re-renders after completion */}
     {!hasCompletedOnce && !location.pathname.startsWith('/admin') && <Preloader />}
     {/* Page Transition Loader */}
@@ -326,24 +358,26 @@ return (
                     transition={{ duration: 0.3 }}
                     className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                   >
-                    <button 
+                    <Link
+                      to="/men"
                       onClick={() => {
                         setIsClothingOpen(false);
-                        navTransition(() => navigate('/men'));
+                        navTransition(() => {});
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       MEN
-                    </button>
-                    <button 
+                    </Link>
+                    <Link
+                      to="/women"
                       onClick={() => {
                         setIsClothingOpen(false);
-                        navTransition(() => navigate('/women'));
+                        navTransition(() => {});
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       WOMEN
-                    </button>
+                    </Link>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -370,24 +404,24 @@ return (
                     transition={{ duration: 0.3 }}
                     className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                   >
-                    <button
+                    <Link
+                      to="/jewellery/men"
                       onClick={() => {
                         setIsJewelleryOpen(false);
-                        navTransition(() => navigate('/jewellery/men'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       MEN
-                    </button>
-                    <button
+                    </Link>
+                    <Link
+                      to="/jewellery/women"
                       onClick={() => {
                         setIsJewelleryOpen(false);
-                        navTransition(() => navigate('/jewellery/women'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       WOMEN
-                    </button>
+                    </Link>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -412,24 +446,24 @@ return (
                     transition={{ duration: 0.3 }}
                     className="absolute top-[calc(100%+1.5rem)] left-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                   >
-                    <button
+                    <Link
+                      to="/accessories/keychains"
                       onClick={() => {
                         setIsAccessoriesOpen(false);
-                        navTransition(() => navigate('/accessories/keychains'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       KEYCHAINS
-                    </button>
-                    <button
+                    </Link>
+                    <Link
+                      to="/accessories/soft-toys"
                       onClick={() => {
                         setIsAccessoriesOpen(false);
-                        navTransition(() => navigate('/accessories/soft-toys'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       SOFT TOYS
-                    </button>
+                    </Link>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -583,35 +617,43 @@ return (
               <X size={28} strokeWidth={1} />
             </button>
             {[
+              // Dropdown-toggle items keep href='#' (they expand a submenu, not navigate)
               { name: 'Clothing', href: '#', onClick: () => setIsMobileClothingOpen(!isMobileClothingOpen) },
               ...(isMobileClothingOpen ? [
-                { name: '- Men', href: '#collection', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
-                { name: '- Women', href: '#collection', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
+                { name: '- Men', href: '/men', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
+                { name: '- Women', href: '/women', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
               ] : []),
               { name: 'Jewellery', href: '#', onClick: () => setIsMobileJewelleryOpen(!isMobileJewelleryOpen) },
               ...(isMobileJewelleryOpen ? [
-                { name: '- Men', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery/men')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
-                { name: '- Women', href: '#collection', onClick: () => { navTransition(() => navigate('/jewellery/women')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
+                { name: '- Men', href: '/jewellery/men', onClick: () => { navTransition(() => navigate('/jewellery/men')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
+                { name: '- Women', href: '/jewellery/women', onClick: () => { navTransition(() => navigate('/jewellery/women')); setIsMenuOpen(false); setIsMobileJewelleryOpen(false); }, isSubItem: true },
               ] : []),
               { name: 'Accessories', href: '#', onClick: () => setIsMobileAccessoriesOpen(!isMobileAccessoriesOpen) },
               ...(isMobileAccessoriesOpen ? [
-                { name: '- Keychains', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories/keychains')); setIsMenuOpen(false); setIsMobileAccessoriesOpen(false); }, isSubItem: true },
-                { name: '- Soft Toys', href: '#collection', onClick: () => { navTransition(() => navigate('/accessories/soft-toys')); setIsMenuOpen(false); setIsMobileAccessoriesOpen(false); }, isSubItem: true },
+                { name: '- Keychains', href: '/accessories/keychains', onClick: () => { navTransition(() => navigate('/accessories/keychains')); setIsMenuOpen(false); setIsMobileAccessoriesOpen(false); }, isSubItem: true },
+                { name: '- Soft Toys', href: '/accessories/soft-toys', onClick: () => { navTransition(() => navigate('/accessories/soft-toys')); setIsMenuOpen(false); setIsMobileAccessoriesOpen(false); }, isSubItem: true },
               ] : []),
-              ...(isAdmin ? [] : [{ name: 'AI Wardrobe', href: '#', onClick: () => { navTransition(() => navigate('/ai-wardrobe')); setIsMenuOpen(false); } }]),
+              // AI Wardrobe: real destination exposed
+              ...(isAdmin ? [] : [{ name: 'AI Wardrobe', href: '/ai-wardrobe', onClick: () => { navTransition(() => navigate('/ai-wardrobe')); setIsMenuOpen(false); } }]),
+              // Admin Panel: action-like, keep '#'
               ...(isAdmin 
                 ? [{ name: 'Admin Panel', href: '#', onClick: () => { navTransition(() => navigate('/admin')); setIsMenuOpen(false); } }]
                 : []),
               ...(user ? [
+                // Profile toggle: keep '#' (expands sub-items)
                 { name: displayName || 'USER', href: '#', onClick: () => setIsMobileProfileOpen(!isMobileProfileOpen) },
                 ...(isMobileProfileOpen ? [
-                  { name: '- Profile', href: '#', onClick: () => { navTransition(() => navigate('/profile')); setIsMenuOpen(false); setIsMobileProfileOpen(false); }, isSubItem: true },
+                  // Profile sub-item: real destination
+                  { name: '- Profile', href: '/profile', onClick: () => { navTransition(() => navigate('/profile')); setIsMenuOpen(false); setIsMobileProfileOpen(false); }, isSubItem: true },
+                  // Logout is an action, not a page — keep '#'
                   { name: '- Logout', href: '#', onClick: () => { logout(); setIsMenuOpen(false); setIsMobileProfileOpen(false); }, isSubItem: true },
                 ] : [])
               ] : [
+                // Login is an action (opens modal) — keep '#'
                 { name: 'Login', href: '#', onClick: () => { navTransition(() => setIsLoginModalOpen(true)); setIsMenuOpen(false); } }
               ]),
-              { name: `Bag(${items.reduce((total, item) => total + item.quantity, 0)})`, href: '#', onClick: () => { navTransition(() => navigate('/bag')); setIsMenuOpen(false); } }
+              // Bag: real destination
+              { name: `Bag(${items.reduce((total, item) => total + item.quantity, 0)})`, href: '/bag', onClick: () => { navTransition(() => navigate('/bag')); setIsMenuOpen(false); } }
             ].map((item, i) => (
               <motion.a
                 key={item.name}
@@ -811,7 +853,8 @@ return (
       </Suspense>
       </div>
 
-      {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}
+
+      {/* Try-On Review Ticker — visible on all non-admin pages, just above Footer */}
       {!location.pathname.startsWith('/admin') && isLiveMode && <TryOnReviewTicker />}
       {/* Footer */}
       {!location.pathname.startsWith('/admin') && isLiveMode && <Footer />}

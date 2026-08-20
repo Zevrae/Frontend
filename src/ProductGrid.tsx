@@ -19,34 +19,34 @@ import menEarringsImg from "./assets/men earrings.png";
 import menBraceletImg from "./assets/men bracelet.png";
 
 const mensCategories = [
-  { id: 'tshirts', name: 'TSHIRTS', image: menTshirts, path: '/men/tshirts' },
-  { id: 'lowers',  name: 'LOWERS',  image: 'https://i.ibb.co/RGyBrL7q/THE-DRAGON-LOWER-FRONT.jpg', path: '/men/lowers' }
+  { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE men's T-shirts collection", image: menTshirts, path: '/men/tshirts' },
+  { id: 'lowers',  name: 'LOWERS',  alt: "ZEVRAE men's lowers collection",    image: 'https://i.ibb.co/RGyBrL7q/THE-DRAGON-LOWER-FRONT.jpg', path: '/men/lowers' }
 ];
 
 const womensCategories = [
-  { id: 'tshirts', name: 'TSHIRTS', image: womenTops, path: '/women/tshirts' },
-  { id: 'lowers',  name: 'LOWERS',  image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' }
+  { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE women's tops and T-shirts",  image: womenTops, path: '/women/tshirts' },
+  { id: 'lowers',  name: 'LOWERS',  alt: "ZEVRAE women's lowers collection",  image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' }
 ];
 
 // Subcategory cards for Men's Jewellery
 const mensJewelleryCategories = [
-  { id: 'rings',     name: 'RINGS',     image: menRingImg,     fit: 'contain', path: '/jewellery/men/rings' },
-  { id: 'pendants',  name: 'PENDANTS',  image: menPendantImg,  fit: 'contain', path: '/jewellery/men/pendants' },
-  { id: 'bracelets', name: 'BRACELETS', image: menBraceletImg, fit: 'contain', path: '/jewellery/men/bracelets' },
-  { id: 'earrings',  name: 'EARRINGS',  image: menEarringsImg, fit: 'contain', path: '/jewellery/men/earrings' },
+  { id: 'rings',     name: 'RINGS',     alt: "ZEVRAE men's rings",     image: menRingImg,     fit: 'contain', path: '/jewellery/men/rings' },
+  { id: 'pendants',  name: 'PENDANTS',  alt: "ZEVRAE men's pendants",  image: menPendantImg,  fit: 'contain', path: '/jewellery/men/pendants' },
+  { id: 'bracelets', name: 'BRACELETS', alt: "ZEVRAE men's bracelets", image: menBraceletImg, fit: 'contain', path: '/jewellery/men/bracelets' },
+  { id: 'earrings',  name: 'EARRINGS',  alt: "ZEVRAE men's earrings",  image: menEarringsImg, fit: 'contain', path: '/jewellery/men/earrings' },
 ];
 
 // Subcategory cards for Women's Jewellery
 const womensJewelleryCategories = [
-  { id: 'rings',     name: 'RINGS',     image: ringImg,     fit: 'contain', path: '/jewellery/women/rings' },
-  { id: 'pendants',  name: 'PENDANTS',  image: pendantImg,  fit: 'contain', path: '/jewellery/women/pendants' },
-  { id: 'bracelets', name: 'BRACELETS', image: braceletImg, fit: 'contain', path: '/jewellery/women/bracelets' },
-  { id: 'earrings',  name: 'EARRINGS',  image: earringsImg, fit: 'contain', path: '/jewellery/women/earrings' },
+  { id: 'rings',     name: 'RINGS',     alt: "ZEVRAE women's rings",     image: ringImg,     fit: 'contain', path: '/jewellery/women/rings' },
+  { id: 'pendants',  name: 'PENDANTS',  alt: "ZEVRAE women's pendants",  image: pendantImg,  fit: 'contain', path: '/jewellery/women/pendants' },
+  { id: 'bracelets', name: 'BRACELETS', alt: "ZEVRAE women's bracelets", image: braceletImg, fit: 'contain', path: '/jewellery/women/bracelets' },
+  { id: 'earrings',  name: 'EARRINGS',  alt: "ZEVRAE women's earrings",  image: earringsImg, fit: 'contain', path: '/jewellery/women/earrings' },
 ];
 
 const accessoriesCategories = [
-  { id: 'keychain', name: 'KEYCHAIN', image: keychainImg,     fit: 'contain', path: '/accessories/keychain' },
-  { id: 'toys',     name: 'TOYS',     image: stuffedAnimalImg, fit: 'cover',   path: '/accessories/toys' }
+  { id: 'keychains', name: 'KEYCHAINS', alt: 'ZEVRAE keychains', image: keychainImg,     fit: 'contain', path: '/accessories/keychains' },
+  { id: 'soft-toys', name: 'SOFT TOYS', alt: 'ZEVRAE soft toys', image: stuffedAnimalImg, fit: 'cover',   path: '/accessories/soft-toys' }
 ];
 
 // ─── Reusable Jewellery Subcategory Grid ─────────────────────────────────────
@@ -67,7 +67,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
           <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
             <img 
               src={item.image} 
-              alt={item.name} 
+              alt={item.alt || item.name} 
               className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100`}
               referrerPolicy="no-referrer"
             />
@@ -312,7 +312,7 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                    <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -391,7 +391,7 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                    <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -437,7 +437,7 @@ export default function ProductGrid({
                   onClick={() => navigate(item.path)}
                 >
                   <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:shadow-[0_10px_40px_-10px_rgba(var(--theme-accent-rgb),0.25)]" data-cursor-image>
-                    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                    <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 text-[var(--theme-text)]">{item.name}</h3>
