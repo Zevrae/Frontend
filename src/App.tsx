@@ -360,9 +360,10 @@ return (
                   >
                     <Link
                       to="/men"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsClothingOpen(false);
-                        navTransition(() => {});
+                        navTransition(() => navigate('/men'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
@@ -370,9 +371,10 @@ return (
                     </Link>
                     <Link
                       to="/women"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsClothingOpen(false);
-                        navTransition(() => {});
+                        navTransition(() => navigate('/women'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
@@ -406,8 +408,10 @@ return (
                   >
                     <Link
                       to="/jewellery/men"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsJewelleryOpen(false);
+                        navTransition(() => navigate('/jewellery/men'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
@@ -415,8 +419,10 @@ return (
                     </Link>
                     <Link
                       to="/jewellery/women"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsJewelleryOpen(false);
+                        navTransition(() => navigate('/jewellery/women'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
@@ -448,8 +454,10 @@ return (
                   >
                     <Link
                       to="/accessories/keychains"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsAccessoriesOpen(false);
+                        navTransition(() => navigate('/accessories/keychains'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
@@ -457,8 +465,10 @@ return (
                     </Link>
                     <Link
                       to="/accessories/soft-toys"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsAccessoriesOpen(false);
+                        navTransition(() => navigate('/accessories/soft-toys'));
                       }}
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >

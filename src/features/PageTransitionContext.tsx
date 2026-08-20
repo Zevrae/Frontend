@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -45,6 +46,23 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isTransitioning = phase !== "idle";
+
+  // ── Browser back/forward safety reset ─────────────────────────────────────
+  // When the user presses the browser back/forward button or calls navigate(-1),
+  // React Router updates the URL via popstate. If a transition was in flight
+  // (busyRef=true, phase≠idle), the curtain overlay stays up blocking all clicks.
+  // Force-resetting here prevents that permanent lock-out.
+  useEffect(() => {
+    const handlePopstate = () => {
+      if (busyRef.current || phase !== "idle") {
+        busyRef.current = false;
+        callbackRef.current = undefined;
+        setPhase("idle");
+      }
+    };
+    window.addEventListener("popstate", handlePopstate);
+    return () => window.removeEventListener("popstate", handlePopstate);
+  }, [phase]);
 
   const value = useMemo(
     () => ({ isTransitioning, phase, trigger, setPhase: setPhaseWrapped }),
