@@ -118,7 +118,7 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
         transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
         className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-4 flex items-center justify-center md:justify-start"
       >
-        <button onClick={handleBack} className="flex items-center hover:text-white transition-colors duration-300 outline-none">
+        <button onClick={handleBack} className="relative z-50 flex items-center hover:text-white transition-colors duration-300 outline-none">
           <ChevronLeft className="w-4 h-4 mr-2" />
           {eyebrow}
         </button>
