@@ -8,7 +8,6 @@ import { cartApi } from './api/cart';
 import { ordersApi, Order } from './api/orders';
 import { paymentsApi } from './api/payments';
 import { discountsApi, Discount } from './api/discounts';
-import { usersApi } from './api/users';
 import { ChevronLeft, ShieldCheck, Lock, Truck, CreditCard, Wallet, ArrowRight, CheckCircle2, Smartphone, Tag, X as XIcon, Home } from 'lucide-react';
 import {
   ReceiptPrinter,
@@ -31,7 +30,7 @@ const loadScript = (src: string) => {
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedMethod, setSelectedMethod] = useState('');
@@ -282,6 +281,7 @@ export default function CheckoutPage() {
     city: shippingData.city,
     postal_code: shippingData.postalCode,
     country: 'India',
+    phone: shippingData.phone,
   });
 
   const syncCartToBackend = async () => {
@@ -303,15 +303,6 @@ export default function CheckoutPage() {
       alert('Failed to prepare your cart: ' + (err?.response?.data?.message || err.message));
       setIsProcessing(false);
       return;
-    }
-
-    try {
-      if (shippingData.phone && (!user || user.phone !== shippingData.phone)) {
-        await usersApi.updateMe({ phone: shippingData.phone });
-        await refreshUser();
-      }
-    } catch (err) {
-      console.error('Failed to update phone number in profile:', err);
     }
 
     if (selectedMethod === 'RAZORPAY') {

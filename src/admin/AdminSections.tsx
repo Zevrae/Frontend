@@ -311,13 +311,18 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
       header: 'Customer',
       cell: info => {
         const customer = typeof info.row.original.user === 'object' ? info.row.original.user : null;
+        // Prefer the phone number captured on the order itself (what the
+        // customer typed at checkout) over the account's profile phone —
+        // the profile phone can be missing entirely for Google sign-ins,
+        // or simply stale/different from the number given for this order.
+        const phone = info.row.original.shipping_address?.phone || customer?.phone;
         return (
           <>
             <p className="text-[11px] text-[var(--theme-text)]">{customer?.name || 'Customer'}</p>
             <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5">{customer?.email}</p>
-            {customer?.phone && (
+            {phone && (
               <p className="text-[9px] text-[rgba(var(--theme-text-rgb),0.4)] font-mono mt-0.5 flex items-center gap-1">
-                <Smartphone size={9} /> {customer.phone}
+                <Smartphone size={9} /> {phone}
               </p>
             )}
           </>
@@ -463,7 +468,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                   <div className="space-y-1.5 text-[11px] text-[rgba(var(--theme-text-rgb),0.7)] bg-[var(--theme-surface)] p-4 rounded-sm border border-[rgba(var(--theme-text-rgb),0.05)]">
                                     <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Name:</span> {customer?.name || '—'}</p>
                                     <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Email:</span> {customer?.email || '—'}</p>
-                                    {customer?.phone && <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Phone:</span> {customer.phone}</p>}
+                                    {(order.shipping_address?.phone || customer?.phone) && <p><span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Phone:</span> {order.shipping_address?.phone || customer?.phone}</p>}
                                     <p>
                                       <span className="text-[rgba(var(--theme-text-rgb),0.4)] w-14 inline-block">Address:</span>{' '}
                                       {[order.shipping_address?.line1, order.shipping_address?.line2, order.shipping_address?.city, order.shipping_address?.state, order.shipping_address?.postal_code, order.shipping_address?.country]

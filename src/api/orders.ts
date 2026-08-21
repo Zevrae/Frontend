@@ -7,6 +7,7 @@ export interface ShippingAddress {
   state?: string;
   postal_code: string;
   country: string;
+  phone: string;
 }
 
 export interface OrderItem {
