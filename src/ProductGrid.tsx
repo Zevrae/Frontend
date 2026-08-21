@@ -87,10 +87,10 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
 // ─── Shared section heading ───────────────────────────────────────────────────
 const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
   const navigate = useNavigate();
+  const currentPath = window.location.pathname;
 
   const handleBack = () => {
     const eyebrowLower = eyebrow.toLowerCase();
-    const currentPath = window.location.pathname;
 
     if (eyebrowLower === "men's jewellery") {
       navigate('/jewellery/men');
@@ -110,40 +110,30 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-16 flex flex-col gap-6 md:gap-8">
-      {/* ── 1. DEDICATED BACK BUTTON BLOCK ── */}
-      <motion.div 
-        initial={{ opacity: 0, x: -10 }} 
-        animate={{ opacity: 1, x: 0 }} 
-        transition={{ duration: 0.5 }}
-        className="w-full flex justify-center md:justify-start"
-      >
-        <button 
-          onClick={handleBack} 
-          className="inline-flex items-center gap-2 py-2 pr-4 text-[10px] md:text-[11px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-accent)] transition-colors duration-300 group cursor-pointer"
-        >
-          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-300" />
-          <span>Back</span>
-        </button>
-      </motion.div>
-
-      {/* ── 2. SEPARATED TITLES BLOCK ── */}
+    <div className="relative z-[9999] max-w-[1400px] mx-auto px-6 md:px-12 mb-16 pointer-events-none">
+      {/* ── SEPARATED TITLES BLOCK ── */}
       <div className="flex flex-col items-center md:items-start gap-4">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]"
+          className="relative z-[9999] pointer-events-auto text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]"
         >
-          {eyebrow}
+          <button 
+            onClick={handleBack} 
+            className="flex items-center hover:text-white transition-colors duration-300 outline-none cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            {eyebrow}
+          </button>
         </motion.h2>
         <motion.h3
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
+          className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase pointer-events-auto"
         >
           {title}
         </motion.h3>

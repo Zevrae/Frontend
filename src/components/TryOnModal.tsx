@@ -1,11 +1,24 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, UploadCloud, RefreshCw, Download, CheckCircle2, Sparkles, AlertCircle, Check, Star, Send, ChevronDown } from 'lucide-react';
-import { useAuth } from '../hooks/UseAuth';
-import { useAuthModal } from '../AuthModalContext';
-import { tryonApi } from '../api/tryon';
-import { buildImageProxyUrl } from '../api/images';
-import { reviewsApi } from '../api/reviews';
+import React, { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  X,
+  UploadCloud,
+  RefreshCw,
+  Download,
+  CheckCircle2,
+  Sparkles,
+  AlertCircle,
+  Check,
+  Star,
+  Send,
+  ChevronDown,
+} from "lucide-react";
+import { useAuth } from "../hooks/UseAuth";
+import { useAuthModal } from "../AuthModalContext";
+import { tryonApi } from "../api/tryon";
+import { buildImageProxyUrl } from "../api/images";
+import { reviewsApi } from "../api/reviews";
+import imageCompression from "browser-image-compression";
 
 interface TryOnModalProps {
   isOpen: boolean;
@@ -18,32 +31,44 @@ interface TryOnModalProps {
 
 const MAX_CLOTH_IMAGES = 5;
 
-type Stage = 'upload' | 'generating' | 'result' | 'error';
+type Stage = "upload" | "generating" | "result" | "error";
 
-export default function TryOnModal({ isOpen, onClose, productId, clothImages }: TryOnModalProps) {
+export default function TryOnModal({
+  isOpen,
+  onClose,
+  productId,
+  clothImages,
+}: TryOnModalProps) {
   const { token } = useAuth();
   const { setIsLoginModalOpen } = useAuthModal();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedCloths, setSelectedCloths] = useState<string[]>(() => (clothImages[0] ? [clothImages[0]] : []));
+  const [selectedCloths, setSelectedCloths] = useState<string[]>(() =>
+    clothImages[0] ? [clothImages[0]] : [],
+  );
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [stage, setStage] = useState<Stage>('upload');
+  const [stage, setStage] = useState<Stage>("upload");
   const [progress, setProgress] = useState(0);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Review form state (result stage)
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState('');
+  const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [reviewError, setReviewError] = useState('');
+  const [reviewError, setReviewError] = useState("");
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
   const [shareImage, setShareImage] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imgPreviewRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [imgRect, setImgRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [imgRect, setImgRect] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Compute the exact rendered bounds of the preview <img> within its container
   // so the border overlay can be sized/positioned to match pixel-perfectly.
@@ -63,7 +88,10 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
 
   // Re-measure whenever selectedImage changes or container resizes
   useEffect(() => {
-    if (!selectedImage) { setImgRect(null); return; }
+    if (!selectedImage) {
+      setImgRect(null);
+      return;
+    }
     // Initial measure after image paints
     requestAnimationFrame(updateImgRect);
   }, [selectedImage]);
@@ -83,15 +111,15 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       setSelectedFile(null);
       setSelectedCloths(clothImages[0] ? [clothImages[0]] : []);
       setGeneratedImage(null);
-      setStage('upload');
+      setStage("upload");
       setProgress(0);
-      setErrorMessage('');
+      setErrorMessage("");
       setShowReviewForm(false);
       setReviewRating(0);
-      setReviewComment('');
+      setReviewComment("");
       setReviewSubmitting(false);
       setReviewSubmitted(false);
-      setReviewError('');
+      setReviewError("");
       setReviewHoverRating(0);
       setShareImage(true);
       setImgRect(null);
@@ -111,10 +139,10 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
   // Close on ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    if (isOpen) window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    if (isOpen) window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
   const toggleCloth = (url: string) => {
@@ -125,15 +153,37 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+      const rawFile = e.target.files[0];
+      setErrorMessage("");
+
+      // Resize/compress client-side before it ever gets stored or uploaded.
+      // iPhone camera photos routinely land in the 5-15MB range — this keeps
+      // uploads fast on mobile data and well under the backend's size limit,
+      // regardless of what future phones produce.
+      let file = rawFile;
+      try {
+        file = await imageCompression(rawFile, {
+          maxSizeMB: 2,
+          maxWidthOrHeight: 2000,
+          useWebWorker: true,
+        });
+      } catch (compressErr) {
+        // If compression itself fails for some reason, fall back to the
+        // original file rather than blocking the user entirely.
+        console.error(
+          "[tryon] image compression failed, using original file:",
+          compressErr,
+        );
+        file = rawFile;
+      }
+
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       setSelectedFile(file);
       setGeneratedImage(null);
-      setStage('upload');
-      setErrorMessage('');
+      setStage("upload");
     }
   };
 
@@ -156,9 +206,9 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
 
   const handleGenerate = async () => {
     if (!selectedFile || selectedCloths.length === 0) return;
-    setStage('generating');
+    setStage("generating");
     setProgress(0);
-    setErrorMessage('');
+    setErrorMessage("");
 
     progressTimerRef.current = setInterval(() => {
       setProgress((prev) => (prev >= 90 ? 90 : prev + Math.random() * 4 + 1));
@@ -179,27 +229,31 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
         try {
           const current = await tryonApi.getStatus(job.id);
 
-          if (current.status === 'completed') {
+          if (current.status === "completed") {
             stopTimers();
             setProgress(100);
             setGeneratedImage(current.imageUrl || null);
-            setStage('result');
+            setStage("result");
             return;
           }
 
-          if (current.status === 'failed') {
+          if (current.status === "failed") {
             stopTimers();
             setProgress(0);
-            setErrorMessage(current.error || 'Something went wrong generating your try-on.');
-            setStage('error');
+            setErrorMessage(
+              current.error || "Something went wrong generating your try-on.",
+            );
+            setStage("error");
             return;
           }
 
           if (Date.now() - startedAt > MAX_WAIT_MS) {
             stopTimers();
             setProgress(0);
-            setErrorMessage('This is taking longer than expected. Please try again in a moment.');
-            setStage('error');
+            setErrorMessage(
+              "This is taking longer than expected. Please try again in a moment.",
+            );
+            setStage("error");
           }
         } catch (pollErr) {
           // A single failed poll (e.g. transient network blip) shouldn't
@@ -207,8 +261,10 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
           if (Date.now() - startedAt > MAX_WAIT_MS) {
             stopTimers();
             setProgress(0);
-            setErrorMessage('Lost connection while checking your try-on. Please try again.');
-            setStage('error');
+            setErrorMessage(
+              "Lost connection while checking your try-on. Please try again.",
+            );
+            setStage("error");
           }
         }
       }, 2500);
@@ -218,10 +274,12 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
       const status = err?.response?.status;
       const message =
         status === 503
-          ? 'Virtual try-on is not available right now. Please try again later.'
-          : err?.response?.data?.message || err?.message || 'Something went wrong starting your try-on.';
+          ? "Virtual try-on is not available right now. Please try again later."
+          : err?.response?.data?.message ||
+            err?.message ||
+            "Something went wrong starting your try-on.";
       setErrorMessage(message);
-      setStage('error');
+      setStage("error");
     }
   };
 
@@ -229,7 +287,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
     if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     setGeneratedImage(null);
-    setStage('upload');
+    setStage("upload");
     setProgress(0);
   };
 
@@ -245,18 +303,18 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
         // that as "zevrae-tryon.jpg" would silently produce a file that
         // looks like an image but isn't one. Fall through to the catch
         // block's "open in a new tab" fallback instead.
-        throw new Error('Image proxy request failed');
+        throw new Error("Image proxy request failed");
       }
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = objectUrl;
-      a.download = 'zevrae-tryon.jpg';
+      a.download = "zevrae-tryon.jpg";
       a.click();
       URL.revokeObjectURL(objectUrl);
     } catch {
       // Fall back to just opening the image so the user can still save it manually.
-      window.open(generatedImage, '_blank');
+      window.open(generatedImage, "_blank");
     }
   };
 
@@ -265,29 +323,39 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
   // Fetch the generated try-on image as a File blob, then submit a review.
   const handleReviewSubmit = async () => {
     if (reviewRating === 0) {
-      setReviewError('Please select a star rating.');
+      setReviewError("Please select a star rating.");
       return;
     }
     if (!generatedImage) return;
     setReviewSubmitting(true);
-    setReviewError('');
+    setReviewError("");
     try {
       let imageFiles: File[] = [];
       if (shareImage) {
         try {
           const res = await fetch(buildImageProxyUrl(generatedImage));
-          if (!res.ok) throw new Error('Image proxy request failed');
+          if (!res.ok) throw new Error("Image proxy request failed");
           const blob = await res.blob();
-          const ext = blob.type.includes('png') ? 'png' : 'jpg';
-          imageFiles = [new File([blob], `tryon-review.${ext}`, { type: blob.type })];
+          const ext = blob.type.includes("png") ? "png" : "jpg";
+          imageFiles = [
+            new File([blob], `tryon-review.${ext}`, { type: blob.type }),
+          ];
         } catch {
           // If fetching the image fails just submit without attaching it.
         }
       }
-      await reviewsApi.create(productId, reviewRating, reviewComment, imageFiles);
+      await reviewsApi.create(
+        productId,
+        reviewRating,
+        reviewComment,
+        imageFiles,
+      );
       setReviewSubmitted(true);
     } catch (err: any) {
-      setReviewError(err?.response?.data?.message || 'Could not submit your review. Please try again.');
+      setReviewError(
+        err?.response?.data?.message ||
+          "Could not submit your review. Please try again.",
+      );
     } finally {
       setReviewSubmitting(false);
     }
@@ -336,19 +404,18 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                   See It On You
                 </h2>
                 <p className="text-[11px] font-plex-mono tracking-[0.05em] text-[rgba(var(--theme-text-rgb),0.4)] mt-3">
-                  {stage === 'result'
-                    ? 'Your AI-generated try-on is ready.'
-                    : stage === 'error'
-                    ? "Something didn't go as planned."
-                    : 'Pick one or more photos of the piece, then upload yours.'}
+                  {stage === "result"
+                    ? "Your AI-generated try-on is ready."
+                    : stage === "error"
+                      ? "Something didn't go as planned."
+                      : "Pick one or more photos of the piece, then upload yours."}
                 </p>
               </div>
 
               {/* ── STAGES ── */}
               <AnimatePresence mode="wait">
-
                 {/* UPLOAD STAGE */}
-                {stage === 'upload' && (
+                {stage === "upload" && (
                   <motion.div
                     key="upload"
                     initial={{ opacity: 0, y: 10 }}
@@ -377,14 +444,22 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                 onClick={() => toggleCloth(url)}
                                 className={`relative aspect-square rounded-lg overflow-hidden border transition-all duration-200 ${
                                   isSelected
-                                    ? 'border-[var(--theme-accent)] ring-1 ring-[rgba(var(--theme-accent-rgb),0.6)]'
-                                    : 'border-[rgba(var(--theme-text-rgb),0.12)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]'
+                                    ? "border-[var(--theme-accent)] ring-1 ring-[rgba(var(--theme-accent-rgb),0.6)]"
+                                    : "border-[rgba(var(--theme-text-rgb),0.12)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]"
                                 }`}
                               >
-                                <img src={url} alt="Garment option" className="w-full h-full object-cover" />
+                                <img
+                                  src={url}
+                                  alt="Garment option"
+                                  className="w-full h-full object-cover"
+                                />
                                 {isSelected && (
                                   <div className="absolute top-1 right-1 bg-[var(--theme-accent)] rounded-full p-0.5">
-                                    <Check size={10} strokeWidth={3} className="text-[var(--theme-bg)]" />
+                                    <Check
+                                      size={10}
+                                      strokeWidth={3}
+                                      className="text-[var(--theme-bg)]"
+                                    />
                                   </div>
                                 )}
                               </button>
@@ -401,7 +476,11 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                           className="w-full h-64 border-2 border-dashed border-[var(--theme-accent)]/25 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[var(--theme-accent)]/55 hover:bg-[var(--theme-accent)]/[0.03] transition-all duration-300 bg-[var(--theme-surface)]"
                         >
                           <div className="w-14 h-14 rounded-full bg-[rgba(var(--theme-accent-rgb),0.1)] flex items-center justify-center mb-4">
-                            <UploadCloud size={26} className="text-[var(--theme-accent)]/65" strokeWidth={1.2} />
+                            <UploadCloud
+                              size={26}
+                              className="text-[var(--theme-accent)]/65"
+                              strokeWidth={1.2}
+                            />
                           </div>
                           <span className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] tracking-[0.15em] uppercase">
                             Click to upload your photo
@@ -411,19 +490,24 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                           </span>
                         </div>
                       ) : (
-                        <div ref={containerRef} className="w-full h-64 rounded-xl relative bg-[var(--theme-surface)] flex items-center justify-center">
+                        <div
+                          ref={containerRef}
+                          className="w-full h-64 rounded-xl relative bg-[var(--theme-surface)] flex items-center justify-center"
+                        >
                           {/* Border overlay — positioned to exactly match the rendered image bounds */}
                           {imgRect && (
                             <div
                               className="pointer-events-none"
                               style={{
-                                position: 'absolute',
+                                position: "absolute",
                                 top: imgRect.top + 1,
                                 left: imgRect.left + 1,
                                 width: imgRect.width - 2,
                                 height: imgRect.height - 2,
-                                border: '1.5px solid rgba(var(--theme-accent-rgb), 0.8)',
-                                boxShadow: '0 0 12px rgba(var(--theme-accent-rgb), 0.3), inset 0 0 12px rgba(var(--theme-accent-rgb), 0.08)',
+                                border:
+                                  "1.5px solid rgba(var(--theme-accent-rgb), 0.8)",
+                                boxShadow:
+                                  "0 0 12px rgba(var(--theme-accent-rgb), 0.3), inset 0 0 12px rgba(var(--theme-accent-rgb), 0.08)",
                                 borderRadius: 4,
                                 zIndex: 10,
                               }}
@@ -437,14 +521,21 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                             onLoad={updateImgRect}
                           />
                           <button
-                            onClick={() => { setSelectedImage(null); setImgRect(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                            className="absolute top-3 right-3 bg-[var(--theme-bg)]/80 hover:bg-[var(--theme-bg)] p-1.5 rounded-full text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-text)] transition-all border border-[rgba(var(--theme-text-rgb),0.1)]" style={{ zIndex: 20 }}
+                            onClick={() => {
+                              setSelectedImage(null);
+                              setImgRect(null);
+                              if (fileInputRef.current)
+                                fileInputRef.current.value = "";
+                            }}
+                            className="absolute top-3 right-3 bg-[var(--theme-bg)]/80 hover:bg-[var(--theme-bg)] p-1.5 rounded-full text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-text)] transition-all border border-[rgba(var(--theme-text-rgb),0.1)]"
+                            style={{ zIndex: 20 }}
                           >
                             <X size={14} strokeWidth={1.5} />
                           </button>
                           <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--theme-bg)]/70 backdrop-blur-sm text-[var(--theme-accent)] text-[10px] font-plex-mono tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-all" style={{ zIndex: 20 }}
+                            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--theme-bg)]/70 backdrop-blur-sm text-[var(--theme-accent)] text-[10px] font-plex-mono tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-all"
+                            style={{ zIndex: 20 }}
                           >
                             Change Photo
                           </button>
@@ -472,7 +563,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                 )}
 
                 {/* GENERATING STAGE */}
-                {stage === 'generating' && (
+                {stage === "generating" && (
                   <motion.div
                     key="generating"
                     initial={{ opacity: 0, y: 10 }}
@@ -493,25 +584,43 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       {/* Shimmer sweep */}
                       <div className="absolute inset-0 overflow-hidden pointer-events-none">
                         <motion.div
-                          animate={{ x: ['-100%', '220%'] }}
-                          transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.5 }}
+                          animate={{ x: ["-100%", "220%"] }}
+                          transition={{
+                            duration: 1.7,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            repeatDelay: 0.5,
+                          }}
                           className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-[rgba(var(--theme-accent-rgb),0.1)] to-transparent -skew-x-12"
                         />
                       </div>
                       {/* Progress ring */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                         <div className="relative w-16 h-16">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
-                            <circle cx="32" cy="32" r="28" fill="none" stroke="var(--theme-accent)" strokeOpacity="0.12" strokeWidth="2.5" />
+                          <svg
+                            className="w-full h-full -rotate-90"
+                            viewBox="0 0 64 64"
+                          >
+                            <circle
+                              cx="32"
+                              cy="32"
+                              r="28"
+                              fill="none"
+                              stroke="var(--theme-accent)"
+                              strokeOpacity="0.12"
+                              strokeWidth="2.5"
+                            />
                             <motion.circle
-                              cx="32" cy="32" r="28"
+                              cx="32"
+                              cy="32"
+                              r="28"
                               fill="none"
                               stroke="var(--theme-accent)"
                               strokeWidth="2.5"
                               strokeLinecap="round"
                               strokeDasharray={`${2 * Math.PI * 28}`}
                               strokeDashoffset={`${2 * Math.PI * 28 * (1 - clampedProgress / 100)}`}
-                              transition={{ ease: 'easeOut', duration: 0.25 }}
+                              transition={{ ease: "easeOut", duration: 0.25 }}
                             />
                           </svg>
                           <span className="absolute inset-0 flex items-center justify-center text-[11px] font-plex-mono text-[var(--theme-accent)] font-bold">
@@ -529,7 +638,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       <motion.div
                         className="h-full bg-gradient-to-r from-[rgba(var(--theme-accent-rgb),0.5)] to-[var(--theme-accent)]"
                         style={{ width: `${clampedProgress}%` }}
-                        transition={{ ease: 'easeOut', duration: 0.25 }}
+                        transition={{ ease: "easeOut", duration: 0.25 }}
                       />
                     </div>
                     <p className="text-[10px] font-plex-mono text-[var(--theme-text)]/28 tracking-[0.15em] uppercase text-center">
@@ -539,7 +648,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                 )}
 
                 {/* ERROR STAGE */}
-                {stage === 'error' && (
+                {stage === "error" && (
                   <motion.div
                     key="error"
                     initial={{ opacity: 0, y: 10 }}
@@ -549,14 +658,18 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     className="flex flex-col items-center"
                   >
                     <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mb-5">
-                      <AlertCircle size={26} className="text-red-400" strokeWidth={1.2} />
+                      <AlertCircle
+                        size={26}
+                        className="text-red-400"
+                        strokeWidth={1.2}
+                      />
                     </div>
                     <p className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)] text-center leading-relaxed mb-7 max-w-[340px]">
                       {errorMessage}
                     </p>
                     <button
                       type="button"
-                      onClick={() => setStage('upload')}
+                      onClick={() => setStage("upload")}
                       className="w-full py-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[11px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-md flex items-center justify-center gap-2.5 uppercase"
                     >
                       <RefreshCw size={14} strokeWidth={2} />
@@ -566,7 +679,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                 )}
 
                 {/* RESULT STAGE */}
-                {stage === 'result' && generatedImage && (
+                {stage === "result" && generatedImage && (
                   <motion.div
                     key="result"
                     initial={{ opacity: 0, y: 14 }}
@@ -582,7 +695,11 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                       className="flex justify-center mb-5"
                     >
                       <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/22 rounded-full px-4 py-1.5">
-                        <CheckCircle2 size={13} className="text-emerald-400" strokeWidth={2} />
+                        <CheckCircle2
+                          size={13}
+                          className="text-emerald-400"
+                          strokeWidth={2}
+                        />
                         <span className="text-[10px] font-plex-mono text-emerald-400 tracking-[0.2em] uppercase font-medium">
                           Try-On Generated
                         </span>
@@ -593,9 +710,16 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     <motion.div
                       initial={{ opacity: 0, scale: 0.97 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+                      transition={{
+                        duration: 0.5,
+                        delay: 0.15,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      }}
                       className="relative w-full rounded-xl overflow-hidden border border-[var(--theme-accent)]/22 bg-[var(--theme-surface)] mb-2"
-                      style={{ boxShadow: '0 0 44px rgba(var(--theme-accent-rgb),0.07), 0 16px 36px rgba(0,0,0,0.45)' }}
+                      style={{
+                        boxShadow:
+                          "0 0 44px rgba(var(--theme-accent-rgb),0.07), 0 16px 36px rgba(0,0,0,0.45)",
+                      }}
                     >
                       {/* Corner accents */}
                       <div className="absolute top-0 left-0 w-12 h-12 pointer-events-none z-10">
@@ -664,7 +788,11 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                           animate={{ opacity: 1, scale: 1 }}
                           className="flex items-center justify-center gap-2.5 py-3.5 bg-emerald-500/10 border border-emerald-500/22 rounded-md"
                         >
-                          <CheckCircle2 size={14} className="text-emerald-400" strokeWidth={2} />
+                          <CheckCircle2
+                            size={14}
+                            className="text-emerald-400"
+                            strokeWidth={2}
+                          />
                           <span className="text-[10px] font-plex-mono text-emerald-400 tracking-[0.2em] uppercase font-medium">
                             Review submitted — thank you!
                           </span>
@@ -683,7 +811,7 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                               size={13}
                               strokeWidth={1.5}
                               className={`text-[rgba(var(--theme-text-rgb),0.35)] group-hover:text-[var(--theme-accent)] transition-all duration-300 ${
-                                showReviewForm ? 'rotate-180' : ''
+                                showReviewForm ? "rotate-180" : ""
                               }`}
                             />
                           </button>
@@ -693,9 +821,12 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                               <motion.div
                                 key="review-form"
                                 initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
+                                animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                                transition={{
+                                  duration: 0.3,
+                                  ease: [0.25, 0.1, 0.25, 1],
+                                }}
                                 className="overflow-hidden"
                               >
                                 <div className="pt-4 space-y-4">
@@ -709,17 +840,23 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                         <button
                                           key={n}
                                           type="button"
-                                          onMouseEnter={() => setReviewHoverRating(n)}
-                                          onMouseLeave={() => setReviewHoverRating(0)}
+                                          onMouseEnter={() =>
+                                            setReviewHoverRating(n)
+                                          }
+                                          onMouseLeave={() =>
+                                            setReviewHoverRating(0)
+                                          }
                                           onClick={() => setReviewRating(n)}
                                         >
                                           <Star
                                             size={18}
                                             strokeWidth={1.2}
                                             className={`transition-colors duration-150 ${
-                                              n <= (reviewHoverRating || reviewRating)
-                                                ? 'text-[var(--theme-accent)] fill-[var(--theme-accent)]'
-                                                : 'text-[rgba(var(--theme-text-rgb),0.2)]'
+                                              n <=
+                                              (reviewHoverRating ||
+                                                reviewRating)
+                                                ? "text-[var(--theme-accent)] fill-[var(--theme-accent)]"
+                                                : "text-[rgba(var(--theme-text-rgb),0.2)]"
                                             }`}
                                           />
                                         </button>
@@ -730,7 +867,9 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                   {/* Comment */}
                                   <textarea
                                     value={reviewComment}
-                                    onChange={(e) => setReviewComment(e.target.value)}
+                                    onChange={(e) =>
+                                      setReviewComment(e.target.value)
+                                    }
                                     placeholder="How did the outfit look? Share your thoughts…"
                                     maxLength={1000}
                                     rows={3}
@@ -743,11 +882,15 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                     <div
                                       className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border transition-all duration-300 ${
                                         shareImage
-                                          ? 'border-[rgba(var(--theme-accent-rgb),0.4)] opacity-100'
-                                          : 'border-[rgba(var(--theme-text-rgb),0.1)] opacity-30 grayscale'
+                                          ? "border-[rgba(var(--theme-accent-rgb),0.4)] opacity-100"
+                                          : "border-[rgba(var(--theme-text-rgb),0.1)] opacity-30 grayscale"
                                       }`}
                                     >
-                                      <img src={generatedImage!} alt="Try-on" className="w-full h-full object-cover" />
+                                      <img
+                                        src={generatedImage!}
+                                        alt="Try-on"
+                                        className="w-full h-full object-cover"
+                                      />
                                     </div>
                                     {/* Label */}
                                     <div className="flex-1 min-w-0">
@@ -755,7 +898,9 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                         Share my try-on photo
                                       </p>
                                       <p className="text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] tracking-[0.1em] uppercase mt-0.5">
-                                        {shareImage ? 'Photo will be attached to your review' : 'Review without photo'}
+                                        {shareImage
+                                          ? "Photo will be attached to your review"
+                                          : "Review without photo"}
                                       </p>
                                     </div>
                                     {/* Toggle switch */}
@@ -764,28 +909,38 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                       onClick={() => setShareImage((v) => !v)}
                                       className={`relative flex-shrink-0 w-10 h-5.5 rounded-full transition-all duration-300 focus:outline-none ${
                                         shareImage
-                                          ? 'bg-[var(--theme-accent)]'
-                                          : 'bg-[rgba(var(--theme-text-rgb),0.15)]'
+                                          ? "bg-[var(--theme-accent)]"
+                                          : "bg-[rgba(var(--theme-text-rgb),0.15)]"
                                       }`}
-                                      style={{ height: '22px', width: '40px' }}
-                                      aria-label={shareImage ? 'Remove photo from review' : 'Attach photo to review'}
+                                      style={{ height: "22px", width: "40px" }}
+                                      aria-label={
+                                        shareImage
+                                          ? "Remove photo from review"
+                                          : "Attach photo to review"
+                                      }
                                     >
                                       <span
                                         className={`absolute top-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-all duration-300 ${
-                                          shareImage ? 'left-[19px]' : 'left-[2px]'
+                                          shareImage
+                                            ? "left-[19px]"
+                                            : "left-[2px]"
                                         }`}
                                       />
                                     </button>
                                   </div>
 
                                   {reviewError && (
-                                    <p className="text-[10px] font-plex-mono text-red-400">{reviewError}</p>
+                                    <p className="text-[10px] font-plex-mono text-red-400">
+                                      {reviewError}
+                                    </p>
                                   )}
 
                                   <button
                                     type="button"
                                     onClick={handleReviewSubmit}
-                                    disabled={reviewSubmitting || reviewRating === 0}
+                                    disabled={
+                                      reviewSubmitting || reviewRating === 0
+                                    }
                                     className="w-full py-3 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-md disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase"
                                   >
                                     {reviewSubmitting ? (
@@ -793,7 +948,9 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                                     ) : (
                                       <Send size={11} strokeWidth={2} />
                                     )}
-                                    {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
+                                    {reviewSubmitting
+                                      ? "Submitting…"
+                                      : "Submit Review"}
                                   </button>
                                 </div>
                               </motion.div>
@@ -804,7 +961,6 @@ export default function TryOnModal({ isOpen, onClose, productId, clothImages }: 
                     </div>
                   </motion.div>
                 )}
-
               </AnimatePresence>
             </div>
           </motion.div>
