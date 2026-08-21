@@ -461,9 +461,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-[100px] pb-24 relative z-10">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-[140px] pb-24 relative z-10">
       {/* Header */}
-      <div className="max-w-[1200px] mx-auto px-6 mb-12 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-12 flex items-center justify-between">
         <button 
           onClick={() => step > 2 ? setStep((prev) => (prev - 1) as 2 | 3 | 4) : navigate('/')}
           className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors"

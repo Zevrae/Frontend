@@ -110,6 +110,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         transition={{ duration: 0.2 }}
         className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm w-full max-w-lg max-h-full flex flex-col"
         onClick={e => e.stopPropagation()}
+        data-lenis-prevent
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(var(--theme-text-rgb),0.1)] flex-shrink-0">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">{title}</h3>
@@ -117,7 +118,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
             <X size={16} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto">{children}</div>
+        <div className="p-6 overflow-y-auto" data-lenis-prevent>{children}</div>
       </motion.div>
     </motion.div>
   );
