@@ -25,7 +25,15 @@ export const tryonApi = {
   start: async (productId: string, personImage: File, clothImageUrls: string[]): Promise<TryonResult> => {
     const formData = new FormData();
     formData.append('productId', productId);
-    formData.append('person_image', personImage);
+    // Explicit filename matters here: `personImage` may be the output of
+    // client-side compression (browser-image-compression), which returns a
+    // plain Blob with a `.name` property bolted on rather than a real File
+    // instance. FormData.append() only uses that name for actual File
+    // objects — for a Blob it silently falls back to "blob" with no
+    // extension, which later breaks server-side mime-type detection. Always
+    // pass a filename explicitly so this doesn't depend on which type of
+    // object we were handed.
+    formData.append('person_image', personImage, personImage.name || 'person.jpg');
     formData.append('clothImageUrls', JSON.stringify(clothImageUrls));
 
     const response = await api.post('/tryon', formData, {
