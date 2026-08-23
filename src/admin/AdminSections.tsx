@@ -20,6 +20,7 @@ import { categoriesApi, Category } from '../api/categories';
 import { discountsApi, Discount } from '../api/discounts';
 import { ordersApi, Order } from '../api/orders';
 import { analysisApi, AnalysisSummary } from '../api/analysis';
+import { generateReceiptPdf } from '../utils/generateReceiptPdf';
 import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -529,6 +530,18 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                     )}
                                     <div className="flex justify-between text-[var(--theme-text)] font-semibold pt-1"><span>Total</span><span className="font-mono">{formatVal(order.total)}</span></div>
                                   </div>
+                                  {/* Download Receipt */}
+                                  <button
+                                    onClick={() => generateReceiptPdf(order)}
+                                    className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[9px] uppercase tracking-[0.15em] font-sans border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                      <polyline points="7 10 12 15 17 10"/>
+                                      <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Download Customer Receipt
+                                  </button>
                                 </div>
                               </div>
                             </td>

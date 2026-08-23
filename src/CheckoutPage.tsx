@@ -13,7 +13,7 @@ import {
   ReceiptPrinter,
   type ReceiptPrinterStage,
 } from './features/ReceiptPrinter';
-import { jsPDF } from 'jspdf';
+import { generateReceiptPdf } from './utils/generateReceiptPdf';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 
 
@@ -69,103 +69,7 @@ export default function CheckoutPage() {
   /** Generate and download a receipt as a PDF file */
   const downloadReceipt = useCallback(() => {
     if (!completedOrder) return;
-    
-    // Create custom height based on number of items to simulate a continuous receipt roll
-    const baseHeight = 130;
-    const itemHeight = completedOrder.items.length * 9;
-    const totalHeight = baseHeight + itemHeight;
-
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: [80, totalHeight]
-    });
-
-    // Set font to monospace for clean receipt alignment
-    doc.setFont('Courier', 'normal');
-    doc.setFontSize(8);
-    
-    let y = 12;
-    doc.setFont('Courier', 'bold');
-    doc.setFontSize(10);
-    doc.text('ZEVRAE', 40, y, { align: 'center' });
-    y += 4;
-    doc.setFont('Courier', 'normal');
-    doc.setFontSize(8);
-    doc.text('LUXURY APPAREL', 40, y, { align: 'center' });
-    y += 5;
-    doc.text('========================================', 40, y, { align: 'center' });
-    y += 5;
-    
-    doc.text(`ORDER   : #${completedOrder.id.slice(-8).toUpperCase()}`, 8, y);
-    y += 4;
-    doc.text(`DATE    : ${new Date(completedOrder.created_at).toLocaleString('en-IN')}`, 8, y);
-    y += 4;
-    doc.text(`PAYMENT : ${completedPaymentMethod}`, 8, y);
-    y += 5;
-    doc.text('----------------------------------------', 40, y, { align: 'center' });
-    y += 4;
-    doc.setFont('Courier', 'bold');
-    doc.text('ITEMS', 8, y);
-    doc.setFont('Courier', 'normal');
-    y += 4;
-    doc.text('----------------------------------------', 40, y, { align: 'center' });
-    y += 5;
-
-    completedOrder.items.forEach((item) => {
-      const name = item.name.toUpperCase();
-      const qtyPrice = `${item.quantity} x Rs.${item.price.toLocaleString('en-IN')}${item.size ? ' [Size: ' + item.size + ']' : ''}`;
-      const totalItemVal = `Rs.${(item.price * item.quantity).toLocaleString('en-IN')}`;
-      
-      const truncatedName = name.length > 25 ? name.substring(0, 22) + '...' : name;
-      
-      doc.setFont('Courier', 'bold');
-      doc.text(truncatedName, 8, y);
-      doc.setFont('Courier', 'normal');
-      y += 4;
-      doc.text(qtyPrice, 10, y);
-      doc.text(totalItemVal, 72, y, { align: 'right' });
-      y += 5;
-    });
-
-    doc.text('----------------------------------------', 40, y, { align: 'center' });
-    y += 5;
-    
-    // Totals
-    doc.text('SUBTOTAL:', 8, y);
-    doc.text(`Rs.${completedOrder.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
-    y += 4;
-    
-    doc.text('SHIPPING:', 8, y);
-    doc.text(completedOrder.shipping_fee === 0 ? 'FREE' : `Rs.${completedOrder.shipping_fee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
-    y += 4;
-    
-    if (completedOrder.handling_fee > 0) {
-      doc.text('HANDLING (COD):', 8, y);
-      doc.text(`Rs.${completedOrder.handling_fee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
-      y += 4;
-    }
-
-    if (completedOrder.discount_code && completedOrder.discount_amount > 0) {
-      doc.text(`DISCOUNT (${completedOrder.discount_code}):`, 8, y);
-      doc.text(`-Rs.${completedOrder.discount_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
-      y += 4;
-    }
-    
-    doc.text('========================================', 40, y, { align: 'center' });
-    y += 5;
-    
-    doc.setFont('Courier', 'bold');
-    doc.text('TOTAL:', 8, y);
-    doc.text(`Rs.${completedOrder.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 72, y, { align: 'right' });
-    doc.setFont('Courier', 'normal');
-    y += 5;
-    doc.text('========================================', 40, y, { align: 'center' });
-    y += 6;
-    
-    doc.text('Thank you for shopping with ZEVRAE', 40, y, { align: 'center' });
-    
-    doc.save(`ZEVRAE-Receipt-${completedOrder.id.slice(-8).toUpperCase()}.pdf`);
+    generateReceiptPdf(completedOrder, completedPaymentMethod || undefined);
   }, [completedOrder, completedPaymentMethod]);
 
   useEffect(() => {
@@ -852,6 +756,53 @@ export default function CheckoutPage() {
                         </div>
 
                         <hr className="border-dashed border-black/20 my-3" />
+
+                        {/* Customer Details */}
+                        {(() => {
+                          const customerName = typeof completedOrder.user === 'object' && completedOrder.user !== null
+                            ? completedOrder.user.name || ''
+                            : '';
+                          const customerPhone = completedOrder.shipping_address?.phone || '';
+                          const addrParts = [
+                            completedOrder.shipping_address?.line1,
+                            completedOrder.shipping_address?.line2,
+                            completedOrder.shipping_address?.city,
+                            completedOrder.shipping_address?.state,
+                            completedOrder.shipping_address?.postal_code,
+                            completedOrder.shipping_address?.country,
+                          ].filter(Boolean).join(', ');
+                          const hasAnyField = customerName || customerPhone || addrParts;
+                          if (!hasAnyField) return null;
+                          return (
+                            <>
+                              <p className="text-[9px] font-bold tracking-[0.12em] uppercase text-black/50 mb-2">Customer Details</p>
+                              <div className="space-y-1 text-[10px] text-black">
+                                {customerName && (
+                                  <div className="flex gap-2">
+                                    <span className="text-black/50 shrink-0">NAME</span>
+                                    <span className="text-black/20 shrink-0">:</span>
+                                    <span className="text-black leading-snug">{customerName}</span>
+                                  </div>
+                                )}
+                                {customerPhone && (
+                                  <div className="flex gap-2">
+                                    <span className="text-black/50 shrink-0">PHONE</span>
+                                    <span className="text-black/20 shrink-0">:</span>
+                                    <span className="text-black">{customerPhone}</span>
+                                  </div>
+                                )}
+                                {addrParts && (
+                                  <div className="flex gap-2">
+                                    <span className="text-black/50 shrink-0">ADDR</span>
+                                    <span className="text-black/20 shrink-0">:</span>
+                                    <span className="text-black leading-snug break-words">{addrParts}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <hr className="border-dashed border-black/20 my-3" />
+                            </>
+                          );
+                        })()}
 
                         {/* Items */}
                         <div className="space-y-2 mb-3">
