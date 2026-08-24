@@ -46,6 +46,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
   const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
+  const navigate = useNavigate();
   const isCancelled = order.order_status === 'cancelled';
   const isAwaitingPayment = order.order_status === 'payment_pending';
   const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
@@ -143,7 +144,16 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                 <div className="space-y-2">
                   {order.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
-                      <span>{item.name} {item.size ? `(${formatSoftToySize(item.size)})` : ''} × {item.quantity}</span>
+                      <span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.product}`); }}
+                          className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
+                          title="View product page"
+                        >
+                          {item.name}
+                        </button>
+                        {item.size ? ` (${formatSoftToySize(item.size)})` : ''} × {item.quantity}
+                      </span>
                       <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
                     </div>
                   ))}
