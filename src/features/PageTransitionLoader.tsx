@@ -194,9 +194,15 @@ export function PageTransitionLoader() {
   }, [phase, setPhase]);
 
   const isVisible = phase !== "idle";
-  // Only block pointer events while the curtain is covering the screen.
-  // During "exiting" the curtain is sweeping away upward — don't block clicks.
-  const blockPointer = phase === "entering" || phase === "holding";
+  // Block pointer events for the full duration of every non-idle phase:
+  // "entering"  — curtain sliding up (0.85 s)
+  // "holding"   — curtain fully covering screen (0.25 s delay)
+  // "exiting"   — curtain sweeping away upward (0.75 s)
+  //
+  // Previously only entering+holding were blocked. Allowing clicks during
+  // "exiting" caused a second navTransition to race the active GSAP timeline,
+  // leaving page content invisible / partially animated (the "messy" glitch).
+  const blockPointer = phase !== "idle";
 
   return createPortal(
     <div

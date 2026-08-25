@@ -185,5 +185,60 @@ export function generateReceiptPdf(order: Order, paymentMethod?: string): void {
   // ── Footer ───────────────────────────────────────────────────────────────────
   doc.text('Thank you for shopping with ZEVRAE', 40, y, { align: 'center' });
 
-  doc.save(`ZEVRAE-Receipt-${order.id.slice(-8).toUpperCase()}.pdf`);
+  // ── Page 2 – Back Side: ZEVRAE logo (monochrome, subtle watermark) ────────────
+  //
+  // We load the logo at runtime into an <img>, render it to an off-screen
+  // <canvas> with a grayscale CSS filter and reduced opacity so it looks like
+  // a premium monochrome brand mark when printed on white paper.
+  //
+  // The second page has the exact same custom dimensions as page 1 so the
+  // receipt aligns perfectly for duplex / double-sided printing.
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+
+  img.onload = () => {
+    // ── Canvas: render logo at native color and full opacity ────────────────
+    // We render at 2× the logo's natural size for sharpness, then let
+    // jsPDF scale it down to the target mm dimensions in the PDF.
+    // The logo asset is already black, so no color treatment is applied.
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth * scale;
+    canvas.height = img.naturalHeight * scale;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const logoDataUrl = canvas.toDataURL('image/png');
+
+    // ── Compute centred placement on page 2 ────────────────────────────────
+    // Page width = 80 mm. Target logo width ≈ 57.5 % → ~46 mm.
+    // Preserve original aspect ratio for height.
+    const pageWidthMm = 80;
+    const pageHeightMm = totalHeight;
+    const logoWidthMm = pageWidthMm * 0.575; // ~46 mm
+    const aspectRatio = img.naturalHeight / img.naturalWidth;
+    const logoHeightMm = logoWidthMm * aspectRatio;
+
+    // Centre both axes
+    const logoX = (pageWidthMm - logoWidthMm) / 2;
+    const logoY = (pageHeightMm - logoHeightMm) / 2;
+
+    // ── Add page 2 with identical dimensions ───────────────────────────────
+    doc.addPage([pageWidthMm, pageHeightMm], 'portrait');
+    doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoWidthMm, logoHeightMm);
+
+    // ── Save the complete two-page PDF ─────────────────────────────────────
+    doc.save(`ZEVRAE-Receipt-${order.id.slice(-8).toUpperCase()}.pdf`);
+  };
+
+  img.onerror = () => {
+    // If the logo fails to load for any reason, still save the receipt
+    // without the back page rather than surfacing an error to the user.
+    doc.save(`ZEVRAE-Receipt-${order.id.slice(-8).toUpperCase()}.pdf`);
+  };
+
+  // Trigger the image load. The save() call is deferred to onload/onerror.
+  img.src = '/zevrae-logo.png';
 }
+
