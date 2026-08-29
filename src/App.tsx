@@ -229,9 +229,24 @@ export default function App() {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
-    closeSearch();
-    navTransition(() => navigate(`/search?q=${encodeURIComponent(trimmed)}`));
+    // Do NOT close search before navTransition — calling closeSearch() here
+    // would trigger a Framer Motion exit animation that races GSAP's curtain
+    // animation and leaves [data-page-content] in a broken opacity/transform state.
+    // Instead, reset search state inside the navTransition callback, which fires
+    // when the curtain fully covers the screen (safe to update state).
+    navTransition(() => {
+      setIsSearchOpen(false);
+      setSearchQuery('');
+      navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+    });
   };
+
+  // Auto-close search (instantly, no animation) whenever the route changes.
+  // This handles all navigation paths: nav links, browser back/forward, etc.
+  useEffect(() => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  }, [location.pathname]);
 
   // ── Hero GSAP: hide letters immediately, animate when preloader reveals ──
   const HERO_LETTERS = 'ZEVRAE'.split('');
@@ -666,7 +681,6 @@ return (
               key="search-overlay"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
               className="absolute top-full left-0 w-full z-30 flex justify-center"
               style={{
