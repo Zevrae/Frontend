@@ -5,7 +5,7 @@ import { CollectionScroller } from './components/CollectionScroller';
 import './components/CollectionScroller.css';
 import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, X, Search } from 'lucide-react';
 import {
   Routes,
   Route,
@@ -72,6 +72,12 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchIconRef = useRef<HTMLButtonElement>(null);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [isLiveMode, setIsLiveMode] = useState(() => {
@@ -188,10 +194,44 @@ export default function App() {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
       }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)
+          && searchIconRef.current && !searchIconRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close search on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSearchOpen) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen]);
+
+  const openSearch = () => {
+    setIsSearchOpen(true);
+    // Focus after the overlay mounts (one animation frame is enough)
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  };
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  };
+
+  const handleSearchSubmit = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    closeSearch();
+    navTransition(() => navigate(`/search?q=${encodeURIComponent(trimmed)}`));
+  };
 
   // ── Hero GSAP: hide letters immediately, animate when preloader reveals ──
   const HERO_LETTERS = 'ZEVRAE'.split('');
@@ -493,9 +533,20 @@ return (
             ZEVRAE
           </motion.button>
 
-          <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+          <div className="hidden md:flex items-center space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
             {isLiveMode ? (
               <>
+                {/* ── Search icon — opens overlay panel below nav ── */}
+                <button
+                  ref={searchIconRef}
+                  onClick={isSearchOpen ? closeSearch : openSearch}
+                  aria-label="Search"
+                  aria-expanded={isSearchOpen}
+                  className="flex items-center text-[rgba(var(--theme-text-rgb),0.7)] hover:text-[var(--theme-text)] transition-colors duration-300"
+                >
+                  <Search size={15} strokeWidth={1.25} />
+                </button>
+
                 {isAdmin && (
                   <button onClick={() => navTransition(() => navigate('/admin'))} className="group relative pb-1 hover:text-[var(--theme-accent)] text-[12px] font-bold transition-colors duration-700">
                     ADMIN PANEL
@@ -607,6 +658,68 @@ return (
           )}
         </div>
         </div>
+
+        {/* ── Search overlay — sits below the nav bar, never overlaps the logo ── */}
+        <AnimatePresence>
+          {isSearchOpen && !location.pathname.startsWith('/admin') && (
+            <motion.div
+              key="search-overlay"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+              className="absolute top-full left-0 w-full z-30 flex justify-center"
+              style={{
+                borderBottom: '1px solid rgba(var(--theme-accent-rgb), 0.12)',
+                backgroundColor: 'rgba(var(--theme-bg-rgb), 0.97)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              <div
+                ref={searchContainerRef}
+                className="w-full max-w-[600px] px-6 py-5 flex items-center gap-4"
+              >
+                {/* Thin gold-tinted magnifying glass at start of field */}
+                <Search
+                  size={13}
+                  strokeWidth={1.25}
+                  className="flex-shrink-0"
+                  style={{ color: 'rgba(var(--theme-accent-rgb), 0.55)' }}
+                />
+
+                <form onSubmit={handleSearchSubmit} className="flex-1">
+                  <input
+                    ref={searchInputRef}
+                    id="header-search-input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="SEARCH PRODUCTS..."
+                    className="w-full bg-transparent outline-none
+                      text-[11px] tracking-[0.28em] font-plex-mono
+                      text-[rgba(var(--theme-text-rgb),0.85)]
+                      placeholder:text-[rgba(var(--theme-text-rgb),0.28)]
+                      border-0 border-b border-[rgba(var(--theme-accent-rgb),0.2)]
+                      focus:border-[rgba(var(--theme-accent-rgb),0.5)]
+                      transition-[border-color] duration-300
+                      pb-1"
+                    aria-label="Search products"
+                  />
+                </form>
+
+                {/* Close button */}
+                <button
+                  onClick={closeSearch}
+                  aria-label="Close search"
+                  className="flex-shrink-0 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[rgba(var(--theme-text-rgb),0.7)] transition-colors duration-200"
+                >
+                  <X size={13} strokeWidth={1.5} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
       )}
 
@@ -626,6 +739,38 @@ return (
             >
               <X size={28} strokeWidth={1} />
             </button>
+
+            {/* Mobile search bar */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const trimmed = mobileSearchQuery.trim();
+                if (!trimmed) return;
+                setMobileSearchQuery('');
+                setIsMenuOpen(false);
+                navTransition(() => navigate(`/search?q=${encodeURIComponent(trimmed)}`));
+              }}
+              className="flex items-center gap-3 border-b border-[rgba(var(--theme-text-rgb),0.2)] pb-3 w-64"
+            >
+              <Search size={14} strokeWidth={1.25} className="text-[rgba(var(--theme-text-rgb),0.4)] flex-shrink-0" />
+              <input
+                type="text"
+                value={mobileSearchQuery}
+                onChange={(e) => setMobileSearchQuery(e.target.value)}
+                placeholder="SEARCH PRODUCTS..."
+                className="flex-1 bg-transparent outline-none text-[11px] tracking-[0.25em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.8)] placeholder:text-[rgba(var(--theme-text-rgb),0.3)] py-1"
+                aria-label="Search products"
+              />
+              {mobileSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setMobileSearchQuery('')}
+                  className="text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[rgba(var(--theme-text-rgb),0.7)] transition-colors"
+                >
+                  <X size={11} strokeWidth={1.5} />
+                </button>
+              )}
+            </form>
             {[
               // Dropdown-toggle items keep href='#' (they expand a submenu, not navigate)
               { name: 'Clothing', href: '#', onClick: () => setIsMobileClothingOpen(!isMobileClothingOpen) },
@@ -812,6 +957,7 @@ return (
         {isLiveMode ? (
           <>
             <Route path="/" element={<ProductGrid categoryFilter="all" />} />
+            <Route path="/search" element={<ProductGrid categoryFilter="search" />} />
             <Route path="/men" element={<ProductGrid categoryFilter="men" />} />
             <Route path="/men/tshirts" element={<ProductGrid categoryFilter="men-tshirts" />} />
             <Route path="/men/lowers" element={<ProductGrid categoryFilter="men-lowers" />} />

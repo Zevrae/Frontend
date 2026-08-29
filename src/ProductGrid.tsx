@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
@@ -149,7 +149,7 @@ export default function ProductGrid({
   categoryFilter = 'all'
 }: {
   categoryFilter?:
-  | 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | ''
+  | 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'search'
   | 'rings' | 'pendants' | 'earrings' | 'bracelet' | 'keychain' | 'keychains'
   | 'toys' | 'soft-toys' | 'ear'
   | 'men-tshirts' | 'men-lowers' | 'women-tshirts' | 'women-lowers' | 'unisex'
@@ -158,6 +158,8 @@ export default function ProductGrid({
   | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings'
 }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchTerm = categoryFilter === 'search' ? (searchParams.get('q') || '').trim() : '';
   const [dbProducts, setDbProducts] = useState<any[]>(cachedDbProducts || []);
   const [isLoading, setIsLoading] = useState(!cachedDbProducts);
 
@@ -288,6 +290,15 @@ export default function ProductGrid({
   const openProduct = (product: any) => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
+
+  // ─── Search results ───────────────────────────────────────────────────────────
+  const searchResults = categoryFilter === 'search' && searchTerm
+    ? dbProducts.filter(p =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   return (
     <>
@@ -580,6 +591,68 @@ export default function ProductGrid({
                   </div>
                 );
               })()}
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── SEARCH RESULTS ── */}
+        {categoryFilter === 'search' && (
+          <motion.section
+            key={`search-${searchTerm}`}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            id="search-results"
+            className="py-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
+          >
+            <div className="relative z-[9999] max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
+              <div className="flex flex-col items-center md:items-start gap-4">
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]"
+                >
+                  SEARCH RESULTS
+                </motion.p>
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
+                >
+                  {searchTerm ? `"${searchTerm}"` : 'ALL PRODUCTS'}
+                </motion.h2>
+              </div>
+            </div>
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+              {isLoading ? (
+                <div className="w-full flex justify-center py-24">
+                  <div className="animate-pulse w-8 h-8 rounded-full bg-[var(--theme-accent)]/20" />
+                </div>
+              ) : !searchTerm ? (
+                <div className="w-full flex justify-center py-24">
+                  <p className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)]">
+                    Enter a search term to find products
+                  </p>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="w-full flex flex-col items-center py-24 gap-6">
+                  <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] uppercase">
+                    No results found
+                  </h3>
+                  <p className="text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)]">
+                    Try a different search term
+                  </p>
+                </div>
+              ) : (
+                <div className="pinterest-grid">
+                  {searchResults.map((item, i) => (
+                    <PinterestCard key={item.id} product={item} index={i} onClick={() => openProduct(item)} />
+                  ))}
+                </div>
+              )}
             </div>
           </motion.section>
         )}
