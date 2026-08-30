@@ -15,7 +15,7 @@ import {
   Navigate
 } from 'react-router-dom';
 import LoginModal from './LoginModal';
-import ProductGrid from './ProductGrid';
+import ProductGrid, { getOrFetchAllProducts } from './ProductGrid';
 import CartDrawer from './CartDrawer';
 import ProductPage from './ProductPage';
 import ShinyText from './components';
@@ -79,6 +79,15 @@ export default function App() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchIconRef = useRef<HTMLButtonElement>(null);
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const [searchProducts, setSearchProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      getOrFetchAllProducts()
+        .then((products) => setSearchProducts(products))
+        .catch((err) => console.error('Failed to pre-fetch search products:', err));
+    }
+  }, [isSearchOpen]);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [isLiveMode, setIsLiveMode] = useState(() => {
@@ -693,44 +702,128 @@ return (
             >
               <div
                 ref={searchContainerRef}
-                className="w-full max-w-[600px] px-6 py-5 flex items-center gap-4"
+                className="w-full max-w-[600px] px-6 py-5 flex flex-col gap-1"
               >
-                {/* Thin gold-tinted magnifying glass at start of field */}
-                <Search
-                  size={13}
-                  strokeWidth={1.25}
-                  className="flex-shrink-0"
-                  style={{ color: 'rgba(var(--theme-accent-rgb), 0.55)' }}
-                />
-
-                <form onSubmit={handleSearchSubmit} className="flex-1">
-                  <input
-                    ref={searchInputRef}
-                    id="header-search-input"
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="SEARCH PRODUCTS..."
-                    className="w-full bg-transparent outline-none
-                      text-[11px] tracking-[0.28em] font-plex-mono
-                      text-[rgba(var(--theme-text-rgb),0.85)]
-                      placeholder:text-[rgba(var(--theme-text-rgb),0.28)]
-                      border-0 border-b border-[rgba(var(--theme-accent-rgb),0.2)]
-                      focus:border-[rgba(var(--theme-accent-rgb),0.5)]
-                      transition-[border-color] duration-300
-                      pb-1"
-                    aria-label="Search products"
+                <div className="flex items-center gap-4 w-full">
+                  {/* Thin gold-tinted magnifying glass at start of field */}
+                  <Search
+                    size={13}
+                    strokeWidth={1.25}
+                    className="flex-shrink-0"
+                    style={{ color: 'rgba(var(--theme-accent-rgb), 0.55)' }}
                   />
-                </form>
 
-                {/* Close button */}
-                <button
-                  onClick={closeSearch}
-                  aria-label="Close search"
-                  className="flex-shrink-0 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[rgba(var(--theme-text-rgb),0.7)] transition-colors duration-200"
-                >
-                  <X size={13} strokeWidth={1.5} />
-                </button>
+                  <form onSubmit={handleSearchSubmit} className="flex-1">
+                    <input
+                      ref={searchInputRef}
+                      id="header-search-input"
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="SEARCH PRODUCTS..."
+                      className="w-full bg-transparent outline-none
+                        text-[11px] tracking-[0.28em] font-plex-mono
+                        text-[rgba(var(--theme-text-rgb),0.85)]
+                        placeholder:text-[rgba(var(--theme-text-rgb),0.28)]
+                        border-0 border-b border-[rgba(var(--theme-accent-rgb),0.2)]
+                        focus:border-[rgba(var(--theme-accent-rgb),0.5)]
+                        transition-[border-color] duration-300
+                        pb-1"
+                      aria-label="Search products"
+                    />
+                  </form>
+
+                  {/* Close button */}
+                  <button
+                    onClick={closeSearch}
+                    aria-label="Close search"
+                    className="flex-shrink-0 text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[rgba(var(--theme-text-rgb),0.7)] transition-colors duration-200"
+                  >
+                    <X size={13} strokeWidth={1.5} />
+                  </button>
+                </div>
+
+                {/* Live suggestions */}
+                {searchQuery.trim().length > 0 && (
+                  <div className="w-full max-h-[300px] overflow-y-auto mt-3 flex flex-col gap-2 pb-1 border-t border-[rgba(var(--theme-accent-rgb),0.08)] pt-4 z-50">
+                    {(() => {
+                      const query = searchQuery.trim().toLowerCase();
+                      const queryWords = query.split(/\s+/).filter(Boolean);
+                      
+                      const suggestions = searchProducts.filter(p => {
+                        const nameLower = (p.name || '').toLowerCase();
+                        const catLower = (p.rawCategory || p.gender || '').toLowerCase();
+                        const subcatLower = (p.rawSubcategory || p.category || '').toLowerCase();
+                        
+                        return queryWords.every(word =>
+                          nameLower.includes(word) ||
+                          catLower.includes(word) ||
+                          subcatLower.includes(word)
+                        );
+                      });
+
+                      if (suggestions.length === 0) {
+                        return (
+                          <div className="text-[10px] tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] py-2 uppercase text-center">
+                            No matching products found
+                          </div>
+                        );
+                      }
+
+                      return suggestions.slice(0, 5).map(product => {
+                        const formattedPrice = new Intl.NumberFormat('en-IN', {
+                          style: 'currency',
+                          currency: 'INR',
+                          maximumFractionDigits: 0
+                        }).format(product.price);
+
+                        const raw = product.rawCategory || product.category || '';
+                        const sub = product.rawSubcategory || product.type || '';
+                        let catLabel = '';
+                        if (raw.toLowerCase().startsWith('jewellery')) {
+                          const gender = raw.toLowerCase().includes('men') ? 'MEN' : 'WOMEN';
+                          catLabel = sub ? `JEWELLERY / ${sub.toUpperCase()}` : `JEWELLERY — ${gender}`;
+                        } else if (raw.toLowerCase() === 'accessories') {
+                          catLabel = sub ? `ACCESSORIES / ${sub.toUpperCase()}` : 'ACCESSORIES';
+                        } else {
+                          const genderLabel = product.gender === 'women' ? 'WOMEN' : 'MEN';
+                          catLabel = sub ? `${genderLabel} / ${sub.toUpperCase()}` : genderLabel;
+                        }
+
+                        return (
+                          <div
+                            key={product.id}
+                            onClick={() => {
+                              navTransition(() => {
+                                setIsSearchOpen(false);
+                                setSearchQuery('');
+                                navigate(`/product/${product.id}`, { state: { product } });
+                              });
+                            }}
+                            className="flex items-center gap-4 p-2 hover:bg-[rgba(var(--theme-accent-rgb),0.04)] rounded-sm cursor-pointer transition-colors duration-300 group"
+                          >
+                            <img
+                              src={product.frontImg}
+                              alt={product.name}
+                              className="w-10 h-14 object-cover bg-[var(--theme-surface)] rounded-sm group-hover:scale-[1.02] transition-transform duration-300"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[8px] font-plex-mono tracking-[0.3em] text-[rgba(var(--theme-accent-rgb),0.6)] uppercase mb-1">
+                                {catLabel}
+                              </p>
+                              <p className="text-[11px] font-archivo font-bold tracking-[0.05em] text-[var(--theme-text)] uppercase group-hover:text-[var(--theme-accent)] transition-colors duration-300 truncate">
+                                {product.name}
+                              </p>
+                            </div>
+                            <div className="text-[11px] font-plex-mono tracking-[0.1em] text-[rgba(var(--theme-accent-rgb),0.85)]">
+                              {formattedPrice}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
