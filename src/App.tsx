@@ -36,6 +36,7 @@ import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
 import TryOnReviewTicker from './components/TryOnReviewTicker';
 import HeroCountdown from './features/HeroCountdown';
+import { BestSellers } from './components/BestSellers';
 import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from './config/launch';
 
 // Code-split everything that isn't the core "browse the storefront /
@@ -949,6 +950,9 @@ return (
             <>
               {/* Collection Scroller */}
               <CollectionScroller />
+
+              {/* Best Sellers — dynamically driven by the active collection tab */}
+              <BestSellers />
 
               {/* Trust / About section — explains what Zevrae does and why
                   Google Sign-In is offered, required for Google OAuth

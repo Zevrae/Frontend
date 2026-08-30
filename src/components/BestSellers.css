@@ -1,0 +1,330 @@
+@reference "../index.css";
+
+/* ═══════════════════════════════════════════════════════════
+   Best Sellers — Dynamic, category-driven editorial section
+   Sits directly below CollectionScroller on the homepage.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Section wrapper ───────────────────────────────────── */
+.bs-section {
+  background: var(--theme-bg);
+  padding: 96px 0 80px;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Inner container ───────────────────────────────────── */
+.bs-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 60px;
+}
+
+/* ── Section top row: eyebrow left, arrows right ──────── */
+.bs-toprow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 52px;
+}
+
+.bs-eyebrow {
+  @apply font-plex-mono;
+  font-size: 9px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(var(--theme-accent-rgb), 0.45);
+  margin-bottom: 12px;
+}
+
+.bs-heading {
+  @apply font-archivo font-bold uppercase;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  letter-spacing: 0.04em;
+  color: var(--theme-text);
+  line-height: 1;
+  transition: color 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Arrow controls ────────────────────────────────────── */
+.bs-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 4px; /* align baseline with heading */
+}
+
+.bs-counter {
+  @apply font-plex-mono;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  color: rgba(var(--theme-text-rgb), 0.25);
+  min-width: 52px;
+  text-align: center;
+  transition: color 0.5s ease;
+}
+
+.bs-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--theme-text-rgb), 0.12);
+  background: none;
+  cursor: pointer;
+  color: rgba(var(--theme-text-rgb), 0.5);
+  transition:
+    color 0.35s ease,
+    border-color 0.35s ease,
+    background 0.35s ease,
+    transform 0.25s ease;
+}
+
+.bs-arrow:hover:not(:disabled) {
+  color: rgba(var(--theme-accent-rgb), 1);
+  border-color: rgba(var(--theme-accent-rgb), 0.5);
+  background: rgba(var(--theme-accent-rgb), 0.07);
+  transform: scale(1.08);
+}
+
+.bs-arrow:disabled {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+.bs-arrow svg {
+  transition: transform 0.3s ease;
+}
+
+.bs-arrow--prev:hover:not(:disabled) svg {
+  transform: translateX(-3px);
+}
+
+.bs-arrow--next:hover:not(:disabled) svg {
+  transform: translateX(3px);
+}
+
+/* ── Carousel viewport ─────────────────────────────────── */
+.bs-viewport {
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Slide transition wrapper ──────────────────────────── */
+/* The actual product grid sits inside this wrapper.
+   Category switching fades + translates it; carousel
+   page changes use a separate slide mechanism. */
+.bs-slide-wrapper {
+  position: relative;
+}
+
+.bs-slide-wrapper.bs-exiting {
+  animation: bs-fade-out 0.32s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.bs-slide-wrapper.bs-entering {
+  animation: bs-fade-in 0.42s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes bs-fade-out {
+  from { opacity: 1; transform: translateY(0px); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes bs-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0px); }
+}
+
+/* ── Product grid: 3 across on desktop ─────────────────── */
+.bs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+}
+
+/* ── Individual product item ───────────────────────────── */
+.bs-product {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ── Product image ─────────────────────────────────────── */
+/* The product image already has its own visual background,
+   rounded corners, and discount badge — we DO NOT wrap it
+   in another card or add any extra background here. */
+.bs-product__img-wrap {
+  position: relative;
+  width: 100%;
+  /* Generous aspect ratio — preserves the cinematic feel */
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 2px;
+  /* Subtle scale on hover — restrained and premium */
+  transition: transform 0.45s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform;
+}
+
+.bs-product:hover .bs-product__img-wrap {
+  transform: scale(1.02);
+}
+
+.bs-product__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 2px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Discount badge — preserved from the product image */
+.bs-product__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  @apply font-plex-mono;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: var(--theme-accent);
+  color: var(--theme-bg);
+  padding: 4px 8px;
+  border-radius: 1px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* ── Product info block ────────────────────────────────── */
+.bs-product__info {
+  padding: 18px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* CATEGORY / SUBCATEGORY line */
+.bs-product__cat {
+  @apply font-plex-mono;
+  font-size: 8px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(var(--theme-accent-rgb), 0.55);
+  transition: color 0.5s ease;
+}
+
+/* PRODUCT NAME — editorial, two lines max */
+.bs-product__name {
+  @apply font-archivo font-bold uppercase;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--theme-text);
+  line-height: 1.25;
+  transition: color 0.35s ease;
+  /* Clamp to 2 lines — avoids blowing up the row height */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Subtle gold accent on name hover */
+.bs-product:hover .bs-product__name {
+  color: var(--theme-accent);
+}
+
+/* PRICE */
+.bs-product__price {
+  @apply font-plex-mono;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: rgba(var(--theme-accent-rgb), 0.85);
+  margin-top: 2px;
+}
+
+/* ── Empty / loading states ────────────────────────────── */
+.bs-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+}
+
+.bs-empty__text {
+  @apply font-plex-mono;
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(var(--theme-text-rgb), 0.2);
+}
+
+.bs-spinner {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.15);
+  border-top-color: rgba(var(--theme-accent-rgb), 0.6);
+  border-radius: 50%;
+  animation: bs-spin 0.9s linear infinite;
+}
+
+@keyframes bs-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive: Tablet (2 visible) ───────────────────── */
+@media (max-width: 1024px) {
+  .bs-inner {
+    padding: 0 32px;
+  }
+
+  .bs-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .bs-section {
+    padding: 72px 0 60px;
+  }
+}
+
+/* ── Responsive: Mobile (1 visible) ───────────────────── */
+@media (max-width: 768px) {
+  .bs-inner {
+    padding: 0 20px;
+  }
+
+  .bs-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .bs-toprow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+
+  .bs-controls {
+    align-self: flex-end;
+    padding-bottom: 0;
+  }
+
+  .bs-section {
+    padding: 56px 0 48px;
+  }
+
+  .bs-arrow {
+    width: 36px;
+    height: 36px;
+  }
+}

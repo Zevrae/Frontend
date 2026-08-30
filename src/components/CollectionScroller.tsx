@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePageTransition } from '../features/PageTransitionContext';
 import { useSetTheme } from '../theme/ThemeProvider';
 import { useCollectionTransition } from '../features/CollectionTransitionContext';
+import { useActiveCollection } from '../features/ActiveCollectionContext';
 import type { ThemeName } from '../theme/themeConfig';
 import clothingDefault from '../assets/static/clothing cover page.png';
 import menClothing from '../assets/static/men cloth cover.png';
@@ -202,6 +203,7 @@ export function CollectionScroller() {
   });
   const setTheme = useSetTheme();
   const { triggerTransition } = useCollectionTransition();
+  const { setActiveCollectionId } = useActiveCollection();
   const isAnimating = useRef(false);
 
   // Swipe gesture refs
@@ -211,6 +213,9 @@ export function CollectionScroller() {
   useEffect(() => {
     const active = collections[activeIdx];
     setTheme(active.id as ThemeName);
+    // Propagate the active collection ID so BestSellers (a sibling below) can
+    // filter its products without any prop-drilling through App.
+    setActiveCollectionId(active.id as ThemeName);
 
     // ── Hero image ──────────────────────────────────────────────────────────
     // Collections without a heroImage clear the override so the :root fallback
@@ -244,7 +249,7 @@ export function CollectionScroller() {
     } else {
       document.documentElement.style.removeProperty('--hero-object-position');
     }
-  }, [activeIdx, setTheme]);
+  }, [activeIdx, setTheme, setActiveCollectionId]);
 
   const goTo = useCallback((idx: number) => {
     if (isAnimating.current) return;

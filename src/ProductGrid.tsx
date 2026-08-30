@@ -143,7 +143,75 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
 };
 
 // Cache the products globally so returning from a single product page is instant
+// and so the BestSellers component can share the same data without a second fetch.
 let cachedDbProducts: any[] | null = null;
+
+/**
+ * Returns the cached product list if available; otherwise fetches all active
+ * products, populates the cache, and returns the formatted array.
+ *
+ * Exported so sibling components (e.g. BestSellers) can access the shared
+ * cache without duplicating the fetch logic.
+ */
+export async function getOrFetchAllProducts(): Promise<any[]> {
+  if (cachedDbProducts) return cachedDbProducts;
+
+  const { productsApi } = await import('./api/products');
+  let allData: any[] = [];
+  let currentPage = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response: any = await productsApi.list({ status: 'active', limit: 100, page: currentPage });
+    const items = response.data || [];
+    const pagination = response.pagination;
+    if (items.length > 0) allData = [...allData, ...items];
+    if (pagination && currentPage >= pagination.pages) hasMore = false;
+    else if (items.length < 100) hasMore = false;
+    else currentPage++;
+  }
+
+  const formatted = allData.map((p: any) => {
+    const catLower = p.category?.toLowerCase() || '';
+    const isJewellery = catLower === 'jewellery' || catLower.startsWith('jewellery/');
+    const isAccessories = catLower === 'accessories';
+    const isMenJewellery = catLower === 'jewellery/men';
+    const isWomenJewellery = catLower === 'jewellery/women';
+    let gender: string;
+    if (isMenJewellery) gender = 'jewellery-men';
+    else if (isWomenJewellery) gender = 'jewellery-women';
+    else gender = catLower;
+    return {
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      originalPrice: p.compare_price,
+      label: `${p.category} Premium`,
+      category: (isJewellery || isAccessories) ? p.subcategory?.toLowerCase() : catLower || '',
+      gender,
+      type: p.subcategory?.toLowerCase() === 'lowers'
+        ? 'lower'
+        : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')),
+      sizes: p.sizes,
+      discount: p.discount || (p.compare_price && p.compare_price > p.price
+        ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
+        : undefined),
+      description: p.description,
+      frontImg: p.images?.[0] || '',
+      backImg: p.images?.[1] || p.images?.[0] || '',
+      rawCategory: p.category || '',
+      rawSubcategory: p.subcategory || '',
+    };
+  });
+
+  cachedDbProducts = formatted;
+  return formatted;
+}
+
+/** Returns the current cache snapshot synchronously (may be null if not yet fetched). */
+export function getCachedProducts(): any[] | null {
+  return cachedDbProducts;
+}
 
 export default function ProductGrid({
   categoryFilter = 'all'
