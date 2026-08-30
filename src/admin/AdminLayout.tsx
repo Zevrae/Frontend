@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import {
   Package2, LayoutDashboard, ShoppingBag, Layers, FolderOpen, Percent,
-  ChevronRight, Archive, ArrowLeft, BarChart3,
+  ChevronRight, Archive, ArrowLeft, BarChart3, Shirt,
 } from 'lucide-react';
 import { ordersApi, Order } from '../api/orders';
 import {
@@ -16,6 +16,7 @@ import {
   DiscountsSection,
   AnalysisSection,
 } from './AdminSections';
+import { CustomizationSection } from './CustomizationSection';
 
 // This whole module (plus everything it imports — the *Section components,
 // productsApi/ordersApi, and RichTextEditor/Tiptap) is only ever requested
@@ -26,6 +27,7 @@ const navItems: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
   { id: 'orders', label: 'Orders', icon: <Archive size={15} /> },
   { id: 'products', label: 'Products', icon: <ShoppingBag size={15} /> },
+  { id: 'customization', label: 'Customization', icon: <Shirt size={15} /> },
   { id: 'collections', label: 'Collections', icon: <Layers size={15} /> },
   { id: 'categories', label: 'Categories', icon: <FolderOpen size={15} /> },
   { id: 'discounts', label: 'Discounts', icon: <Percent size={15} /> },
@@ -220,6 +222,7 @@ export default function AdminLayout() {
                 />
               )}
               {activeSection === 'products' && <ProductsSection />}
+              {activeSection === 'customization' && <CustomizationSection />}
               {activeSection === 'collections' && <CollectionsSection />}
               {activeSection === 'categories' && <CategoriesSection />}
               {activeSection === 'discounts' && <DiscountsSection />}
