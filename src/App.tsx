@@ -28,7 +28,7 @@ import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import { useCollectionTransition } from './features/CollectionTransitionContext';
-import heroImage from './assets/hero section.webp';
+import heroImage from './assets/hero section try.png';
 import jewelleryHeroImage from './assets/jewellery hero section.png';
 import accessoriesHeroImage from './assets/accessories hero section.png';
 import { useTheme } from './theme/ThemeProvider';
