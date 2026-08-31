@@ -4,7 +4,20 @@
 // Zeurae editor's hook almost verbatim (see the original zeurae-app repo)
 // so its already-proven canvas/compositing behavior carries over exactly.
 import { useEffect, useRef } from 'react';
-import { fabric } from 'fabric';
+import * as fabricNS from 'fabric';
+
+// fabric v5's CJS bundle does `exports.fabric = fabric`, but that
+// assignment is wrapped in an `if (typeof exports !== 'undefined')` guard —
+// esbuild's dependency pre-bundler (which Vite uses) only reliably detects
+// unconditional top-level `exports.x = ...` assignments as named exports,
+// so `import { fabric } from 'fabric'` fails at runtime with "does not
+// provide an export named 'fabric'" even though it works fine under plain
+// Node/CommonJS. Importing the whole namespace and unwrapping it here
+// works no matter which shape the bundler produces (namespace object with
+// a `.fabric` property, a `.default.fabric`, or — under some resolutions —
+// the fabric object itself).
+const fabric: any =
+  (fabricNS as any).fabric ?? (fabricNS as any).default?.fabric ?? (fabricNS as any).default ?? fabricNS;
 
 export const STAGE_WIDTH = 380;
 export const STAGE_HEIGHT = 460;

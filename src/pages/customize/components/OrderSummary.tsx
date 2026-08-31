@@ -63,7 +63,7 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
     <div className="flow-screen">
       <button
         className="back-link"
-        onClick={() => dispatch({ type: 'GO_TO', screen: state.flow === 'upload' ? 'upload' : 'editor' })}
+        onClick={() => dispatch({ type: 'GO_TO', screen: 'design' })}
       >
         ← Back to editing
       </button>
@@ -71,10 +71,6 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
       <div className="summary-page">
         <p className="summary-title">Your design</p>
 
-        <div className="summary-row">
-          <span>Flow</span>
-          <span>{state.flow === 'upload' ? 'Upload a design' : 'Start from scratch'}</span>
-        </div>
         <div className="summary-row">
           <span>Cloth type</span>
           <span>{garment?.label ?? state.clothType}</span>

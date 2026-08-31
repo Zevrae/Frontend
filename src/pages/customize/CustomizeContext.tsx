@@ -2,8 +2,11 @@ import { createContext, useContext, useReducer } from 'react';
 import type { Dispatch, ReactNode } from 'react';
 import type { CustomizableGarment } from '../../api/customization';
 
-export type Screen = 'home' | 'upload' | 'editor' | 'summary';
-export type Flow = 'upload' | 'scratch' | null;
+// Only two screens now: the designer (pick cloth/color/size, place your
+// design on front/back) and the summary (review + add to bag). There is no
+// more "pick a path" landing screen or separate quick-upload flow — the
+// full editor is the only way to customize a piece.
+export type Screen = 'design' | 'summary';
 
 export interface GeneratedProduct {
   clothType: string;
@@ -16,12 +19,10 @@ export interface GeneratedProduct {
 
 export interface CustomizeState {
   screen: Screen;
-  flow: Flow;
   clothType: string;
   colorId: string;
   size: string | null;
   quantity: number;
-  uploadedImage: string | null;
   generatedProduct: GeneratedProduct | null;
   submitting: boolean;
   submitError: string | null;
@@ -30,12 +31,10 @@ export interface CustomizeState {
 
 type Action =
   | { type: 'GO_TO'; screen: Screen }
-  | { type: 'START_FLOW'; flow: Exclude<Flow, null> }
   | { type: 'SET_CLOTH'; clothType: string; garments: CustomizableGarment[] }
   | { type: 'SET_COLOR'; colorId: string }
   | { type: 'SET_SIZE'; size: string }
   | { type: 'SET_QUANTITY'; quantity: number }
-  | { type: 'SET_UPLOADED_IMAGE'; dataUrl: string | null }
   | { type: 'SET_GENERATED_PRODUCT'; product: GeneratedProduct }
   | { type: 'SUBMIT_START' }
   | { type: 'SUBMIT_ERROR'; message: string }
@@ -49,13 +48,11 @@ function firstColorFor(garments: CustomizableGarment[], clothType: string) {
 export function initialStateFor(garments: CustomizableGarment[]): CustomizeState {
   const clothType = garments[0]?.cloth_type ?? '';
   return {
-    screen: 'home',
-    flow: null,
+    screen: 'design',
     clothType,
     colorId: firstColorFor(garments, clothType),
     size: null,
     quantity: 1,
-    uploadedImage: null,
     generatedProduct: null,
     submitting: false,
     submitError: null,
@@ -64,20 +61,13 @@ export function initialStateFor(garments: CustomizableGarment[]): CustomizeState
 }
 
 function resetSelectionFields(): Partial<CustomizeState> {
-  return { uploadedImage: null, generatedProduct: null, submitError: null, createdProductId: null };
+  return { generatedProduct: null, submitError: null, createdProductId: null };
 }
 
 function reducer(state: CustomizeState, action: Action): CustomizeState {
   switch (action.type) {
     case 'GO_TO':
       return { ...state, screen: action.screen };
-    case 'START_FLOW':
-      return {
-        ...state,
-        flow: action.flow,
-        screen: action.flow === 'upload' ? 'upload' : 'editor',
-        ...resetSelectionFields(),
-      };
     case 'SET_CLOTH':
       return {
         ...state,
@@ -93,8 +83,6 @@ function reducer(state: CustomizeState, action: Action): CustomizeState {
       return { ...state, size: action.size, quantity: 1 };
     case 'SET_QUANTITY':
       return { ...state, quantity: action.quantity };
-    case 'SET_UPLOADED_IMAGE':
-      return { ...state, uploadedImage: action.dataUrl, generatedProduct: null };
     case 'SET_GENERATED_PRODUCT':
       return { ...state, generatedProduct: action.product, screen: 'summary', submitError: null };
     case 'SUBMIT_START':

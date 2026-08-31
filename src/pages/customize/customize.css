@@ -43,80 +43,6 @@
   letter-spacing: 0.02em;
 }
 
-/* ---------- Home ---------- */
-.zv-customize .home {
-  display: flex;
-  justify-content: center;
-  padding: 64px 24px;
-}
-.zv-customize .home-inner {
-  max-width: 720px;
-  text-align: center;
-}
-.zv-customize .home-eyebrow {
-  font-family: var(--zc-sans);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--zc-accent);
-  margin: 0 0 18px;
-  font-weight: 600;
-}
-.zv-customize .home-title {
-  font-size: 44px;
-  line-height: 1.1;
-  margin: 0 0 18px;
-  font-weight: 500;
-}
-.zv-customize .home-sub {
-  color: var(--zc-muted);
-  font-size: 16px;
-  line-height: 1.6;
-  max-width: 520px;
-  margin: 0 auto 44px;
-}
-.zv-customize .home-choices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  text-align: left;
-}
-.zv-customize .choice-card {
-  background: var(--zc-panel);
-  border: 1px solid var(--zc-line);
-  border-radius: 4px;
-  padding: 26px 24px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: var(--zc-ink);
-  text-align: left;
-  transition: 0.15s;
-}
-.zv-customize .choice-card:hover {
-  border-color: var(--zc-accent);
-  transform: translateY(-2px);
-}
-.zv-customize .choice-card--accent {
-  border-color: var(--zc-accent);
-}
-.zv-customize .choice-kicker {
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--zc-accent-2);
-}
-.zv-customize .choice-title {
-  font-size: 20px;
-  font-weight: 500;
-}
-.zv-customize .choice-desc {
-  color: var(--zc-muted);
-  font-size: 13.5px;
-  line-height: 1.5;
-}
-
 /* ---------- Flow screens ---------- */
 .zv-customize .flow-screen {
   padding: 20px 0 60px;
@@ -537,8 +463,5 @@
   .zv-customize .panel.right {
     border: none;
     border-bottom: 1px solid var(--zc-line);
-  }
-  .zv-customize .home-choices {
-    grid-template-columns: 1fr;
   }
 }

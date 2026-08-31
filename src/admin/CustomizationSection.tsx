@@ -1,6 +1,29 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Upload, Save, X, RefreshCw, Palette } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload, Save, X, RefreshCw, Palette, AlertTriangle } from 'lucide-react';
 import { customizableGarmentsApi, CustomizableGarment, GarmentColor } from '../api/customization';
+
+// Turns any axios/JS error into a message that always includes enough to
+// diagnose it from a screenshot (status code + backend message when present)
+// and always logs the full error object to the console — so a failure is
+// never silent, even if the on-screen banner gets missed.
+function describeError(e: any, fallback: string): string {
+  // eslint-disable-next-line no-console
+  console.error('[Customization admin]', fallback, e);
+  const status = e?.response?.status;
+  const serverMessage = e?.response?.data?.message;
+  if (status && serverMessage) return `[${status}] ${serverMessage}`;
+  if (status) return `[${status}] ${e.message || fallback}`;
+  return serverMessage || e?.message || fallback;
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="mb-3 flex items-start gap-2 px-3 py-2.5 text-[11px] font-sans text-red-300 bg-red-900/20 border border-red-700/50 rounded-sm">
+      <AlertTriangle size={14} className="flex-shrink-0 mt-0.5 text-red-400" />
+      <span>{message}</span>
+    </div>
+  );
+}
 
 // ─── Shared styling, mirrored from AdminSections.tsx so this file stays
 // visually consistent without needing those (unexported) helpers ──────────
@@ -104,7 +127,7 @@ export function CustomizationSection() {
       const { data } = await customizableGarmentsApi.list();
       setGarments(data);
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || 'Could not load customizable garment stock.');
+      setError(describeError(err, 'Could not load customizable garment stock.'));
     } finally {
       setLoading(false);
     }
@@ -177,7 +200,7 @@ export function CustomizationSection() {
       setShowGarmentModal(false);
       fetchGarments();
     } catch (e: any) {
-      setFormError(e?.response?.data?.message || e.message || 'Save failed.');
+      setFormError(describeError(e, 'Save failed.'));
     } finally {
       setSaving(false);
     }
@@ -189,7 +212,7 @@ export function CustomizationSection() {
       await customizableGarmentsApi.remove(id);
       fetchGarments();
     } catch (e: any) {
-      alert('Delete failed: ' + (e?.response?.data?.message || e.message));
+      alert('Delete failed: ' + describeError(e, 'Delete failed.'));
     }
   };
 
@@ -203,11 +226,7 @@ export function CustomizationSection() {
         stock, template photography, and the print-area each design gets placed inside.
       </p>
 
-      {error && (
-        <div className="mb-4 px-4 py-3 text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} />}
 
       {loading ? (
         <div className="flex items-center gap-2 text-[11px] text-[rgba(var(--theme-text-rgb),0.4)] font-sans">
@@ -286,7 +305,7 @@ export function CustomizationSection() {
       {showGarmentModal && (
         <Modal title={editingId ? 'Edit Cloth Type' : 'Add Cloth Type'} onClose={() => setShowGarmentModal(false)}>
           {formError && (
-            <div className="mb-4 px-3 py-2 text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm">{formError}</div>
+            <ErrorBanner message={formError} />
           )}
 
           <FormField label="Cloth Type Id (slug)">
@@ -384,6 +403,40 @@ export function CustomizationSection() {
 
 // ─── Colors & stock modal ──────────────────────────────────────────────────
 
+// Renders the template photo, or a placeholder that explains WHY it's
+// missing — "no photo uploaded yet" vs. "a URL is stored but the file
+// can't be loaded" (broken Appwrite bucket id, expired file, wrong
+// permissions, etc.) are very different problems, and the native broken-
+// image icon doesn't distinguish between them.
+function GarmentThumb({ src, alt, view }: { src: string | null; alt: string; view: 'front' | 'back' }) {
+  const [failed, setFailed] = useState(false);
+  if (!src) {
+    return (
+      <div className="w-10 h-12 flex items-center justify-center rounded-sm border border-dashed border-[rgba(var(--theme-text-rgb),0.2)] text-[8px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans text-center">
+        No {view}
+      </div>
+    );
+  }
+  if (failed) {
+    return (
+      <div
+        title={`Stored URL failed to load: ${src}`}
+        className="w-10 h-12 flex items-center justify-center rounded-sm border border-dashed border-red-700/50 text-[7px] text-red-400 font-sans text-center leading-tight p-0.5"
+      >
+        Failed to load
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className="w-10 h-12 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)]"
+    />
+  );
+}
+
 function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGarment; onClose: () => void; onChanged: () => void }) {
   const [newColor, setNewColor] = useState({ id: '', label: '', hex: '#111111' });
   const [adding, setAdding] = useState(false);
@@ -392,9 +445,47 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
   const [localStock, setLocalStock] = useState<Record<string, Record<string, number>>>(
     Object.fromEntries(garment.colors.map((c) => [c.id, { ...c.size_stock }])),
   );
+  // Editable label/hex per color, kept in real state instead of mutating the
+  // `garment` prop directly — mutating props doesn't trigger a re-render and,
+  // worse, gets silently thrown away every time `onChanged()` refetches and
+  // replaces `garment.colors` with brand-new objects (any unsaved edit would
+  // vanish without warning, which looks exactly like "nothing happening").
+  const [localMeta, setLocalMeta] = useState<Record<string, { label: string; hex: string }>>(
+    Object.fromEntries(garment.colors.map((c) => [c.id, { label: c.label, hex: c.hex }])),
+  );
+
+  // Whenever the garment's color list changes shape (a color added/removed
+  // elsewhere, or on first load of a newly-created color after handleAddColor
+  // succeeds), bring the local edit state in sync — without clobbering
+  // in-progress edits on colors that already have local state.
+  useEffect(() => {
+    setLocalStock((prev) => {
+      const next = { ...prev };
+      for (const c of garment.colors) {
+        if (!next[c.id]) next[c.id] = { ...c.size_stock };
+      }
+      for (const id of Object.keys(next)) {
+        if (!garment.colors.some((c) => c.id === id)) delete next[id];
+      }
+      return next;
+    });
+    setLocalMeta((prev) => {
+      const next = { ...prev };
+      for (const c of garment.colors) {
+        if (!next[c.id]) next[c.id] = { label: c.label, hex: c.hex };
+      }
+      for (const id of Object.keys(next)) {
+        if (!garment.colors.some((c) => c.id === id)) delete next[id];
+      }
+      return next;
+    });
+  }, [garment.colors]);
 
   const setStockValue = (colorId: string, size: string, qty: number) => {
     setLocalStock((prev) => ({ ...prev, [colorId]: { ...prev[colorId], [size]: qty } }));
+  };
+  const setMetaValue = (colorId: string, patch: Partial<{ label: string; hex: string }>) => {
+    setLocalMeta((prev) => ({ ...prev, [colorId]: { ...prev[colorId], ...patch } }));
   };
 
   const handleAddColor = async () => {
@@ -418,7 +509,7 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
       setNewColor({ id: '', label: '', hex: '#111111' });
       onChanged();
     } catch (e: any) {
-      setAddError(e?.response?.data?.message || e.message || 'Could not add color.');
+      setAddError(describeError(e, 'Could not add color.'));
     } finally {
       setAdding(false);
     }
@@ -428,13 +519,13 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
     setBusyColorId(color.id);
     try {
       await customizableGarmentsApi.updateColor(garment.id, color.id, {
-        label: color.label,
-        hex: color.hex,
+        label: localMeta[color.id]?.label ?? color.label,
+        hex: localMeta[color.id]?.hex ?? color.hex,
         size_stock: localStock[color.id] || {},
       });
       onChanged();
     } catch (e: any) {
-      alert('Could not save: ' + (e?.response?.data?.message || e.message));
+      alert('Could not save: ' + describeError(e, 'Could not save color.'));
     } finally {
       setBusyColorId(null);
     }
@@ -447,7 +538,7 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
       await customizableGarmentsApi.removeColor(garment.id, colorId);
       onChanged();
     } catch (e: any) {
-      alert('Delete failed: ' + (e?.response?.data?.message || e.message));
+      alert('Delete failed: ' + describeError(e, 'Delete failed.'));
     } finally {
       setBusyColorId(null);
     }
@@ -459,7 +550,7 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
       await customizableGarmentsApi.uploadColorImages(garment.id, colorId, { [view]: file });
       onChanged();
     } catch (e: any) {
-      alert('Image upload failed: ' + (e?.response?.data?.message || e.message));
+      alert('Image upload failed: ' + describeError(e, 'Image upload failed.'));
     } finally {
       setBusyColorId(null);
     }
@@ -471,17 +562,17 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
         {garment.colors.map((color) => (
           <div key={color.id} className="border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm p-4">
             <div className="flex items-center gap-3 mb-3">
-              <span className="w-6 h-6 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] flex-shrink-0" style={{ background: color.hex }} />
+              <span className="w-6 h-6 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] flex-shrink-0" style={{ background: localMeta[color.id]?.hex ?? color.hex }} />
               <input
                 className={`${baseInputCls} flex-1 py-2`}
-                defaultValue={color.label}
-                onChange={(e) => { color.label = e.target.value; }}
+                value={localMeta[color.id]?.label ?? color.label}
+                onChange={(e) => setMetaValue(color.id, { label: e.target.value })}
                 placeholder="Color label"
               />
               <input
                 type="color"
-                defaultValue={color.hex}
-                onChange={(e) => { color.hex = e.target.value; }}
+                value={localMeta[color.id]?.hex ?? color.hex}
+                onChange={(e) => setMetaValue(color.id, { hex: e.target.value })}
                 className="w-9 h-9 rounded-sm border border-[rgba(var(--theme-text-rgb),0.15)] bg-transparent cursor-pointer"
               />
               <button
@@ -496,13 +587,7 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
             <div className="flex flex-wrap gap-3 mb-3">
               {(['front', 'back'] as const).map((view) => (
                 <div key={view} className="flex items-center gap-2">
-                  {color.images[view] ? (
-                    <img src={color.images[view]!} alt={`${color.label} ${view}`} className="w-10 h-12 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)]" />
-                  ) : (
-                    <div className="w-10 h-12 flex items-center justify-center rounded-sm border border-dashed border-[rgba(var(--theme-text-rgb),0.2)] text-[8px] text-[rgba(var(--theme-text-rgb),0.3)] font-sans text-center">
-                      No {view}
-                    </div>
-                  )}
+                  <GarmentThumb src={color.images[view]} alt={`${color.label} ${view}`} view={view} />
                   <label className="flex items-center gap-1.5 px-3 py-2 text-[10px] uppercase tracking-[0.1em] font-sans border border-[rgba(var(--theme-text-rgb),0.15)] rounded-sm cursor-pointer hover:border-[rgba(var(--theme-accent-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors">
                     <Upload size={11} />
                     {view}
@@ -549,7 +634,7 @@ function ColorsModal({ garment, onClose, onChanged }: { garment: CustomizableGar
 
         <div className="border border-dashed border-[rgba(var(--theme-text-rgb),0.2)] rounded-sm p-4">
           <p className="text-[10px] uppercase tracking-[0.15em] font-sans text-[rgba(var(--theme-text-rgb),0.5)] mb-3">Add a color</p>
-          {addError && <div className="mb-3 px-3 py-2 text-[11px] font-sans text-red-400 bg-red-900/10 border border-red-900/30 rounded-sm">{addError}</div>}
+          {addError && <ErrorBanner message={addError} />}
           <div className="flex flex-wrap gap-2 items-center">
             <input
               className={`${baseInputCls} py-2 w-28`}

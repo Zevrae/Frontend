@@ -1,24 +1,13 @@
 import { useEffect, useState } from 'react';
 import { customizableGarmentsApi, type CustomizableGarment } from '../../api/customization';
 import { CustomizeProvider, useCustomize } from './CustomizeContext';
-import Home from './components/Home';
-import UploadFlow from './components/UploadFlow';
-import ScratchEditor from './components/ScratchEditor';
+import Designer from './components/Designer';
 import OrderSummary from './components/OrderSummary';
 import './customize.css';
 
 function Screen({ garments }: { garments: CustomizableGarment[] }) {
   const { state } = useCustomize();
-  switch (state.screen) {
-    case 'upload':
-      return <UploadFlow garments={garments} />;
-    case 'editor':
-      return <ScratchEditor garments={garments} />;
-    case 'summary':
-      return <OrderSummary garments={garments} />;
-    default:
-      return <Home />;
-  }
+  return state.screen === 'summary' ? <OrderSummary garments={garments} /> : <Designer garments={garments} />;
 }
 
 export default function CustomizePage() {
