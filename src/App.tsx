@@ -44,6 +44,7 @@ import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from './config/launch';
 // (AdminSections.tsx + RichTextEditor) is a large chunk that ~0% of
 // storefront visitors ever need to download.
 const CheckoutPage = lazy(() => import('./CheckoutPage'));
+const CustomizePage = lazy(() => import('./pages/customize/CustomizePage'));
 const BagPage = lazy(() => import('./BagPage'));
 const ProfilePage = lazy(() => import('./ProfilePage'));
 const AdminGate = lazy(() => import('./admin/AdminGate'));
@@ -444,6 +445,17 @@ return (
                       className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                     >
                       WOMEN
+                    </Link>
+                    <Link
+                      to="/customize"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsClothingOpen(false);
+                        navTransition(() => navigate('/customize'));
+                      }}
+                      className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] border-t border-[rgba(var(--theme-accent-rgb),0.1)] mt-1 pt-3"
+                    >
+                      CUSTOMIZE
                     </Link>
                   </motion.div>
                 )}
@@ -885,6 +897,7 @@ return (
               ...(isMobileClothingOpen ? [
                 { name: '- Men', href: '/men', onClick: () => { navTransition(() => navigate('/men')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
                 { name: '- Women', href: '/women', onClick: () => { navTransition(() => navigate('/women')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
+                { name: '- Customize', href: '/customize', onClick: () => { navTransition(() => navigate('/customize')); setIsMenuOpen(false); setIsMobileClothingOpen(false); }, isSubItem: true },
               ] : []),
               { name: 'Jewellery', href: '#', onClick: () => setIsMobileJewelleryOpen(!isMobileJewelleryOpen) },
               ...(isMobileJewelleryOpen ? [
@@ -1094,6 +1107,7 @@ return (
             <Route path="/accessories/toys" element={<ProductGrid categoryFilter="soft-toys" />} />
             <Route path="/accessories/soft-toys" element={<ProductGrid categoryFilter="soft-toys" />} />
             <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/customize" element={<CustomizePage />} />
             <Route path="/bag" element={<BagPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -1112,6 +1126,7 @@ return (
         <Route path="/admin" element={<AdminGate />} />
         <Route path="/admin/orders" element={<AdminGate />} />
         <Route path="/admin/products" element={<AdminGate />} />
+        <Route path="/admin/customization" element={<AdminGate />} />
         <Route path="/admin/collections" element={<AdminGate />} />
         <Route path="/admin/categories" element={<AdminGate />} />
         <Route path="/admin/discounts" element={<AdminGate />} />

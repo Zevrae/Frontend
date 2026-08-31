@@ -25,7 +25,7 @@ import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts' | 'analysis';
+export type AdminSection = 'dashboard' | 'orders' | 'products' | 'collections' | 'categories' | 'discounts' | 'analysis' | 'customization';
 export type { Order };
 
 const formatVal = (val: number) =>
