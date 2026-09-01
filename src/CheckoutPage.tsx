@@ -29,6 +29,10 @@ const loadScript = (src: string) => {
 
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
+  // COD is not available when the cart contains any customized product.
+  const hasCustomizedItem = items.some((item) =>
+    item.category?.toLowerCase().includes('custom')
+  );
   const { setIsLoginModalOpen } = useAuthModal();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -611,61 +615,80 @@ export default function CheckoutPage() {
 
                 <form onSubmit={handlePaymentSubmit}>
                   <div className="space-y-4 mb-10">
-                    {paymentMethods.map(method => (
-                      <div 
-                        key={method.id} 
-                        className={`border rounded-sm transition-all duration-300 overflow-hidden cursor-pointer ${selectedMethod === method.id ? 'border-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]' : 'border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[rgba(var(--theme-text-rgb),0.5)] bg-[rgba(var(--theme-text-rgb),0.02)]'}`}
-                        onClick={() => setSelectedMethod(method.id)}
-                      >
-                        <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                          <div className="flex items-center gap-3 sm:gap-4">
-                            <div className={`w-5 h-5 flex-shrink-0 rounded-full border flex items-center justify-center ${selectedMethod === method.id ? 'border-[var(--theme-accent)]' : 'border-[rgba(var(--theme-text-rgb),0.4)]'}`}>
-                              {selectedMethod === method.id && <div className="w-2.5 h-2.5 bg-[var(--theme-accent)] rounded-full" />}
-                            </div>
-                            <div className="flex items-center gap-3">
-                              {method.icon}
-                              <span className="text-[12px] sm:text-[14px] uppercase tracking-[0.1em] font-plex-mono text-[var(--theme-text)]">{method.name}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3 pl-8 sm:pl-0">
-                            {method.recommended && (
-                              <span className="text-[9px] uppercase tracking-wider font-bold bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] px-2 py-1 rounded-sm border border-[rgba(var(--theme-accent-rgb),0.3)]">Recommended</span>
-                            )}
-                            {method.tag && !method.recommended && (
-                              <span className="text-[9px] uppercase tracking-wider font-mono text-[rgba(var(--theme-text-rgb),0.5)]">{method.tag}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <AnimatePresence>
-                          {selectedMethod === method.id && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="px-5 pb-5 pt-0 overflow-hidden"
-                            >
-                              <div className="pt-4 border-t border-[rgba(var(--theme-text-rgb),0.1)]">
-                                {method.id === 'RAZORPAY' && (
-                                  <div className="space-y-4">
-                                    <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
-                                      Pay securely via Cards, UPI, Netbanking, or Wallets using Razorpay.
-                                    </p>
-                                  </div>
+                    {paymentMethods.map(method => {
+                      const isCodDisabled = method.id === 'COD' && hasCustomizedItem;
+                      return (
+                        <div key={method.id}>
+                          <div 
+                            className={`border rounded-sm transition-all duration-300 overflow-hidden ${
+                              isCodDisabled
+                                ? 'border-[rgba(var(--theme-text-rgb),0.1)] bg-[rgba(var(--theme-text-rgb),0.02)] opacity-50 cursor-not-allowed'
+                                : `cursor-pointer ${
+                                    selectedMethod === method.id
+                                      ? 'border-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.05)]'
+                                      : 'border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[rgba(var(--theme-text-rgb),0.5)] bg-[rgba(var(--theme-text-rgb),0.02)]'
+                                  }`
+                            }`}
+                            onClick={() => !isCodDisabled && setSelectedMethod(method.id)}
+                          >
+                            <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                              <div className="flex items-center gap-3 sm:gap-4">
+                                <div className={`w-5 h-5 flex-shrink-0 rounded-full border flex items-center justify-center ${selectedMethod === method.id && !isCodDisabled ? 'border-[var(--theme-accent)]' : 'border-[rgba(var(--theme-text-rgb),0.4)]'}`}>
+                                  {selectedMethod === method.id && !isCodDisabled && <div className="w-2.5 h-2.5 bg-[var(--theme-accent)] rounded-full" />}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  {method.icon}
+                                  <span className="text-[12px] sm:text-[14px] uppercase tracking-[0.1em] font-plex-mono text-[var(--theme-text)]">{method.name}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 pl-8 sm:pl-0">
+                                {method.recommended && (
+                                  <span className="text-[9px] uppercase tracking-wider font-bold bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] px-2 py-1 rounded-sm border border-[rgba(var(--theme-accent-rgb),0.3)]">Recommended</span>
                                 )}
-
-                                {method.id === 'COD' && (
-                                  <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
-                                    A {formatVal(COD_HANDLING_FEE)} handling charge applies to Cash on Delivery orders.
-                                    Pay {formatVal(subtotal + shipping + COD_HANDLING_FEE - discountAmount)} with cash or UPI at the time of delivery.
-                                  </p>
+                                {method.tag && !method.recommended && (
+                                  <span className="text-[9px] uppercase tracking-wider font-mono text-[rgba(var(--theme-text-rgb),0.5)]">{method.tag}</span>
                                 )}
                               </div>
-                            </motion.div>
+                            </div>
+
+                            <AnimatePresence>
+                              {selectedMethod === method.id && !isCodDisabled && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  className="px-5 pb-5 pt-0 overflow-hidden"
+                                >
+                                  <div className="pt-4 border-t border-[rgba(var(--theme-text-rgb),0.1)]">
+                                    {method.id === 'RAZORPAY' && (
+                                      <div className="space-y-4">
+                                        <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+                                          Pay securely via Cards, UPI, Netbanking, or Wallets using Razorpay.
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {method.id === 'COD' && (
+                                      <p className="text-[12px] font-mono text-[rgba(var(--theme-text-rgb),0.7)]">
+                                        A {formatVal(COD_HANDLING_FEE)} handling charge applies to Cash on Delivery orders.
+                                        Pay {formatVal(subtotal + shipping + COD_HANDLING_FEE - discountAmount)} with cash or UPI at the time of delivery.
+                                      </p>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+
+                          {/* COD unavailable notice shown below the COD card when cart has customized items */}
+                          {isCodDisabled && (
+                            <p className="mt-1.5 text-[10px] uppercase tracking-[0.12em] font-plex-mono text-amber-500/80">
+                              COD unavailable for customized orders
+                            </p>
                           )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <button 
