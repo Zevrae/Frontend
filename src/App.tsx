@@ -61,6 +61,29 @@ const TermsOfService = lazy(() => import('./pages/termsOfService'));
 export default function App() {
   const { isLoginModalOpen, setIsLoginModalOpen } = useAuthModal();
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Countdown timer for coupon strip — target: Sept 6 2026 23:59:59 IST (UTC+5:30)
+  const COUPON_EXPIRY = new Date('2026-09-06T18:29:59Z'); // 23:59:59 IST = 18:29:59 UTC
+  const calcCouponCountdown = () => {
+    const diff = COUPON_EXPIRY.getTime() - Date.now();
+    if (diff <= 0) return null;
+    const totalSec = Math.floor(diff / 1000);
+    const d = Math.floor(totalSec / 86400);
+    const h = Math.floor((totalSec % 86400) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return d > 0
+      ? `${d}d ${pad(h)}:${pad(m)}:${pad(s)}`
+      : `${pad(h)}:${pad(m)}:${pad(s)}`;
+  };
+  const [couponCountdown, setCouponCountdown] = useState<string | null>(calcCouponCountdown);
+  useEffect(() => {
+    const tick = () => setCouponCountdown(calcCouponCountdown());
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClothingOpen, setIsClothingOpen] = useState(false);
   const [isMobileClothingOpen, setIsMobileClothingOpen] = useState(false);
@@ -384,13 +407,17 @@ return (
       <nav 
         className="fixed top-0 w-full z-40 flex flex-col"
       >
-        {/* Announcement black strip */}
-        <div 
-          className="w-full bg-black text-white text-center py-2.5 text-[10px] md:text-[12px] tracking-[0.15em] font-plex-mono font-medium uppercase border-b border-white/5"
-          style={{ color: '#FFFFFF', backgroundColor: '#000000' }}
-        >
-          Use coupon <span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums' }} className="font-semibold lining-nums">ZEV15</span> (applicable for first <span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums' }} className="font-semibold lining-nums">100</span> customers)
-        </div>
+        {/* Announcement black strip — hides automatically once coupon expires */}
+        {couponCountdown !== null && (
+          <div 
+            className="w-full bg-black text-white text-center py-2.5 text-[10px] md:text-[12px] tracking-[0.15em] font-plex-mono font-medium uppercase border-b border-white/5"
+            style={{ color: '#FFFFFF', backgroundColor: '#000000' }}
+          >
+            Use code&nbsp;<span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums' }} className="font-semibold lining-nums">ZEV15</span>
+            <span className="mx-3 opacity-40">—</span>
+            Offer ends in&nbsp;<span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums', fontFeatureSettings: '"tnum"' }} className="font-semibold tabular-nums">{couponCountdown}</span>
+          </div>
+        )}
 
         {/* Main Navbar */}
         <div 
