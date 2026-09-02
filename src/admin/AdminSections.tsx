@@ -7,6 +7,7 @@ import {
   Search, X, Image, ToggleLeft, ToggleRight,
   Star, AlertCircle, TrendingUp, Users, ArrowUpRight,
   Save, Upload, RefreshCw, Bell, BarChart3, CalendarClock,
+  Download, Paintbrush,
 } from 'lucide-react';
 import {
   useReactTable,
@@ -203,6 +204,130 @@ export function DashboardSection({ orders }: { orders: Order[] }) {
 
 // ─── Orders Section ───────────────────────────────────────────────────────────
 
+// Returns true when at least one item in the order was a custom-designed product.
+// Custom products have a category that contains the word "custom".
+const isCustomOrder = (order: Order): boolean =>
+  order.items.some((item) => item.category?.toLowerCase().includes('custom'));
+
+// Forces a browser download for an image URL (avoids the browser opening it
+// in a new tab instead). Falls back to a direct anchor click if fetch fails.
+async function downloadImageUrl(url: string, filename: string): Promise<void> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objectUrl);
+  } catch {
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+  }
+}
+
+// Shows the front/back design images for custom-ordered items and lets the
+// admin download each one. If the order item doesn't carry design_images
+// directly, we fetch the product by ID to get its images array.
+function CustomDesignViewer({ items }: { items: Order['items'] }) {
+  const customItems = items.filter((item) =>
+    item.category?.toLowerCase().includes('custom')
+  );
+  const [productImages, setProductImages] = React.useState<Record<string, string[]>>({});
+  const [loadingIds, setLoadingIds] = React.useState<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    customItems.forEach((item) => {
+      // Already loaded or loading
+      if (productImages[item.product] || loadingIds.has(item.product)) return;
+      // If design_images are embedded directly in the order item, use them
+      if (item.design_images && item.design_images.length > 0) {
+        setProductImages((prev) => ({ ...prev, [item.product]: item.design_images! }));
+        return;
+      }
+      // Otherwise fetch product by ID
+      setLoadingIds((prev) => new Set(prev).add(item.product));
+      productsApi
+        .getById(item.product)
+        .then((product) => {
+          setProductImages((prev) => ({ ...prev, [item.product]: product.images || [] }));
+        })
+        .catch(() => {
+          setProductImages((prev) => ({ ...prev, [item.product]: [] }));
+        })
+        .finally(() => {
+          setLoadingIds((prev) => { const s = new Set(prev); s.delete(item.product); return s; });
+        });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (customItems.length === 0) return null;
+
+  return (
+    <div className="mt-5">
+      <p className="text-[10px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-3 flex items-center gap-1.5">
+        <Paintbrush size={12} /> Custom Design Files
+      </p>
+      {customItems.map((item) => {
+        const images = productImages[item.product] || [];
+        const isLoading = loadingIds.has(item.product);
+        const frontImg = images[0] || null;
+        const backImg = images[1] || null;
+
+        return (
+          <div key={item.product} className="mb-4">
+            <p className="text-[9px] font-sans uppercase tracking-[0.1em] text-[rgba(var(--theme-text-rgb),0.5)] mb-2">
+              {item.name}
+            </p>
+            {isLoading ? (
+              <p className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.3)] animate-pulse">Loading design…</p>
+            ) : images.length === 0 ? (
+              <p className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">Design images not available.</p>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {frontImg && (
+                  <div className="flex flex-col gap-1.5">
+                    <img
+                      src={frontImg}
+                      alt="Front design"
+                      className="w-24 h-24 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)] bg-[var(--theme-bg)]"
+                    />
+                    <button
+                      onClick={() => downloadImageUrl(frontImg, `design-front-${item.product.slice(-6)}.png`)}
+                      className="flex items-center justify-center gap-1 px-2 py-1 text-[8px] uppercase tracking-[0.1em] font-sans border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                    >
+                      <Download size={9} /> Front
+                    </button>
+                  </div>
+                )}
+                {backImg && (
+                  <div className="flex flex-col gap-1.5">
+                    <img
+                      src={backImg}
+                      alt="Back design"
+                      className="w-24 h-24 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)] bg-[var(--theme-bg)]"
+                    />
+                    <button
+                      onClick={() => downloadImageUrl(backImg, `design-back-${item.product.slice(-6)}.png`)}
+                      className="flex items-center justify-center gap-1 px-2 py-1 text-[8px] uppercase tracking-[0.1em] font-sans border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                    >
+                      <Download size={9} /> Back
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // Formats an ISO date string into the yyyy-mm-dd shape a <input type="date">
 // expects. Falls back to '' if the value is missing/invalid.
 const toDateInputValue = (d?: string | null) => {
@@ -282,7 +407,8 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
         filter === 'Pending' ? o.order_status === 'placed' :
         filter === 'Paid' ? o.payment_status === 'paid' :
         filter === 'COD' ? o.payment_method === 'cod' :
-        filter === 'Delivered' ? o.order_status === 'delivered' : true;
+        filter === 'Delivered' ? o.order_status === 'delivered' :
+        filter === 'Custom' ? isCustomOrder(o) : true;
       const matchSearch = !search ||
         (customer?.name || '').toLowerCase().includes(search.toLowerCase()) ||
         o.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -355,9 +481,16 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
     columnHelper.accessor('order_status', {
       header: 'Status',
       cell: info => (
-        <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm ${orderStatusColor(info.getValue())}`}>
-          {info.getValue()}
-        </span>
+        <div className="flex flex-col gap-1 items-start">
+          <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-sans rounded-sm ${orderStatusColor(info.getValue())}`}>
+            {info.getValue()}
+          </span>
+          {isCustomOrder(info.row.original) && (
+            <span className="px-2 py-0.5 text-[8px] uppercase tracking-wider font-sans rounded-sm bg-violet-900/25 text-violet-300 border border-violet-700/40 flex items-center gap-1">
+              <Paintbrush size={8} /> Custom
+            </span>
+          )}
+        </div>
       )
     }),
     columnHelper.display({
@@ -395,7 +528,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {['All', 'Pending', 'Paid', 'COD', 'Delivered'].map(f => (
+          {['All', 'Pending', 'Paid', 'COD', 'Delivered', 'Custom'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -512,7 +645,14 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                     {order.items.map((item, idx) => (
                                       <div key={idx} className="flex justify-between items-center bg-[var(--theme-surface)] p-3 border border-[rgba(var(--theme-text-rgb),0.05)] rounded-sm">
                                         <div>
-                                          <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[var(--theme-text)]">{item.name}</p>
+                                          <p className="text-[10px] font-sans uppercase tracking-[0.1em] text-[var(--theme-text)] flex items-center gap-1.5">
+                                            {item.name}
+                                            {item.category?.toLowerCase().includes('custom') && (
+                                              <span className="px-1.5 py-0.5 text-[7px] uppercase tracking-wider font-sans rounded-sm bg-violet-900/25 text-violet-300 border border-violet-700/40">
+                                                Custom
+                                              </span>
+                                            )}
+                                          </p>
                                           <p className="text-[9px] font-mono text-[rgba(var(--theme-text-rgb),0.4)] mt-0.5">Size: {item.size || '—'} × {item.quantity}</p>
                                         </div>
                                         <span className="text-[11px] font-mono text-[var(--theme-accent)]">{formatVal(item.price * item.quantity)}</span>
@@ -542,6 +682,7 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                     </svg>
                                     Download Customer Receipt
                                   </button>
+                                  {isCustomOrder(order) && <CustomDesignViewer items={order.items} />}
                                 </div>
                               </div>
                             </td>

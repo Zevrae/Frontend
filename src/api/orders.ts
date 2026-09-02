@@ -16,6 +16,10 @@ export interface OrderItem {
   price: number;
   size?: string;
   quantity: number;
+  // Optional fields — present on custom-product order items
+  category?: string;
+  image?: string;           // primary product image (front design for custom orders)
+  design_images?: string[]; // [frontUrl, backUrl?] if backend populates it
 }
 
 export interface Order {
