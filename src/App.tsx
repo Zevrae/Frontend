@@ -3,7 +3,7 @@ import { SEO_CONFIG } from './config/seo';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import { CollectionScroller } from './components/CollectionScroller';
 import './components/CollectionScroller.css';
-import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef, useMemo } from 'react';
 import gsap from 'gsap';
 import { ChevronDown, Menu, X, Search } from 'lucide-react';
 import {
@@ -62,22 +62,44 @@ export default function App() {
   const { isLoginModalOpen, setIsLoginModalOpen } = useAuthModal();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Countdown timer for coupon strip — target: Sept 6 2026 23:59:59 IST (UTC+5:30)
-  const COUPON_EXPIRY = new Date('2026-09-06T18:29:59Z'); // 23:59:59 IST = 18:29:59 UTC
-  const calcCouponCountdown = () => {
+  // Countdown timer for coupon strip — counts down to the upcoming Sunday at 23:59:59 IST.
+  // The expiry is computed once (at mount) so it never rolls over mid-session.
+  // IST = UTC+5:30, so Sunday 23:59:59 IST = Sunday 18:29:59 UTC.
+  const getUpcomingSundayExpiry = (): Date => {
+    const now = new Date();
+    // Work in IST: offset is +5:30 = 330 minutes
+    const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+    const nowIST = new Date(now.getTime() + IST_OFFSET_MS);
+    // Day of week in IST (0 = Sunday … 6 = Saturday)
+    const dayIST = nowIST.getUTCDay();
+    // How many days until the coming Sunday (0 if today is Sunday)
+    const daysUntilSunday = dayIST === 0 ? 0 : 7 - dayIST;
+    // Build Sunday 23:59:59 in IST as a UTC Date
+    const sundayMidnightIST = new Date(
+      Date.UTC(
+        nowIST.getUTCFullYear(),
+        nowIST.getUTCMonth(),
+        nowIST.getUTCDate() + daysUntilSunday,
+        18, 29, 59   // 23:59:59 IST = 18:29:59 UTC
+      )
+    );
+    return sundayMidnightIST;
+  };
+  // Freeze the expiry when the component first mounts — never recalculate mid-session.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const COUPON_EXPIRY = useMemo(() => getUpcomingSundayExpiry(), []);
+  // Returns { h: totalHours, m, s } — h is the TOTAL remaining hours (e.g. 109),
+  // not capped at 24. Returns null when the offer has expired.
+  const calcCouponCountdown = (): { h: number; m: number; s: number } | null => {
     const diff = COUPON_EXPIRY.getTime() - Date.now();
     if (diff <= 0) return null;
     const totalSec = Math.floor(diff / 1000);
-    const d = Math.floor(totalSec / 86400);
-    const h = Math.floor((totalSec % 86400) / 3600);
+    const h = Math.floor(totalSec / 3600);          // total hours, can be 100+
     const m = Math.floor((totalSec % 3600) / 60);
     const s = totalSec % 60;
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return d > 0
-      ? `${d}d ${pad(h)}:${pad(m)}:${pad(s)}`
-      : `${pad(h)}:${pad(m)}:${pad(s)}`;
+    return { h, m, s };
   };
-  const [couponCountdown, setCouponCountdown] = useState<string | null>(calcCouponCountdown);
+  const [couponCountdown, setCouponCountdown] = useState<{ h: number; m: number; s: number } | null>(calcCouponCountdown);
   useEffect(() => {
     const tick = () => setCouponCountdown(calcCouponCountdown());
     const id = setInterval(tick, 1000);
@@ -415,7 +437,16 @@ return (
           >
             Use code&nbsp;<span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums' }} className="font-semibold lining-nums">ZEV15</span>
             <span className="mx-3 opacity-40">—</span>
-            Offer ends in&nbsp;<span style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums', fontFeatureSettings: '"tnum"' }} className="font-semibold tabular-nums">{couponCountdown}</span>
+            <span
+              style={{ color: '#C5A059', fontVariantNumeric: 'lining-nums', fontFeatureSettings: '"tnum"' }}
+              className="font-semibold tabular-nums"
+            >
+              {String(couponCountdown.h).padStart(2, '0')}
+              <span className="mx-1 opacity-60">:</span>
+              {String(couponCountdown.m).padStart(2, '0')}
+              <span className="mx-1 opacity-60">:</span>
+              {String(couponCountdown.s).padStart(2, '0')}
+            </span>
           </div>
         )}
 
