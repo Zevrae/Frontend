@@ -44,7 +44,7 @@ export default function CustomizePage() {
       <div className="zv-customize">
         <div className="zc-topbar">
           <h1>
-            ZEVRAE <span>/ custom designs</span>
+            <span>custom designs</span>
           </h1>
         </div>
         <div style={{ padding: '80px 24px', textAlign: 'center', color: 'var(--zc-muted)', fontSize: 13, maxWidth: 480, margin: '0 auto' }}>
@@ -58,7 +58,7 @@ export default function CustomizePage() {
     <div className="zv-customize">
       <div className="zc-topbar">
         <h1>
-          ZEVRAE <span>/ custom designs</span>
+          <span>CUSTOM DESIGNS</span>
         </h1>
       </div>
       <CustomizeProvider garments={garments}>
