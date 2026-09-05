@@ -40,6 +40,7 @@ export default function ReviewSection({ productId }: ReviewSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [summary, setSummary] = useState<ReviewSummary>({ averageRating: 0, count: 0 });
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const [showForm, setShowForm] = useState(false);
   const [rating, setRating] = useState(0);
@@ -52,12 +53,15 @@ export default function ReviewSection({ productId }: ReviewSectionProps) {
   const loadReviews = async () => {
     if (!productId) return;
     setLoading(true);
+    setFetchError(null);
     try {
       const res = await reviewsApi.list(productId, { limit: 20 });
-      setReviews(res.data);
-      setSummary(res.summary);
-    } catch {
-      // Non-fatal — the rest of the product page still works without reviews.
+      setReviews(res.data ?? []);
+      setSummary(res.summary ?? { averageRating: 0, count: 0 });
+    } catch (err: any) {
+      console.error('[ReviewSection] Failed to load reviews:', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to load reviews.';
+      setFetchError(msg);
     } finally {
       setLoading(false);
     }
@@ -246,6 +250,10 @@ export default function ReviewSection({ productId }: ReviewSectionProps) {
       {/* Reviews list */}
       {loading ? (
         <p className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)]">Loading reviews…</p>
+      ) : fetchError ? (
+        <p className="text-[12px] font-plex-mono text-red-400">
+          Could not load reviews: {fetchError}
+        </p>
       ) : reviews.length === 0 ? (
         <p className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)]">
           No reviews yet — be the first to share your experience.

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, X, ZoomIn } from 'lucide-react';
+import { Star, X, ZoomIn, MessageSquare } from 'lucide-react';
 import { reviewsApi, Review } from '../api/reviews';
 
 /* ─────────────────────────────────────────────
@@ -50,7 +50,7 @@ function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
       >
         <img
           src={src}
-          alt="Try-on result"
+          alt="Review photo"
           className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_60px_rgba(0,0,0,0.8)]"
         />
         <button
@@ -160,11 +160,11 @@ function ReviewPopover({
               </p>
             )}
 
-            {/* ── Prominent first image ── */}
+            {/* ── Photo(s) ── */}
             {primaryImage && (
               <div className="mt-2 space-y-2">
                 <p className="text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] tracking-[0.2em] uppercase mb-2">
-                  Try-On Photo
+                  Review Photo
                 </p>
                 <div
                   className="relative w-full rounded-xl overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.22)] bg-[var(--theme-surface)] cursor-pointer group"
@@ -172,7 +172,7 @@ function ReviewPopover({
                 >
                   <img
                     src={primaryImage}
-                    alt="Try-on result"
+                    alt="Review photo"
                     className="w-full max-h-72 object-contain group-hover:opacity-90 transition-opacity duration-200"
                   />
                   {/* Zoom hint */}
@@ -220,20 +220,41 @@ function ReviewPopover({
 
 /* ─────────────────────────────────────────────
    Main Ticker
+   Shows all 4–5 star reviews site-wide:
+   both regular product reviews and
+   "See It On You" (try-on) reviews.
 ───────────────────────────────────────────── */
 export default function TryOnReviewTicker() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [activeReview, setActiveReview] = useState<Review | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     reviewsApi.listAll({ limit: 40 }).then((data) => {
-      // Only show reviews that have a comment (or at least a rating)
-      const filtered = data.filter((r) => r.rating >= 4 && (r.comment || r.rating > 0));
+      console.log('[ReviewTicker] raw data from /reviews:', data);
+      if (!Array.isArray(data) || data.length === 0) {
+        setLoadError('No reviews returned from API (listAll returned empty).');
+        return;
+      }
+      // Show all 4–5 star reviews (normal product + try-on, no comment requirement)
+      const filtered = data.filter((r) => r.rating >= 4);
+      console.log(`[ReviewTicker] ${data.length} total → ${filtered.length} with rating ≥ 4`);
+      if (filtered.length === 0) {
+        setLoadError(`${data.length} reviews found but none have rating ≥ 4.`);
+      }
       setReviews(filtered);
+    }).catch((err) => {
+      console.error('[ReviewTicker] Failed to fetch reviews:', err);
+      setLoadError(err?.message || 'Fetch failed.');
     });
   }, []);
+
+  // Log any load issues for easy debugging
+  useEffect(() => {
+    if (loadError) console.warn('[ReviewTicker] Load issue:', loadError);
+  }, [loadError]);
 
   // Need at least 2 reviews to show a meaningful ticker
   if (reviews.length < 2) return null;
@@ -289,11 +310,13 @@ export default function TryOnReviewTicker() {
                 onClick={() => setActiveReview(review)}
                 aria-label={`Review by ${name}: ${preview}`}
               >
-                {/* Try-on photo badge — tiny circular thumbnail */}
-                {hasImage && (
+                {/* Photo badge or chat icon */}
+                {hasImage ? (
                   <div className="w-4 h-4 rounded-full overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.4)] flex-shrink-0">
                     <img src={review.images[0]} alt="" className="w-full h-full object-cover" />
                   </div>
+                ) : (
+                  <MessageSquare size={10} strokeWidth={1.5} className="text-[rgba(var(--theme-accent-rgb),0.5)] flex-shrink-0" />
                 )}
 
                 {/* Mini stars */}
