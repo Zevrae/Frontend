@@ -828,9 +828,9 @@ const emptyForm = (): Omit<DbProduct, 'id' | 'created_at' | 'is_deleted'> => ({
 // ─── Products Section ─────────────────────────────────────────────────────────
 
 const CATEGORY_MAP: Record<string, string[]> = {
-  Men:               ['T-Shirts', 'Lowers'],
+  Men:               ['T-Shirts', 'Lowers', 'Henleys'],
   Women:             ['T-Shirts', 'Lowers', 'Crop-Tops'],
-  Unisex:            ['T-Shirts', 'Lowers'],
+  Unisex:            ['T-Shirts', 'Lowers', 'Henleys'],
   'Jewellery/Men':   ['Rings', 'Pendants', 'Bracelets', 'Earrings'],
   'Jewellery/Women': ['Rings', 'Pendants', 'Bracelets', 'Earrings'],
   Accessories:       ['Keychains', 'Soft Toys'],

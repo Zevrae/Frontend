@@ -14,7 +14,6 @@ import braceletImg from "./assets/static/BRACELET.webp";
 import menTshirts from "./assets/static/menTshirts.webp";
 import womenTops from "./assets/static/womenTops.webp";
 import menHenley from "./assets/static/men henley.png";
-import womenHenley from "./assets/static/women henley.png";
 import menRingImg from "./assets/men ring.png";
 import menPendantImg from "./assets/men pendant.png";
 import menEarringsImg from "./assets/men earrings.png";
@@ -28,8 +27,7 @@ const mensCategories = [
 
 const womensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE women's tops and T-shirts", image: womenTops, path: '/women/tshirts' },
-  { id: 'lowers', name: 'LOWERS', alt: "ZEVRAE women's lowers collection", image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' },
-  { id: 'henleys', name: 'HENLEYS', alt: "ZEVRAE women's henley collection", image: womenHenley, path: '/women/henleys' },
+  { id: 'lowers', name: 'LOWERS', alt: "ZEVRAE women's lowers collection", image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' }
 ];
 
 // Subcategory cards for Men's Jewellery
@@ -195,7 +193,9 @@ export async function getOrFetchAllProducts(): Promise<any[]> {
       gender,
       type: p.subcategory?.toLowerCase() === 'lowers'
         ? 'lower'
-        : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')),
+        : (p.subcategory?.toLowerCase()?.includes('henley')
+          ? 'henley'
+          : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt'))),
       sizes: p.sizes,
       discount: p.discount || (p.compare_price && p.compare_price > p.price
         ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
@@ -224,7 +224,7 @@ export default function ProductGrid({
   | 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'search'
   | 'rings' | 'pendants' | 'earrings' | 'bracelet' | 'keychain' | 'keychains'
   | 'toys' | 'soft-toys' | 'ear'
-  | 'men-tshirts' | 'men-lowers' | 'men-henleys' | 'women-tshirts' | 'women-lowers' | 'women-henleys' | 'unisex'
+  | 'men-tshirts' | 'men-lowers' | 'men-henleys' | 'women-tshirts' | 'women-lowers' | 'unisex'
   | 'jewellery-men' | 'jewellery-women'
   | 'men-rings' | 'men-pendants' | 'men-bracelets' | 'men-earrings'
   | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings'
@@ -301,7 +301,9 @@ export default function ProductGrid({
             gender,
             type: p.subcategory?.toLowerCase() === 'lowers'
               ? 'lower'
-              : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')),
+              : (p.subcategory?.toLowerCase()?.includes('henley')
+                ? 'henley'
+                : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt'))),
             sizes: p.sizes,
             discount: p.discount || (p.compare_price && p.compare_price > p.price
               ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
@@ -343,7 +345,7 @@ export default function ProductGrid({
 
   const activeSubcategoryProducts = dbProducts.filter(p =>
     (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') &&
-    (isHenleyFilter ? p.type === 'henley' : p.type === getApparelType())
+    (isHenleyFilter ? (p.type === 'henley' || p.type === 'henleys') : p.type === getApparelType())
   );
 
   // ─── Gendered jewellery helpers ───────────────────────────────────────────────
@@ -430,7 +432,7 @@ export default function ProductGrid({
         )}
 
         {/* ── GENDERED SUBCATEGORIES (MEN/WOMEN TSHIRTS, LOWERS & HENLEYS) ── */}
-        {['men-tshirts', 'men-lowers', 'men-henleys', 'women-tshirts', 'women-lowers', 'women-henleys'].includes(categoryFilter) && (
+        {['men-tshirts', 'men-lowers', 'men-henleys', 'women-tshirts', 'women-lowers'].includes(categoryFilter) && (
           <motion.section
             key="gendered-category"
             initial={{ opacity: 0, y: 16 }}
@@ -475,22 +477,22 @@ export default function ProductGrid({
           >
             <SectionHeading eyebrow="NEW ARRIVALS" title="Women's Collection" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6">
+              <div className="flex flex-col md:flex-row flex-wrap justify-center gap-[36px] items-center">
                 {womensCategories.map((item, i) => (
                   <motion.div
                     key={item.id}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="group relative flex flex-col cursor-pointer"
+                    transition={{ duration: 0.8, delay: (i % 2) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="w-full md:w-[460px] max-w-[460px] group relative flex flex-col cursor-pointer"
                     onClick={() => navigate(item.path)}
                   >
-                    <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
+                    <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
                       <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
+                        <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                       </div>
                     </div>
                   </motion.div>

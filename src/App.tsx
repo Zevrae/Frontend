@@ -1084,7 +1084,6 @@ return (
             <Route path="/women" element={<ProductGrid categoryFilter="women" />} />
             <Route path="/women/tshirts" element={<ProductGrid categoryFilter="women-tshirts" />} />
             <Route path="/women/lowers" element={<ProductGrid categoryFilter="women-lowers" />} />
-            <Route path="/women/henleys" element={<ProductGrid categoryFilter="women-henleys" />} />
             <Route path="/jewellery" element={<ProductGrid categoryFilter="jewellery-men" />} />
             {/* Men's Jewellery */}
             <Route path="/jewellery/men" element={<ProductGrid categoryFilter="jewellery-men" />} />
