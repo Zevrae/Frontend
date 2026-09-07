@@ -2071,7 +2071,8 @@ export function DiscountsSection() {
   }, []);
 
   const handleSave = async () => {
-    if (!form.code.trim()) { setFormError('Coupon code is required.'); return; }
+    const formattedCode = form.code.trim().toUpperCase();
+    if (!formattedCode) { setFormError('Coupon code is required.'); return; }
     if (!form.value || Number(form.value) <= 0) { setFormError('Value must be greater than 0.'); return; }
     if (form.limit_type === 'uses' && (!form.limit || Number(form.limit) <= 0)) { setFormError('Usage limit must be greater than 0.'); return; }
     if (!form.expiry) { setFormError('Expiry date is required.'); return; }
@@ -2090,7 +2091,7 @@ export function DiscountsSection() {
         });
       } else {
         await discountsApi.create({
-          code: form.code,
+          code: formattedCode,
           type: form.type as Discount['type'],
           value: Number(form.value),
           limit_type: form.limit_type,
@@ -2102,7 +2103,12 @@ export function DiscountsSection() {
       setShowModal(false);
       fetchDiscounts();
     } catch (err: any) {
-      setFormError(err?.response?.data?.message || err.message || 'Save failed.');
+      const msg = err?.response?.data?.message || err.message || 'Save failed.';
+      if (msg.toLowerCase().includes('duplicate')) {
+        setFormError(`Coupon code "${formattedCode}" already exists in your database. Please choose a unique code or edit the existing coupon.`);
+      } else {
+        setFormError(msg);
+      }
     } finally {
       setSaving(false);
     }
