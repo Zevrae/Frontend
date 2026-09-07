@@ -1080,9 +1080,11 @@ return (
             <Route path="/men" element={<ProductGrid categoryFilter="men" />} />
             <Route path="/men/tshirts" element={<ProductGrid categoryFilter="men-tshirts" />} />
             <Route path="/men/lowers" element={<ProductGrid categoryFilter="men-lowers" />} />
+            <Route path="/men/henleys" element={<ProductGrid categoryFilter="men-henleys" />} />
             <Route path="/women" element={<ProductGrid categoryFilter="women" />} />
             <Route path="/women/tshirts" element={<ProductGrid categoryFilter="women-tshirts" />} />
             <Route path="/women/lowers" element={<ProductGrid categoryFilter="women-lowers" />} />
+            <Route path="/women/henleys" element={<ProductGrid categoryFilter="women-henleys" />} />
             <Route path="/jewellery" element={<ProductGrid categoryFilter="jewellery-men" />} />
             {/* Men's Jewellery */}
             <Route path="/jewellery/men" element={<ProductGrid categoryFilter="jewellery-men" />} />
