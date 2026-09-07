@@ -13,7 +13,7 @@ import pendantImg from "./assets/static/PENDANT.webp";
 import braceletImg from "./assets/static/BRACELET.webp";
 import menTshirts from "./assets/static/menTshirts.webp";
 import womenTops from "./assets/static/womenTops.webp";
-import menHenley from "./assets/static/men henley.png";
+import menHenley from "./assets/static/men henley.jpeg";
 import menRingImg from "./assets/men ring.png";
 import menPendantImg from "./assets/men pendant.png";
 import menEarringsImg from "./assets/men earrings.png";
