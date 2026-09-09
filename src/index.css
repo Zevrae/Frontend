@@ -21,6 +21,11 @@
   --color-brand-white: #f5f5f5;
 }
 
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
 /* ═══════════════════════════════════════════════
    DYNAMIC CATEGORY THEMES
    ───────────────────────────────────────────────
