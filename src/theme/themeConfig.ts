@@ -15,6 +15,7 @@
  *   /accessories/soft-toys  -> "accessories"
  *   /jewellery/men/rings    -> "jewellery"
  *   /men/tshirts            -> "clothing"
+ *   /customize              -> "clothing"
  *   /product/64f2c1         -> null (persist current theme)
  *   /bag, /checkout, /profile, /admin/*, policy pages, etc. -> null
  */
@@ -33,6 +34,7 @@ export function getThemeForPath(pathname: string): ThemeName | null {
     case undefined: // "/"
     case 'men':
     case 'women':
+    case 'customize':
       return 'clothing';
     default:
       // product/:id, bag, checkout, profile, admin*, ai-wardrobe, policy
