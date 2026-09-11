@@ -52,17 +52,26 @@ export function usePrintCanvas(canvasEl: React.RefObject<HTMLCanvasElement>, wid
   }, [width, height]);
 
   api.current.addImage = (dataUrl: string, onDone?: () => void) => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    fabric.Image.fromURL(dataUrl, (img: any) => {
-      if (designRef.current) canvas.remove(designRef.current);
+    // If the Fabric canvas isn't ready yet (e.g. garment data still loading),
+    // retry once after a short delay so the upload isn't silently dropped.
+    if (!fabricRef.current) {
+      setTimeout(() => api.current.addImage(dataUrl, onDone), 150);
+      return;
+    }
+    fabric.Image.fromURL(dataUrl, (img: any, isError: boolean) => {
+      // Always read the *live* canvas ref inside the async callback — the
+      // canvas may have been recreated (width/height change) between the
+      // fromURL call and this callback firing.
+      const liveCanvas = fabricRef.current;
+      if (!liveCanvas || isError || !img) return;
+      if (designRef.current) liveCanvas.remove(designRef.current);
       const targetWidth = Math.min(width, height) * 0.8;
       img.scaleToWidth(targetWidth);
       img.set({ left: width / 2, top: height / 2, originX: 'center', originY: 'center' });
-      canvas.add(img);
-      canvas.setActiveObject(img);
+      liveCanvas.add(img);
+      liveCanvas.setActiveObject(img);
       designRef.current = img;
-      canvas.requestRenderAll();
+      liveCanvas.requestRenderAll();
       if (onDone) onDone();
     });
   };
