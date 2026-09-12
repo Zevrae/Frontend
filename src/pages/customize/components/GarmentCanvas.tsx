@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { usePrintCanvas, compositeStagePNG, STAGE_WIDTH, STAGE_HEIGHT } from '../hooks/usePrintCanvas';
+import { usePrintCanvas, compositeStagePNG, STAGE_WIDTH, STAGE_HEIGHT, EXPORT_MULTIPLIER } from '../hooks/usePrintCanvas';
 import type { CustomizableGarment } from '../../../api/customization';
 import { getPrintAreaPx, getGarmentImages } from '../garmentHelpers';
 
@@ -38,8 +38,9 @@ const GarmentCanvas = forwardRef<GarmentCanvasHandle, Props>(function GarmentCan
     exportComposite: () =>
       compositeStagePNG({
         garmentImgSrc: garmentImgSrc ?? '',
-        designDataUrl: api.current.hasImage() ? api.current.exportDesignLayer() : null,
+        designDataUrl: api.current.hasImage() ? api.current.exportDesignLayer(EXPORT_MULTIPLIER) : null,
         printArea,
+        multiplier: EXPORT_MULTIPLIER,
       }),
   }));
 
