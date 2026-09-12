@@ -389,7 +389,7 @@ return (
 
         {/* Coupon Strip */}
         <div className="w-full bg-black text-white text-center py-[9px] text-[13px] tracking-[0.25em] uppercase font-semibold font-plex-mono select-none">
-          USE <span className="text-[#daa520]">ZEV10</span> TO GET <span className="text-[#daa520]">10%</span> OFF
+          USE <span className="text-[#daa520]">ZEV10</span> TO GET <span className="text-[#daa520]">15%</span> OFF
         </div>
 
         {/* Main Navbar */}
