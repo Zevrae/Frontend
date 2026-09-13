@@ -19,6 +19,8 @@ import menPendantImg from "./assets/men pendant.webp";
 import menEarringsImg from "./assets/men earrings.webp";
 import menBraceletImg from "./assets/men bracelet.webp";
 
+const resolveImg = (img: any): string => (img && typeof img === 'object' && 'src' in img ? img.src : img || '');
+
 const mensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE men's T-shirts collection", image: menTshirts, path: '/men/tshirts' },
   { id: 'lowers', name: 'LOWERS', alt: "ZEVRAE men's lowers collection", image: 'https://i.ibb.co/RGyBrL7q/THE-DRAGON-LOWER-FRONT.jpg', path: '/men/lowers' },
@@ -48,7 +50,7 @@ const womensJewelleryCategories = [
 
 const accessoriesCategories = [
   { id: 'keychains', name: 'KEYCHAINS', alt: 'ZEVRAE keychains', image: keychainImg, fit: 'contain', path: '/accessories/keychains' },
-  { id: 'soft-toys', name: 'SOFT TOYS', alt: 'ZEVRAE soft toys', image: stuffedAnimalImg, fit: 'cover', path: '/accessories/soft-toys' }
+  { id: 'soft-toys', name: 'SOFT TOYS', alt: 'ZEVRAE soft toys', image: (stuffedAnimalImg as any)?.src || stuffedAnimalImg, fit: 'cover', path: '/accessories/soft-toys' }
 ];
 
 // ─── Reusable Jewellery Subcategory Grid ─────────────────────────────────────
@@ -68,7 +70,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
         >
           <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
             <img
-              src={item.image}
+              src={resolveImg(item.image)}
               alt={item.alt || item.name}
               loading="lazy"
               decoding="async"
@@ -381,7 +383,7 @@ export default function ProductGrid({
                     onClick={() => navigate(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                      <img src={resolveImg(item.image)} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -460,7 +462,7 @@ export default function ProductGrid({
                     onClick={() => navigate(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                      <img src={resolveImg(item.image)} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -506,7 +508,7 @@ export default function ProductGrid({
                     onClick={() => navigate(item.path)}
                   >
                     <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" />
+                      <img src={resolveImg(item.image)} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 text-[var(--theme-text)]">{item.name}</h3>

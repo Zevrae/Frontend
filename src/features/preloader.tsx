@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { usePreloader } from "./PreloaderContext";
@@ -27,7 +29,7 @@ const useIsoLayoutEffect =
 
 interface EditorialImage {
   id: string;
-  url: string;
+  url: any;
 }
 
 const STACK: EditorialImage[] = [
@@ -225,7 +227,7 @@ export function Preloader() {
             {STACK.map((image, i) => (
               <img
                 key={image.id}
-                src={image.url}
+                src={image.url?.src || image.url}
                 alt=""
                 className="zv-plimg absolute inset-0 h-full w-full object-cover shadow-[0_16px_50px_-12px_rgba(0,0,0,0.6)]"
                 style={{ zIndex: 10 + i }}

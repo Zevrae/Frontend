@@ -982,7 +982,7 @@ return (
             {/* ── PHOTO PLACEHOLDER — replace src with <video> when ready ── */}
             <img
               ref={heroImageRef}
-              src={activeHeroImage}
+              src={typeof activeHeroImage === 'string' ? activeHeroImage : (activeHeroImage as any)?.src || ''}
               alt="ZEVRAE Contemporary Luxury"
               fetchPriority="high"
               decoding="sync"

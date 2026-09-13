@@ -29,12 +29,12 @@ interface Collection {
   sub: string;
   menRoute: string;
   womenRoute: string;
-  image: string;
-  menImage: string;
-  womenImage: string;
+  image: any;
+  menImage: any;
+  womenImage: any;
   isContain?: boolean;
   /** Optional hero section background image for the homepage hero when this collection is active. */
-  heroImage?: string;
+  heroImage?: any;
   /** Hero image filter brightness (0–1+). Falls back to --hero-brightness :root default (clothing value). */
   heroBrightness?: number;
   /** Hero vignette outer stop opacity (0–1). Falls back to --hero-vignette-opacity :root default (clothing value). */
@@ -120,7 +120,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
 
       <div className={`cs-card__img-wrap ${col.isContain ? 'cs-card__img-wrap--contain' : ''}`}>
         <img
-          src={col.image}
+          src={col.image?.src || col.image}
           alt={col.label}
           className="cs-card__img cs-card__img--default cs-card__img--visible"
           loading="lazy"
@@ -128,7 +128,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           draggable={false}
         />
         <img
-          src={col.menImage}
+          src={col.menImage?.src || col.menImage}
           alt={`${col.label} Men`}
           className={`cs-card__img cs-card__img--men ${hovered === 'men' ? 'cs-card__img--visible' : ''}`}
           loading="lazy"
@@ -136,7 +136,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           draggable={false}
         />
         <img
-          src={col.womenImage}
+          src={col.womenImage?.src || col.womenImage}
           alt={`${col.label} Women`}
           className={`cs-card__img cs-card__img--women ${hovered === 'women' ? 'cs-card__img--visible' : ''}`}
           loading="lazy"

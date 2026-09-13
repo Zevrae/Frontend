@@ -14,27 +14,34 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "paths": {
       "@/*": [
+        "./src/*",
         "./*"
       ]
     },
-    "allowImportingTsExtensions": true,
     "noEmit": true,
     "strict": false,
     "incremental": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "exclude": [
     "src/features/BAG/*",
-    "read_models.js"
+    "read_models.js",
+    "node_modules"
   ],
   "include": [
-    "**/*.mts",
+    "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next/types/**/*.ts"
   ]
 }

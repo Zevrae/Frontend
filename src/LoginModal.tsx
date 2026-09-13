@@ -11,6 +11,11 @@ import {
 } from './components/ui/dialog';
 import { Button } from './components/ui/button';
 
+const GOOGLE_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID) ||
+  '';
+
 declare global {
   interface Window {
     google?: {
@@ -61,7 +66,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const clientId = GOOGLE_CLIENT_ID;
     if (!clientId) return;
 
     let cancelled = false;
@@ -374,7 +379,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </span>
             </div>
 
-            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+            {GOOGLE_CLIENT_ID ? (
               <div className="flex flex-col items-center justify-center w-full gap-2">
                 <div ref={googleBtnRef} className="w-full flex justify-center" />
                 {!googleReady && (

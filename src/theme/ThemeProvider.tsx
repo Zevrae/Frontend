@@ -1,5 +1,7 @@
+'use client';
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 import { getThemeForPath, DEFAULT_THEME, type ThemeName } from './themeConfig';
 
 interface ThemeContextValue {
@@ -60,14 +62,8 @@ export function useSetTheme(): (theme: ThemeName) => void {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  let pathname = '/';
-  try {
-    pathname = useLocation().pathname;
-  } catch {
-    if (typeof window !== 'undefined') {
-      pathname = window.location.pathname;
-    }
-  }
+  const currentPathname = usePathname();
+  const pathname = currentPathname || '/';
 
   const [theme, setThemeState] = useState<ThemeName>(
     () => getThemeForPath(pathname) ?? readStoredTheme() ?? DEFAULT_THEME,

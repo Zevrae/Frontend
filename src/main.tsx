@@ -1,16 +1,16 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App.tsx';
+import App from './App';
 import './index.css';
-import { CartProvider } from './CartContext.tsx';
-import { AuthModalProvider } from './AuthModalContext.tsx';
-import { AuthProvider } from './context/AuthContext.tsx';
-import { PreloaderProvider } from './features/PreloaderContext.tsx';
-import { PageTransitionProvider } from './features/PageTransitionContext.tsx';
-import { ThemeProvider } from './theme/ThemeProvider.tsx';
-import { CollectionTransitionProvider } from './features/CollectionTransitionContext.tsx';
-import { ActiveCollectionProvider } from './features/ActiveCollectionContext.tsx';
+import { CartProvider } from './CartContext';
+import { AuthModalProvider } from './AuthModalContext';
+import { AuthProvider } from './context/AuthContext';
+import { PreloaderProvider } from './features/PreloaderContext';
+import { PageTransitionProvider } from './features/PageTransitionContext';
+import { ThemeProvider } from './theme/ThemeProvider';
+import { CollectionTransitionProvider } from './features/CollectionTransitionContext';
+import { ActiveCollectionProvider } from './features/ActiveCollectionContext';
 
 
 createRoot(document.getElementById('root')!).render(
