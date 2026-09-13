@@ -21,7 +21,6 @@ import { categoriesApi, Category } from '../api/categories';
 import { discountsApi, Discount } from '../api/discounts';
 import { ordersApi, Order } from '../api/orders';
 import { analysisApi, AnalysisSummary } from '../api/analysis';
-import { generateReceiptPdf } from '../utils/generateReceiptPdf';
 import RichTextEditor from './RichTextEditor';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -112,7 +111,6 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         transition={{ duration: 0.2 }}
         className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm w-full max-w-lg max-h-full flex flex-col"
         onClick={e => e.stopPropagation()}
-        data-lenis-prevent
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(var(--theme-text-rgb),0.1)] flex-shrink-0">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">{title}</h3>
@@ -120,7 +118,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
             <X size={16} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto" data-lenis-prevent>{children}</div>
+        <div className="p-6 overflow-y-auto">{children}</div>
       </motion.div>
     </motion.div>
   );
@@ -672,7 +670,10 @@ export function OrdersSection({ orders, loading, errorMsg, onUpdateStatus }: {
                                   </div>
                                   {/* Download Receipt */}
                                   <button
-                                    onClick={() => generateReceiptPdf(order)}
+                                    onClick={async () => {
+                                      const { generateReceiptPdf } = await import('../utils/generateReceiptPdf');
+                                      generateReceiptPdf(order);
+                                    }}
                                     className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[9px] uppercase tracking-[0.15em] font-sans border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
                                   >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

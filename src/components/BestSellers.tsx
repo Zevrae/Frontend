@@ -306,6 +306,7 @@ export function BestSellers() {
                         alt={product.name}
                         className="bs-product__img"
                         loading="lazy"
+                        decoding="async"
                         draggable={false}
                       />
                       {/* Discount badge — only if product has one */}

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
-import stuffedAnimalImg from './assets/stuffed animal.jpg';
+import stuffedAnimalImg from './assets/stuffed animal.webp';
 import { productsApi } from './api/products';
 import ringImg from "./assets/static/RING.webp";
 import keychainImg from "./assets/static/KEYCHAIN.webp";
@@ -13,11 +13,11 @@ import pendantImg from "./assets/static/PENDANT.webp";
 import braceletImg from "./assets/static/BRACELET.webp";
 import menTshirts from "./assets/static/menTshirts.webp";
 import womenTops from "./assets/static/womenTops.webp";
-import menHenley from "./assets/static/men henley.jpeg";
-import menRingImg from "./assets/men ring.png";
-import menPendantImg from "./assets/men pendant.png";
-import menEarringsImg from "./assets/men earrings.png";
-import menBraceletImg from "./assets/men bracelet.png";
+import menHenley from "./assets/static/men henley.webp";
+import menRingImg from "./assets/men ring.webp";
+import menPendantImg from "./assets/men pendant.webp";
+import menEarringsImg from "./assets/men earrings.webp";
+import menBraceletImg from "./assets/men bracelet.webp";
 
 const mensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE men's T-shirts collection", image: menTshirts, path: '/men/tshirts' },
@@ -70,6 +70,8 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
             <img
               src={item.image}
               alt={item.alt || item.name}
+              loading="lazy"
+              decoding="async"
               className={`absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'} transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100`}
               referrerPolicy="no-referrer"
             />
@@ -89,7 +91,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
 // ─── Shared section heading ───────────────────────────────────────────────────
 const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
   const navigate = useNavigate();
-  const currentPath = window.location.pathname;
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
   const handleBack = () => {
     const eyebrowLower = eyebrow.toLowerCase();
@@ -102,6 +104,8 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
       navigate('/men');
     } else if (eyebrowLower === "women's collection") {
       navigate('/women');
+    } else if (eyebrowLower === "accessories") {
+      navigate('/accessories');
     } else if (currentPath.startsWith('/jewellery')) {
       navigate('/#jewellery');
     } else if (currentPath.startsWith('/accessories')) {
@@ -147,6 +151,7 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
 // Cache the products globally so returning from a single product page is instant
 // and so the BestSellers component can share the same data without a second fetch.
 let cachedDbProducts: any[] | null = null;
+let pendingFetchPromise: Promise<any[]> | null = null;
 
 /**
  * Returns the cached product list if available; otherwise fetches all active
@@ -157,59 +162,68 @@ let cachedDbProducts: any[] | null = null;
  */
 export async function getOrFetchAllProducts(): Promise<any[]> {
   if (cachedDbProducts) return cachedDbProducts;
+  if (pendingFetchPromise) return pendingFetchPromise;
 
-  const { productsApi } = await import('./api/products');
-  let allData: any[] = [];
-  let currentPage = 1;
-  let hasMore = true;
+  pendingFetchPromise = (async () => {
+    try {
+      const { productsApi } = await import('./api/products');
+      let allData: any[] = [];
+      let currentPage = 1;
+      let hasMore = true;
 
-  while (hasMore) {
-    const response: any = await productsApi.list({ status: 'active', limit: 100, page: currentPage });
-    const items = response.data || [];
-    const pagination = response.pagination;
-    if (items.length > 0) allData = [...allData, ...items];
-    if (pagination && currentPage >= pagination.pages) hasMore = false;
-    else if (items.length < 100) hasMore = false;
-    else currentPage++;
-  }
+      while (hasMore) {
+        const response: any = await productsApi.list({ status: 'active', limit: 100, page: currentPage });
+        const items = response.data || [];
+        const pagination = response.pagination;
+        if (items.length > 0) allData = [...allData, ...items];
+        if (pagination && currentPage >= pagination.pages) hasMore = false;
+        else if (items.length < 100) hasMore = false;
+        else currentPage++;
+      }
 
-  const formatted = allData.map((p: any) => {
-    const catLower = p.category?.toLowerCase() || '';
-    const isJewellery = catLower === 'jewellery' || catLower.startsWith('jewellery/');
-    const isAccessories = catLower === 'accessories';
-    const isMenJewellery = catLower === 'jewellery/men';
-    const isWomenJewellery = catLower === 'jewellery/women';
-    let gender: string;
-    if (isMenJewellery) gender = 'jewellery-men';
-    else if (isWomenJewellery) gender = 'jewellery-women';
-    else gender = catLower;
-    return {
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      originalPrice: p.compare_price,
-      label: `${p.category} Premium`,
-      category: (isJewellery || isAccessories) ? p.subcategory?.toLowerCase() : catLower || '',
-      gender,
-      type: p.subcategory?.toLowerCase() === 'lowers'
-        ? 'lower'
-        : (p.subcategory?.toLowerCase()?.includes('henley')
-          ? 'henley'
-          : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt'))),
-      sizes: p.sizes,
-      discount: p.discount || (p.compare_price && p.compare_price > p.price
-        ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
-        : undefined),
-      description: p.description,
-      frontImg: p.images?.[0] || '',
-      backImg: p.images?.[1] || p.images?.[0] || '',
-      rawCategory: p.category || '',
-      rawSubcategory: p.subcategory || '',
-    };
-  });
+      const formatted = allData.map((p: any) => {
+        const catLower = p.category?.toLowerCase() || '';
+        const isJewellery = catLower === 'jewellery' || catLower.startsWith('jewellery/');
+        const isAccessories = catLower === 'accessories';
+        const isMenJewellery = catLower === 'jewellery/men';
+        const isWomenJewellery = catLower === 'jewellery/women';
+        let gender: string;
+        if (isMenJewellery) gender = 'jewellery-men';
+        else if (isWomenJewellery) gender = 'jewellery-women';
+        else gender = catLower;
+        return {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          originalPrice: p.compare_price,
+          label: `${p.category} Premium`,
+          category: (isJewellery || isAccessories) ? p.subcategory?.toLowerCase() : catLower || '',
+          gender,
+          type: p.subcategory?.toLowerCase() === 'lowers'
+            ? 'lower'
+            : (p.subcategory?.toLowerCase()?.includes('henley')
+              ? 'henley'
+              : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt'))),
+          sizes: p.sizes,
+          discount: p.discount || (p.compare_price && p.compare_price > p.price
+            ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
+            : undefined),
+          description: p.description,
+          frontImg: p.images?.[0] || '',
+          backImg: p.images?.[1] || p.images?.[0] || '',
+          rawCategory: p.category || '',
+          rawSubcategory: p.subcategory || '',
+        };
+      });
 
-  cachedDbProducts = formatted;
-  return formatted;
+      cachedDbProducts = formatted;
+      return formatted;
+    } finally {
+      pendingFetchPromise = null;
+    }
+  })();
+
+  return pendingFetchPromise;
 }
 
 /** Returns the current cache snapshot synchronously (may be null if not yet fetched). */
@@ -246,90 +260,39 @@ export default function ProductGrid({
 
       setIsLoading(true);
       try {
-        let allData: any[] = [];
-        let currentPage = 1;
-        let hasMore = true;
-
-        // Loop to fetch all pages of active products
-        while (hasMore) {
-          const response: any = await productsApi.list({
-            status: 'active',
-            limit: 100,
-            page: currentPage
-          });
-
-          const items = response.data || [];
-          const pagination = response.pagination;
-
-          if (items.length > 0) {
-            allData = [...allData, ...items];
-          }
-
-          if (pagination && currentPage >= pagination.pages) {
-            hasMore = false;
-          } else if (items.length < 100) {
-            hasMore = false;
-          } else {
-            currentPage++;
-          }
-        }
-
-        const formatted = allData.map((p: any) => {
-          const catLower = p.category?.toLowerCase() || '';
-          const isJewellery = catLower === 'jewellery' || catLower.startsWith('jewellery/');
-          const isAccessories = catLower === 'accessories';
-          const isMenJewellery = catLower === 'jewellery/men';
-          const isWomenJewellery = catLower === 'jewellery/women';
-
-          // gender is used for top-level filtering
-          let gender: string;
-          if (isMenJewellery) gender = 'jewellery-men';
-          else if (isWomenJewellery) gender = 'jewellery-women';
-          else gender = catLower;
-
-          return {
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            originalPrice: p.compare_price,
-            label: `${p.category} Premium`,
-            // For jewellery & accessories use subcategory as the filter key;
-            // for apparel use the top-level category (men/women/unisex)
-            category: (isJewellery || isAccessories)
-              ? p.subcategory?.toLowerCase()
-              : catLower || '',
-            gender,
-            type: p.subcategory?.toLowerCase() === 'lowers'
-              ? 'lower'
-              : (p.subcategory?.toLowerCase()?.includes('henley')
-                ? 'henley'
-                : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt'))),
-            sizes: p.sizes,
-            discount: p.discount || (p.compare_price && p.compare_price > p.price
-              ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
-              : undefined),
-            description: p.description,
-            frontImg: p.images?.[0] || '',
-            backImg: p.images?.[1] || p.images?.[0] || '',
-          };
-        });
-        cachedDbProducts = formatted;
+        const formatted = await getOrFetchAllProducts();
         setDbProducts(formatted);
       } catch (err) {
-        console.error('Failed to fetch DB products', err);
+        console.error('Failed to load products:', err);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchDbProducts();
   }, [categoryFilter]);
 
-  // ─── Product pools ───────────────────────────────────────────────────────────
-  const dbMenProducts = dbProducts.filter(p => p.gender === 'men' || p.gender === 'unisex');
-  const dbWomenProducts = dbProducts.filter(p => p.gender === 'women' || p.gender === 'unisex');
-  const dbJewelleryMenProducts = dbProducts.filter(p => p.gender === 'jewellery-men');
-  const dbJewelleryWomenProducts = dbProducts.filter(p => p.gender === 'jewellery-women');
-  const dbAccessoriesProducts = dbProducts.filter(p => p.gender === 'accessories');
+  // ─── Memoized Product pools ──────────────────────────────────────────────────
+  const dbMenProducts = useMemo(
+    () => dbProducts.filter(p => p.gender === 'men' || p.gender === 'unisex'),
+    [dbProducts]
+  );
+  const dbWomenProducts = useMemo(
+    () => dbProducts.filter(p => p.gender === 'women' || p.gender === 'unisex'),
+    [dbProducts]
+  );
+  const dbJewelleryMenProducts = useMemo(
+    () => dbProducts.filter(p => p.gender === 'jewellery-men'),
+    [dbProducts]
+  );
+  const dbJewelleryWomenProducts = useMemo(
+    () => dbProducts.filter(p => p.gender === 'jewellery-women'),
+    [dbProducts]
+  );
+  const dbAccessoriesProducts = useMemo(
+    () => dbProducts.filter(p => p.gender === 'accessories'),
+    [dbProducts]
+  );
   const allWomenProducts = dbWomenProducts;
 
   // ─── Apparel subcategory helpers ─────────────────────────────────────────────
@@ -337,49 +300,57 @@ export default function ProductGrid({
   const isTshirtFilter = categoryFilter.includes('tshirts');
   const isHenleyFilter = categoryFilter.includes('henleys');
 
-  const getApparelType = () => {
+  const getApparelType = useCallback(() => {
     if (isTshirtFilter) return 'tshirt';
     if (isHenleyFilter) return 'henley';
     return 'lower';
-  };
+  }, [isTshirtFilter, isHenleyFilter]);
 
-  const activeSubcategoryProducts = dbProducts.filter(p =>
-    (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') &&
-    (isHenleyFilter ? (p.type === 'henley' || p.type === 'henleys') : p.type === getApparelType())
-  );
+  const activeSubcategoryProducts = useMemo(() => {
+    const apparelType = getApparelType();
+    return dbProducts.filter(p =>
+      (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') &&
+      (isHenleyFilter ? (p.type === 'henley' || p.type === 'henleys') : p.type === apparelType)
+    );
+  }, [dbProducts, isMenFilter, isHenleyFilter, getApparelType]);
 
   // ─── Gendered jewellery helpers ───────────────────────────────────────────────
-  const JEWELLERY_MEN_SUBS = ['men-rings', 'men-pendants', 'men-bracelets', 'men-earrings'];
-  const JEWELLERY_WOMEN_SUBS = ['women-rings', 'women-pendants', 'women-bracelets', 'women-earrings'];
-  const isGenderedJewellerySubcategory = [...JEWELLERY_MEN_SUBS, ...JEWELLERY_WOMEN_SUBS].includes(categoryFilter);
+  const JEWELLERY_MEN_SUBS = useMemo(() => ['men-rings', 'men-pendants', 'men-bracelets', 'men-earrings'], []);
+  const JEWELLERY_WOMEN_SUBS = useMemo(() => ['women-rings', 'women-pendants', 'women-bracelets', 'women-earrings'], []);
+  const isGenderedJewellerySubcategory = useMemo(
+    () => [...JEWELLERY_MEN_SUBS, ...JEWELLERY_WOMEN_SUBS].includes(categoryFilter),
+    [JEWELLERY_MEN_SUBS, JEWELLERY_WOMEN_SUBS, categoryFilter]
+  );
 
-  const getJewellerySubcategoryLabel = () => {
+  const getJewellerySubcategoryLabel = useCallback(() => {
     const parts = categoryFilter.split('-');
     if (parts.length < 2) return '';
     return parts.slice(1).join(' ').toUpperCase();
-  };
+  }, [categoryFilter]);
 
-  const getGenderedJewelleryProducts = () => {
+  const getGenderedJewelleryProducts = useCallback(() => {
     const isMenSub = categoryFilter.startsWith('men-');
     const [, ...subParts] = categoryFilter.split('-');
     const sub = subParts.join('').toLowerCase(); // "rings", "pendants", "bracelets", "earrings"
     const pool = isMenSub ? dbJewelleryMenProducts : dbJewelleryWomenProducts;
     if (!sub) return pool;
     return pool.filter(p => p.category?.toLowerCase() === sub);
-  };
+  }, [categoryFilter, dbJewelleryMenProducts, dbJewelleryWomenProducts]);
 
-  const openProduct = (product: any) => {
+  const openProduct = useCallback((product: any) => {
     navigate(`/product/${product.id}`, { state: { product } });
-  };
+  }, [navigate]);
 
   // ─── Search results ───────────────────────────────────────────────────────────
-  const searchResults = categoryFilter === 'search' && searchTerm
-    ? dbProducts.filter(p =>
-        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
+  const searchResults = useMemo(() => {
+    if (categoryFilter !== 'search' || !searchTerm) return [];
+    const lower = searchTerm.toLowerCase();
+    return dbProducts.filter(p =>
+      p.name?.toLowerCase().includes(lower) ||
+      p.description?.toLowerCase().includes(lower) ||
+      p.category?.toLowerCase().includes(lower)
+    );
+  }, [categoryFilter, searchTerm, dbProducts]);
 
   return (
     <>
@@ -410,7 +381,7 @@ export default function ProductGrid({
                     onClick={() => navigate(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -489,7 +460,7 @@ export default function ProductGrid({
                     onClick={() => navigate(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -535,7 +506,7 @@ export default function ProductGrid({
                     onClick={() => navigate(item.path)}
                   >
                     <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <img src={item.image} alt={item.alt || item.name} className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" />
+                      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] uppercase text-center w-full px-2 text-[var(--theme-text)]">{item.name}</h3>
@@ -545,6 +516,33 @@ export default function ProductGrid({
                 ))}
               </div>
             </div>
+            {isLoading ? (
+              <div className="w-full flex justify-center py-24">
+                <div className="animate-pulse w-8 h-8 rounded-full bg-[var(--theme-accent)]/20" />
+              </div>
+            ) : dbAccessoriesProducts.length > 0 && (
+              <div className="max-w-[1400px] mx-auto px-6 md:px-12 mt-24">
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)] mb-8 text-center md:text-left"
+                >
+                  FROM OUR CATALOG
+                </motion.h2>
+                <div className="pinterest-grid">
+                  {dbAccessoriesProducts.map((item, i) => (
+                    <PinterestCard
+                      key={item.id}
+                      product={item}
+                      index={i}
+                      onClick={() => openProduct(item)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.section>
         )}
 

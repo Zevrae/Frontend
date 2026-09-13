@@ -13,7 +13,6 @@ import {
   ReceiptPrinter,
   type ReceiptPrinterStage,
 } from './features/ReceiptPrinter';
-import { generateReceiptPdf } from './utils/generateReceiptPdf';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 
 
@@ -71,8 +70,9 @@ export default function CheckoutPage() {
   }, []);
 
   /** Generate and download a receipt as a PDF file */
-  const downloadReceipt = useCallback(() => {
+  const downloadReceipt = useCallback(async () => {
     if (!completedOrder) return;
+    const { generateReceiptPdf } = await import('./utils/generateReceiptPdf');
     generateReceiptPdf(completedOrder, completedPaymentMethod || undefined);
   }, [completedOrder, completedPaymentMethod]);
 

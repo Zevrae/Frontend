@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getThemeForPath, DEFAULT_THEME, type ThemeName } from './themeConfig';
 
@@ -60,28 +60,25 @@ export function useSetTheme(): (theme: ThemeName) => void {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const location = useLocation();
-  // Initialization order: a category route (e.g. /jewellery/...) always
-  // wins, since that's an explicit, unambiguous signal. Otherwise fall back
-  // to whatever theme was last persisted (so refreshing on /product/:id or
-  // /checkout doesn't flash back to DEFAULT_THEME), and only use
-  // DEFAULT_THEME when neither is available (first-ever visit, or a
-  // corrupted/missing localStorage value).
+  let pathname = '/';
+  try {
+    pathname = useLocation().pathname;
+  } catch {
+    if (typeof window !== 'undefined') {
+      pathname = window.location.pathname;
+    }
+  }
+
   const [theme, setThemeState] = useState<ThemeName>(
-    () => getThemeForPath(location.pathname) ?? readStoredTheme() ?? DEFAULT_THEME,
+    () => getThemeForPath(pathname) ?? readStoredTheme() ?? DEFAULT_THEME,
   );
 
-  // Route change only overrides the palette when the new route actually
-  // belongs to a category. Non-category routes (product detail, cart,
-  // checkout, profile, admin, policy pages...) return `null` and the
-  // currently active theme is left untouched — that's what makes it
-  // "persist" when you open a product instead of a category listing.
   useEffect(() => {
-    const next = getThemeForPath(location.pathname);
+    const next = getThemeForPath(pathname);
     if (next !== null) {
       setThemeState(next);
     }
-  }, [location.pathname]);
+  }, [pathname]);
 
   useEffect(() => {
     // The route only actually swaps to the new URL once the curtain in
@@ -102,5 +99,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((next: ThemeName) => setThemeState(next), []);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  const contextValue = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }

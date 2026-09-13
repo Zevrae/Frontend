@@ -6,15 +6,15 @@ import { useSetTheme } from '../theme/ThemeProvider';
 import { useCollectionTransition } from '../features/CollectionTransitionContext';
 import { useActiveCollection } from '../features/ActiveCollectionContext';
 import type { ThemeName } from '../theme/themeConfig';
-import clothingDefault from '../assets/static/clothing cover page.png';
-import menClothing from '../assets/static/men cloth cover.png';
-import womenClothing from '../assets/static/women cloth cover.png';
-import jewelleryCover from '../assets/jewellery cover page .jpeg';
-import jewelleryMen from '../assets/men jewellery.jpeg';
-import jewelleryWomen from '../assets/women jewellery.jpeg';
-import accessoriesCover from '../assets/static/accessories cover page.jpg';
-import jewelleryHero from '../assets/jewellery hero section.png';
-import accessoriesHero from '../assets/accessories hero section.png';
+import clothingDefault from '../assets/static/clothing cover page.webp';
+import menClothing from '../assets/static/men cloth cover.webp';
+import womenClothing from '../assets/static/women cloth cover.webp';
+import jewelleryCover from '../assets/jewellery cover page .webp';
+import jewelleryMen from '../assets/men jewellery.webp';
+import jewelleryWomen from '../assets/women jewellery.webp';
+import accessoriesCover from '../assets/static/accessories cover page.webp';
+import jewelleryHero from '../assets/jewellery hero section.webp';
+import accessoriesHero from '../assets/accessories hero section.webp';
 
 
 
@@ -124,6 +124,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           alt={col.label}
           className="cs-card__img cs-card__img--default cs-card__img--visible"
           loading="lazy"
+          decoding="async"
           draggable={false}
         />
         <img
@@ -131,6 +132,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           alt={`${col.label} Men`}
           className={`cs-card__img cs-card__img--men ${hovered === 'men' ? 'cs-card__img--visible' : ''}`}
           loading="lazy"
+          decoding="async"
           draggable={false}
         />
         <img
@@ -138,6 +140,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           alt={`${col.label} Women`}
           className={`cs-card__img cs-card__img--women ${hovered === 'women' ? 'cs-card__img--visible' : ''}`}
           loading="lazy"
+          decoding="async"
           draggable={false}
         />
       </div>
@@ -321,6 +324,17 @@ export function CollectionScroller() {
       }, 100);
     }
   }, [activeIdx]);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const h = window.location.hash;
+      if (h === '#clothing') goTo(0);
+      else if (h === '#jewellery') goTo(1);
+      else if (h === '#accessories') goTo(2);
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [goTo]);
 
   const goPrev = () => goTo(activeIdx - 1);
   const goNext = () => goTo(activeIdx + 1);

@@ -21,6 +21,20 @@
       ]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
-  }
+    "noEmit": true,
+    "strict": false,
+    "incremental": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strictNullChecks": true
+  },
+  "exclude": [
+    "src/features/BAG/*",
+    "read_models.js"
+  ],
+  "include": [
+    "**/*.mts",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

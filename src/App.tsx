@@ -1,6 +1,6 @@
 import SEO from './components/SEO';
 import { SEO_CONFIG } from './config/seo';
-import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CollectionScroller } from './components/CollectionScroller';
 import './components/CollectionScroller.css';
 import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react';
@@ -17,7 +17,6 @@ import {
 import LoginModal from './LoginModal';
 import ProductGrid, { getOrFetchAllProducts } from './ProductGrid';
 import CartDrawer from './CartDrawer';
-import ProductPage from './ProductPage';
 import ShinyText from './components';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -28,9 +27,9 @@ import { PageTransitionLoader } from './features/PageTransitionLoader';
 import { usePageTransition } from './features/PageTransitionContext';
 import { CustomCursor } from './features/CustomCursor';
 import { useCollectionTransition } from './features/CollectionTransitionContext';
-import heroImage from './assets/hero section try.png';
-import jewelleryHeroImage from './assets/jewellery hero section.png';
-import accessoriesHeroImage from './assets/accessories hero section.png';
+import heroImage from './assets/hero section try.webp';
+import jewelleryHeroImage from './assets/jewellery hero section.webp';
+import accessoriesHeroImage from './assets/accessories hero section.webp';
 import { useTheme } from './theme/ThemeProvider';
 import { TrustSection } from './components/TrustSection';
 import { Footer } from './components/Footer';
@@ -43,19 +42,21 @@ import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from './config/launch';
 // view a product" path most visitors are on — the admin panel alone
 // (AdminSections.tsx + RichTextEditor) is a large chunk that ~0% of
 // storefront visitors ever need to download.
+const ProductPage = lazy(() => import('./ProductPage'));
 const CheckoutPage = lazy(() => import('./CheckoutPage'));
-const CustomizePage = lazy(() => import('./pages/customize/CustomizePage'));
+const CustomizePage = lazy(() => import('./views/customize/CustomizePage'));
 const BagPage = lazy(() => import('./BagPage'));
 const ProfilePage = lazy(() => import('./ProfilePage'));
 const AdminGate = lazy(() => import('./admin/AdminGate'));
-const ComingSoon = lazy(() => import('./pages/comingsoon/ComingSoon'));
-const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const CustomerCare = lazy(() => import('./pages/customerCare'));
-const SizeGuide = lazy(() => import('./pages/sizeGuide'));
-const ShippingReturns = lazy(() => import('./pages/shippingReturns'));
-const PrivacyPolicy = lazy(() => import('./pages/privacyPolicy'));
-const TermsOfService = lazy(() => import('./pages/termsOfService'));
+const ComingSoon = lazy(() => import('./views/comingsoon/ComingSoon'));
+const VerifyEmail = lazy(() => import('./views/VerifyEmail'));
+const ResetPassword = lazy(() => import('./views/ResetPassword'));
+const CustomerCare = lazy(() => import('./views/customerCare'));
+const SizeGuide = lazy(() => import('./views/sizeGuide'));
+const ShippingReturns = lazy(() => import('./views/shippingReturns'));
+const PrivacyPolicy = lazy(() => import('./views/privacyPolicy'));
+const TermsOfService = lazy(() => import('./views/termsOfService'));
+const UiDemo = lazy(() => import('./views/UiDemo'));
 
 
 export default function App() {
@@ -111,17 +112,15 @@ export default function App() {
       const now = Date.now();
       const start = COUNTDOWN_START_TIMESTAMP.getTime();
       const end = LAUNCH_CONFIG.brandLaunch.getTime();
-      if (isAdmin || now < start || now >= end) {
-        setIsLiveMode(true);
-      } else {
-        setIsLiveMode(false);
-      }
+      const shouldBeLive = isAdmin || now < start || now >= end;
+      setIsLiveMode((prev) => (prev !== shouldBeLive ? shouldBeLive : prev));
+      return { now, end };
     };
-    checkLive();
-    const interval = setInterval(checkLive, 1000);
+    const { now, end } = checkLive();
+    if (isAdmin || now >= end) return;
+    const interval = setInterval(checkLive, 10000);
     return () => clearInterval(interval);
   }, [isAdmin]);
-  const { scrollY } = useScroll();
   const { setIsCartOpen, items } = useCart();
   const { isLoading, hasCompletedOnce } = usePreloader();
   const { trigger: navTransition, isTransitioning } = usePageTransition();
@@ -186,10 +185,18 @@ export default function App() {
   }, [isTransitioning]);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 50;
+          setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -468,6 +475,10 @@ return (
               onMouseLeave={() => setIsJewelleryOpen(false)}
             >
               <button
+                onClick={() => {
+                  setIsJewelleryOpen(false);
+                  navTransition(() => navigate('/jewellery/men'));
+                }}
                 className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
               >
                 JEWELLERY
@@ -515,7 +526,13 @@ return (
               onMouseEnter={() => setIsAccessoriesOpen(true)}
               onMouseLeave={() => setIsAccessoriesOpen(false)}
             >
-              <button className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700">
+              <button 
+                onClick={() => {
+                  setIsAccessoriesOpen(false);
+                  navTransition(() => navigate('/accessories'));
+                }}
+                className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
+              >
                 ACCESSORIES
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
               </button>
@@ -966,8 +983,9 @@ return (
             <img
               ref={heroImageRef}
               src={activeHeroImage}
-              alt=""
-              aria-hidden="true"
+              alt="ZEVRAE Contemporary Luxury"
+              fetchPriority="high"
+              decoding="sync"
               className="absolute inset-0 w-full h-full object-cover"
               style={{
                 filter: 'brightness(var(--hero-brightness)) saturate(1.1)',
@@ -1119,6 +1137,7 @@ return (
             <Route path="/shipping-returns" element={<ShippingReturns />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/ui-demo" element={<UiDemo />} />
             <Route path="/ai-wardrobe" element={<ComingSoon />} />
           </>
         ) : (

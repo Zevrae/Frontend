@@ -138,6 +138,8 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
           <img
             src={product.frontImg}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
             className="pinterest-card__front"
             referrerPolicy="no-referrer"
           />
@@ -152,6 +154,8 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
               ref={backImgRef}
               src={backSrc}
               alt={`${product.name} alternate`}
+              loading="lazy"
+              decoding="async"
               className="pinterest-card__back"
               referrerPolicy="no-referrer"
             />

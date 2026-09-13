@@ -3,12 +3,12 @@ import gsap from "gsap";
 import { usePreloader } from "./PreloaderContext";
 
 // Editorial images for the preloader pile
-import ed01 from "@/src/assets/ed-01.jpg";
-import ed02 from "@/src/assets/ed-02.jpg";
-import ed03 from "@/src/assets/ed-03.jpg";
-import ed04 from "@/src/assets/ed-04.jpg";
-import ed05 from "@/src/assets/ed-05.jpg";
-import ed06 from "@/src/assets/ed-06.jpg";
+import ed01 from "@/src/assets/ed-01.webp";
+import ed02 from "@/src/assets/ed-02.webp";
+import ed03 from "@/src/assets/ed-03.webp";
+import ed04 from "@/src/assets/ed-04.webp";
+import ed05 from "@/src/assets/ed-05.webp";
+import ed06 from "@/src/assets/ed-06.webp";
 
 /**
  * Zevrae — OUTFIT-style Preloader with slide-up reveal.
@@ -279,7 +279,7 @@ export function Preloader() {
               ref={counterRef}
               className="tabular-nums text-[12px] tracking-[0.25em]"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 color: "rgba(var(--theme-text-rgb),0.5)",
               }}
             >

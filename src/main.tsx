@@ -11,7 +11,6 @@ import { PageTransitionProvider } from './features/PageTransitionContext.tsx';
 import { ThemeProvider } from './theme/ThemeProvider.tsx';
 import { CollectionTransitionProvider } from './features/CollectionTransitionContext.tsx';
 import { ActiveCollectionProvider } from './features/ActiveCollectionContext.tsx';
-import SmoothScroll from "./components/SmoothScroll";
 
 
 createRoot(document.getElementById('root')!).render(
@@ -25,9 +24,7 @@ createRoot(document.getElementById('root')!).render(
                 <AuthProvider>
                   <CartProvider>
                     <AuthModalProvider>
-                      <SmoothScroll>
                       <App />
-                      </SmoothScroll>
                     </AuthModalProvider>
                   </CartProvider>
                 </AuthProvider>

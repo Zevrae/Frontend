@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { useAuth } from './hooks/UseAuth';
 import { cartApi, Cart } from './api/cart';
 import { productsApi } from './api/products';
@@ -57,6 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
+      if (typeof window === 'undefined') return [];
       const saved = localStorage.getItem('zevrae_cart_cache') || localStorage.getItem('zevrae_guest_cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
@@ -125,7 +126,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Adds an item to the cart, capping the combined quantity for that
   // product+size at MAX_QTY_PER_SIZE. Returns the quantity actually added
   // (0 if the size was already at the cap) so callers can let the user know.
-  const addToCart = (newItem: CartItem): number => {
+  const addToCart = useCallback((newItem: CartItem): number => {
     let addedQty = 0;
 
     setItems((currentItems) => {
@@ -162,9 +163,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     return addedQty;
-  };
+  }, [token]);
 
-  const removeFromCart = (id: string, size: string) => {
+  const removeFromCart = useCallback((id: string, size: string) => {
     setItems((currentItems) => currentItems.filter((item) => !(item.id === id && item.size === size)));
 
     if (token) {
@@ -176,9 +177,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         })
         .catch((err) => console.error('Failed to sync cart removal:', err));
     }
-  };
+  }, [token]);
 
-  const updateQuantity = (id: string, size: string, delta: number) => {
+  const updateQuantity = useCallback((id: string, size: string, delta: number) => {
     setItems((currentItems) =>
       currentItems
         .map((item) => {
@@ -203,21 +204,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
         })
         .catch((err) => console.error('Failed to sync cart quantity:', err));
     }
-  };
+  }, [token]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
     if (token) {
       cartApi.clearCart().catch((err) => console.error('Failed to clear backend cart:', err));
     }
-  };
+  }, [token]);
 
-  const cartTotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const cartTotal = useMemo(
+    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
+    [items]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      items,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      isCartOpen,
+      setIsCartOpen,
+      cartTotal,
+    }),
+    [items, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, cartTotal]
+  );
 
   return (
-    <CartContext.Provider
-      value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, cartTotal }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );
