@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { useRouter } from 'next/navigation';
 import { usePageTransition } from '../features/PageTransitionContext';
@@ -122,28 +123,28 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
       <span className="cs-card__number">{col.number}</span>
 
       <div className={`cs-card__img-wrap ${col.isContain ? 'cs-card__img-wrap--contain' : ''}`}>
-        <img
+        <Image
           src={col.image?.src || col.image}
           alt={col.label}
+          fill
+          sizes="560px"
           className="cs-card__img cs-card__img--default cs-card__img--visible"
-          loading="lazy"
-          decoding="async"
           draggable={false}
         />
-        <img
+        <Image
           src={col.menImage?.src || col.menImage}
           alt={`${col.label} Men`}
+          fill
+          sizes="560px"
           className={`cs-card__img cs-card__img--men ${hovered === 'men' ? 'cs-card__img--visible' : ''}`}
-          loading="lazy"
-          decoding="async"
           draggable={false}
         />
-        <img
+        <Image
           src={col.womenImage?.src || col.womenImage}
           alt={`${col.label} Women`}
+          fill
+          sizes="560px"
           className={`cs-card__img cs-card__img--women ${hovered === 'women' ? 'cs-card__img--visible' : ''}`}
-          loading="lazy"
-          decoding="async"
           draggable={false}
         />
       </div>

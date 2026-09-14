@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import { Star, ImagePlus, X, Loader2, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/UseAuth';
@@ -202,7 +203,7 @@ export default function ReviewSection({ productId }: ReviewSectionProps) {
             <div className="flex flex-wrap gap-2.5">
               {previews.map((src, idx) => (
                 <div key={src} className="relative w-16 h-16 rounded-lg overflow-hidden border border-[rgba(var(--theme-text-rgb),0.12)]">
-                  <img src={src} alt="Review attachment" className="w-full h-full object-cover" />
+                  <Image fill sizes="64px" unoptimized src={src} alt="Review attachment" className="object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(idx)}
@@ -295,9 +296,9 @@ export default function ReviewSection({ productId }: ReviewSectionProps) {
                         href={src}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-16 h-16 rounded-lg overflow-hidden border border-[rgba(var(--theme-text-rgb),0.12)] block"
+                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-[rgba(var(--theme-text-rgb),0.12)] block"
                       >
-                        <img src={src} alt="Review attachment" className="w-full h-full object-cover" />
+                        <Image fill sizes="64px" src={src} alt="Review attachment" className="object-cover" />
                       </a>
                     ))}
                   </div>

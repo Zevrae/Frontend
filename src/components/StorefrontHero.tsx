@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { useTheme } from '../theme/ThemeProvider';
 import { usePreloader } from '../features/PreloaderContext';
@@ -127,13 +128,14 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
       ref={heroRef}
       className="relative bg-[var(--theme-bg)] overflow-hidden min-h-screen flex flex-col items-center justify-center"
     >
-      <img
+      <Image
         ref={heroImageRef}
         src={typeof activeHeroImage === 'string' ? activeHeroImage : (activeHeroImage as any)?.src || ''}
         alt="ZEVRAE Contemporary Luxury"
-        fetchPriority="high"
-        decoding="sync"
-        className="absolute inset-0 w-full h-full object-cover"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
         style={{
           filter: 'brightness(var(--hero-brightness)) saturate(1.1)',
           objectPosition: 'var(--hero-object-position)',

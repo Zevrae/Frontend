@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import {
   X,
@@ -448,10 +449,12 @@ export default function TryOnModal({
                                     : "border-[rgba(var(--theme-text-rgb),0.12)] hover:border-[rgba(var(--theme-accent-rgb),0.4)]"
                                 }`}
                               >
-                                <img
+                                <Image
                                   src={url}
                                   alt="Garment option"
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  sizes="80px"
+                                  className="object-cover"
                                 />
                                 {isSelected && (
                                   <div className="absolute top-1 right-1 bg-[var(--theme-accent)] rounded-full p-0.5">
@@ -513,11 +516,14 @@ export default function TryOnModal({
                               }}
                             />
                           )}
-                          <img
+                          <Image
                             ref={imgPreviewRef}
                             src={selectedImage!}
                             alt="Preview"
-                            className="max-w-full max-h-full object-contain"
+                            width={400}
+                            height={400}
+                            unoptimized
+                            className="max-w-full max-h-full w-auto h-auto object-contain"
                             onLoad={updateImgRect}
                           />
                           <button
@@ -575,10 +581,13 @@ export default function TryOnModal({
                     {/* Preview + shimmer overlay */}
                     <div className="relative w-full h-72 rounded-xl overflow-hidden bg-[var(--theme-surface)] border border-[rgba(var(--theme-accent-rgb),0.2)] mb-7">
                       {selectedImage && (
-                        <img
+                        <Image
                           src={selectedImage}
                           alt="Processing"
-                          className="w-full h-full object-contain opacity-25"
+                          fill
+                          sizes="300px"
+                          unoptimized
+                          className="object-contain opacity-25"
                         />
                       )}
                       {/* Shimmer sweep */}
@@ -739,9 +748,12 @@ export default function TryOnModal({
                         <div className="absolute bottom-0 right-0 h-full w-px bg-gradient-to-t from-[rgba(var(--theme-accent-rgb),0.4)] to-transparent" />
                       </div>
 
-                      <img
+                      <Image
                         src={generatedImage}
                         alt="AI Try-On Result"
+                        width={450}
+                        height={400}
+                        unoptimized
                         className="w-full object-contain max-h-[400px]"
                       />
 
@@ -880,16 +892,19 @@ export default function TryOnModal({
                                   <div className="flex items-center gap-3 p-3 rounded-xl border border-[rgba(var(--theme-text-rgb),0.07)] bg-[rgba(var(--theme-accent-rgb),0.03)]">
                                     {/* Image preview */}
                                     <div
-                                      className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border transition-all duration-300 ${
+                                      className={`relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border transition-all duration-300 ${
                                         shareImage
                                           ? "border-[rgba(var(--theme-accent-rgb),0.4)] opacity-100"
                                           : "border-[rgba(var(--theme-text-rgb),0.1)] opacity-30 grayscale"
                                       }`}
                                     >
-                                      <img
+                                      <Image
                                         src={generatedImage!}
                                         alt="Try-on"
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        sizes="64px"
+                                        unoptimized
+                                        className="object-cover"
                                       />
                                     </div>
                                     {/* Label */}

@@ -205,6 +205,7 @@
 
 /* Product image */
 .bag-item-image-wrap {
+  position: relative;
   width: clamp(100px, 14vw, 200px);
   aspect-ratio: 1 / 1;
   overflow: hidden;

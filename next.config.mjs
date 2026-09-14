@@ -32,6 +32,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.appwrite.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
+      },
     ],
   },
   async rewrites() {

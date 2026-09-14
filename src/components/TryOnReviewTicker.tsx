@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, X, ZoomIn, MessageSquare } from 'lucide-react';
 import { reviewsApi, Review } from '../api/reviews';
@@ -48,10 +49,12 @@ function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
         transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
         className="relative max-w-lg w-full max-h-[85vh] flex items-center justify-center"
       >
-        <img
+        <Image
           src={src}
           alt="Review photo"
-          className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_60px_rgba(0,0,0,0.8)]"
+          width={512}
+          height={680}
+          className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-xl shadow-[0_0_60px_rgba(0,0,0,0.8)]"
         />
         <button
           onClick={onClose}
@@ -170,9 +173,11 @@ function ReviewPopover({
                   className="relative w-full rounded-xl overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.22)] bg-[var(--theme-surface)] cursor-pointer group"
                   onClick={() => setLightboxSrc(primaryImage)}
                 >
-                  <img
+                  <Image
                     src={primaryImage}
                     alt="Review photo"
+                    width={400}
+                    height={288}
                     className="w-full max-h-72 object-contain group-hover:opacity-90 transition-opacity duration-200"
                   />
                   {/* Zoom hint */}
@@ -191,9 +196,9 @@ function ReviewPopover({
                       <button
                         key={src}
                         onClick={() => setLightboxSrc(src)}
-                        className="w-14 h-14 rounded-lg overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.2)] hover:border-[var(--theme-accent)]/50 transition-colors flex-shrink-0"
+                        className="relative w-14 h-14 rounded-lg overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.2)] hover:border-[var(--theme-accent)]/50 transition-colors flex-shrink-0"
                       >
-                        <img src={src} alt="Review attachment" className="w-full h-full object-cover" />
+                        <Image fill sizes="56px" src={src} alt="Review attachment" className="object-cover" />
                       </button>
                     ))}
                   </div>
@@ -312,8 +317,8 @@ export default function TryOnReviewTicker() {
               >
                 {/* Photo badge or chat icon */}
                 {hasImage ? (
-                  <div className="w-4 h-4 rounded-full overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.4)] flex-shrink-0">
-                    <img src={review.images[0]} alt="" className="w-full h-full object-cover" />
+                  <div className="relative w-4 h-4 rounded-full overflow-hidden border border-[rgba(var(--theme-accent-rgb),0.4)] flex-shrink-0">
+                    <Image fill sizes="16px" src={review.images[0]} alt="" className="object-cover" />
                   </div>
                 ) : (
                   <MessageSquare size={10} strokeWidth={1.5} className="text-[rgba(var(--theme-accent-rgb),0.5)] flex-shrink-0" />

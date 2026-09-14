@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import './ProductCardSober.css';
 
@@ -144,9 +145,11 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
       {/* Image Container */}
       <div ref={wrapRef} className="product-card-sober__image-wrap" data-cursor-image>
         {product.frontImg ? (
-          <img
+          <Image
             src={product.frontImg}
             alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
             className="product-card-sober__front"
             referrerPolicy="no-referrer"
           />
@@ -157,10 +160,12 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
         {/* Back image layer — always rendered (falls back to frontImg) */}
         {backSrc && (
           <>
-            <img
+            <Image
               ref={backImgRef}
               src={backSrc}
               alt={`${product.name} alternate`}
+              fill
+              sizes="(max-width: 768px) 50vw, 33vw"
               className="product-card-sober__back"
               referrerPolicy="no-referrer"
             />

@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import './PinterestCard.css';
 
@@ -135,11 +136,11 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
     >
       <div className="pinterest-card__image-wrap">
         {product.frontImg ? (
-          <img
+          <Image
             src={product.frontImg}
             alt={product.name}
-            loading="lazy"
-            decoding="async"
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
             className="pinterest-card__front"
             referrerPolicy="no-referrer"
           />
@@ -150,12 +151,12 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
         {/* Back image layer — wipe reveal */}
         {backSrc && (
           <>
-            <img
+            <Image
               ref={backImgRef}
               src={backSrc}
               alt={`${product.name} alternate`}
-              loading="lazy"
-              decoding="async"
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
               className="pinterest-card__back"
               referrerPolicy="no-referrer"
             />

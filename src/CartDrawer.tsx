@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { ShoppingBag, X } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -53,9 +54,9 @@ export default function CartDrawer() {
           ) : (
             items.map((item) => (
               <div key={`${item.id}-${item.size}`} className="flex gap-4 group">
-                <div className="w-20 aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-accent-rgb),0.1)] rounded-xs">
+                <div className="relative w-20 aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-accent-rgb),0.1)] rounded-xs">
                   {item.image && (
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <Image fill sizes="80px" src={item.image} alt={item.name} className="object-cover" />
                   )}
                 </div>
                 <div className="flex-1 flex flex-col justify-between py-1">

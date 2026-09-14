@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCustomize } from '../CustomizeContext';
 import { findGarment, findColor } from '../garmentHelpers';
@@ -98,12 +99,12 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
 
         <div className="summary-thumbs">
           <a href={product.frontImg} download="zevrae-custom-front.png">
-            <img src={product.frontImg} alt="Generated front design" />
+            <Image src={product.frontImg} alt="Generated front design" width={110} height={130} unoptimized />
             <span>Front · PNG</span>
           </a>
           {product.backImg && (
             <a href={product.backImg} download="zevrae-custom-back.png">
-              <img src={product.backImg} alt="Generated back design" />
+              <Image src={product.backImg} alt="Generated back design" width={110} height={130} unoptimized />
               <span>Back · PNG</span>
             </a>
           )}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Eye, CheckCircle2, Truck, XCircle,
@@ -289,9 +290,12 @@ function CustomDesignViewer({ items }: { items: Order['items'] }) {
               <div className="flex flex-wrap gap-3">
                 {frontImg && (
                   <div className="flex flex-col gap-1.5">
-                    <img
+                    <NextImage
                       src={frontImg}
                       alt="Front design"
+                      width={96}
+                      height={96}
+                      unoptimized={frontImg.startsWith('data:') || frontImg.startsWith('blob:')}
                       className="w-24 h-24 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)] bg-[var(--theme-bg)]"
                     />
                     <button
@@ -304,9 +308,12 @@ function CustomDesignViewer({ items }: { items: Order['items'] }) {
                 )}
                 {backImg && (
                   <div className="flex flex-col gap-1.5">
-                    <img
+                    <NextImage
                       src={backImg}
                       alt="Back design"
+                      width={96}
+                      height={96}
+                      unoptimized={backImg.startsWith('data:') || backImg.startsWith('blob:')}
                       className="w-24 h-24 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)] bg-[var(--theme-bg)]"
                     />
                     <button
@@ -1102,9 +1109,9 @@ export function ProductsSection() {
         const p = info.row.original;
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[var(--theme-bg)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
+            <div className="relative w-10 h-10 bg-[var(--theme-bg)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
               {p.images?.[0] ? (
-                <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover opacity-80" />
+                <NextImage src={p.images[0]} alt={p.name} fill sizes="40px" className="object-cover opacity-80" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Image size={12} className="text-[rgba(var(--theme-text-rgb),0.2)]" />
@@ -1481,7 +1488,7 @@ export function ProductsSection() {
               <div className="flex flex-wrap gap-4 mb-3">
                 {form.images.map((img, idx) => (
                   <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[rgba(var(--theme-text-rgb),0.2)]">
-                    <img src={img} alt="Product" className="w-full h-full object-cover" />
+                    <NextImage src={img} alt="Product" fill sizes="80px" className="object-cover" />
                     <button
                       onClick={() => handleRemoveExistingImage(img)}
                       className="absolute top-1 right-1 bg-[var(--theme-bg)]/80 p-0.5 rounded-full hover:bg-red-500/80 transition-colors"
@@ -1493,7 +1500,7 @@ export function ProductsSection() {
                 
                 {imageFiles.map((file, idx) => (
                   <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[var(--theme-accent)] opacity-80">
-                    <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                    <NextImage src={URL.createObjectURL(file)} alt="Preview" fill sizes="80px" unoptimized className="object-cover" />
                     <button
                       onClick={() => setImageFiles(files => files.filter((_, i) => i !== idx))}
                       className="absolute top-1 right-1 bg-[var(--theme-bg)]/80 p-0.5 rounded-full hover:bg-red-500/80 transition-colors"
@@ -2397,8 +2404,16 @@ export function AnalysisSection() {
               <div className="space-y-2">
                 {summary.unfulfilledDemand.map((item) => (
                   <div key={item.product?._id} className="flex items-center gap-3 bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.05)] rounded-sm p-3">
-                    <div className="w-10 h-10 bg-[var(--theme-surface)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
-                      {productImage(item.product) && <img src={productImage(item.product)} alt={item.product?.name} className="w-full h-full object-cover" />}
+                    <div className="relative w-10 h-10 bg-[var(--theme-surface)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
+                      {productImage(item.product) && (
+                        <NextImage
+                          src={productImage(item.product)}
+                          alt={item.product?.name || 'Product'}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-sans text-[var(--theme-text)] truncate">{item.product?.name || 'Unknown product'}</p>
@@ -2432,8 +2447,16 @@ export function AnalysisSection() {
                   {summary.topOverall.map((item, i) => (
                     <div key={item.product?._id} className="flex items-center gap-3">
                       <span className="text-[10px] font-mono text-[rgba(var(--theme-text-rgb),0.25)] w-4">{i + 1}</span>
-                      <div className="w-8 h-8 bg-[var(--theme-surface)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
-                        {productImage(item.product) && <img src={productImage(item.product)} alt={item.product?.name} className="w-full h-full object-cover" />}
+                      <div className="relative w-8 h-8 bg-[var(--theme-surface)] rounded-sm overflow-hidden flex-shrink-0 border border-[rgba(var(--theme-text-rgb),0.1)]">
+                        {productImage(item.product) && (
+                          <NextImage
+                            src={productImage(item.product)}
+                            alt={item.product?.name || 'Product'}
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                          />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-sans text-[var(--theme-text)] truncate">{item.product?.name || 'Unknown product'}</p>

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Plus, Edit2, Trash2, Upload, Save, X, RefreshCw, Palette, AlertTriangle } from 'lucide-react';
 import { customizableGarmentsApi, CustomizableGarment, GarmentColor } from '../api/customization';
 
@@ -427,10 +428,13 @@ function GarmentThumb({ src, alt, view }: { src: string | null; alt: string; vie
     );
   }
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={40}
+      height={48}
       onError={() => setFailed(true)}
+      unoptimized={src.startsWith('data:') || src.startsWith('blob:')}
       className="w-10 h-12 object-cover rounded-sm border border-[rgba(var(--theme-text-rgb),0.1)]"
     />
   );

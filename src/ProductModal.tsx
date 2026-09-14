@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Minus, Plus, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -157,10 +158,12 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               onTouchEnd={handleTouchEnd}
             >
               {currentImg ? (
-                <img
+                <Image
                   src={currentImg}
                   alt={`${product.name} ${activeImage}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[rgba(var(--theme-text-rgb),0.2)] font-sans tracking-widest uppercase text-sm">
@@ -201,7 +204,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         : 'border-transparent hover:border-[rgba(var(--theme-text-rgb),0.3)]'
                     }`}
                   >
-                    <img src={img.url} alt={img.type} className="w-full h-full object-cover" />
+                    <Image fill sizes="64px" src={img.url} alt={img.type} className="object-cover" />
                   </button>
                 ))}
               </div>

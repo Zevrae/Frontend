@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Menu, X, Search } from 'lucide-react';
@@ -636,9 +637,11 @@ export function StorefrontNav() {
                           >
                             <div className="flex items-center gap-3">
                               {img && (
-                                <img
+                                <Image
                                   src={img}
                                   alt={p.name}
+                                  width={32}
+                                  height={32}
                                   className="w-8 h-8 object-cover rounded-sm border border-[rgba(var(--theme-accent-rgb),0.2)]"
                                 />
                               )}

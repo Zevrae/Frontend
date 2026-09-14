@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -419,8 +420,8 @@ export default function ProfilePage() {
                   const productInfo = typeof t.product === 'object' ? t.product : null;
                   return (
                     <div key={t.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden group">
-                      <div className="aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden">
-                        <img src={t.imageUrl} alt={productInfo?.name || 'Try-on result'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="relative aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden">
+                        <Image fill sizes="(max-width: 768px) 50vw, 25vw" src={t.imageUrl!} alt={productInfo?.name || 'Try-on result'} className="object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
                       <div className="p-3">
                         <p className="text-[10px] font-sans text-[var(--theme-text)] truncate">{productInfo?.name || 'Product'}</p>

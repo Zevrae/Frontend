@@ -1,4 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
+import Image from 'next/image';
 import { usePrintCanvas, compositeStagePNG, STAGE_WIDTH, STAGE_HEIGHT } from '../hooks/usePrintCanvas';
 import type { CustomizableGarment } from '../../../api/customization';
 import { getPrintAreaPx, getGarmentImages } from '../garmentHelpers';
@@ -50,7 +51,14 @@ const GarmentCanvas = forwardRef<GarmentCanvasHandle, Props>(function GarmentCan
     >
       <span className="stage-label">{label}</span>
       {garmentImgSrc ? (
-        <img className="garment-photo" src={garmentImgSrc} alt={`${garment?.label ?? ''} ${colorId} ${view}`} />
+        <Image
+          className="garment-photo"
+          src={garmentImgSrc}
+          alt={`${garment?.label ?? ''} ${colorId} ${view}`}
+          width={STAGE_WIDTH}
+          height={STAGE_HEIGHT}
+          unoptimized={garmentImgSrc.startsWith('data:') || garmentImgSrc.startsWith('blob:')}
+        />
       ) : (
         <div className="garment-photo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--zc-muted)' }}>
           No {view} photo yet

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { ChevronLeft } from 'lucide-react';
@@ -339,11 +340,12 @@ export default function BagPage() {
                 {/* Center — Product image */}
                 <div className="bag-item-image-wrap">
                   {item.image ? (
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
-                      className="bag-item-image"
-                      loading="lazy"
+                      fill
+                      sizes="(max-width: 768px) 100px, 200px"
+                      className="bag-item-image object-cover"
                     />
                   ) : (
                     <div className="bag-item-image-placeholder" />

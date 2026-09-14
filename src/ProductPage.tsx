@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
@@ -633,15 +634,16 @@ export default function ProductPage() {
 
                 {/* Main image with fade */}
                 {images.length > 0 && images[activeImg] && (
-                  <img
+                  <Image
                     key={activeImg}
                     src={images[activeImg]}
                     alt={product.name}
                     referrerPolicy="no-referrer"
-                    loading="eager"
-                    decoding="async"
+                    priority
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                     onLoad={() => setImgLoaded(true)}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="object-cover"
                     style={{
                       opacity: imgLoaded ? 1 : 0,
                       transition: 'opacity 400ms ease',
@@ -704,11 +706,13 @@ export default function ProductPage() {
                           : 'opacity-50 hover:opacity-80 ring-1 ring-transparent hover:ring-[rgba(var(--theme-text-rgb),0.2)]'
                         }`}
                     >
-                      <img
+                      <Image
                         src={img}
                         alt={`View ${i + 1}`}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="72px"
+                        className="object-cover"
                       />
                     </button>
                   ))}

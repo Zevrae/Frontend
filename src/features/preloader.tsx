@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { usePreloader } from "./PreloaderContext";
 
@@ -225,11 +226,14 @@ export function Preloader() {
           {/* Image pile */}
           <div className="relative w-[min(28vw,220px)] aspect-[3/4]">
             {STACK.map((image, i) => (
-              <img
+              <Image
                 key={image.id}
                 src={image.url?.src || image.url}
                 alt=""
-                className="zv-plimg absolute inset-0 h-full w-full object-cover shadow-[0_16px_50px_-12px_rgba(0,0,0,0.6)]"
+                fill
+                priority
+                sizes="220px"
+                className="zv-plimg object-cover shadow-[0_16px_50px_-12px_rgba(0,0,0,0.6)]"
                 style={{ zIndex: 10 + i }}
                 draggable={false}
               />

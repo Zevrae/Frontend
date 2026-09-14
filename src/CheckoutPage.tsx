@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart, CartItem } from './CartContext';
@@ -940,7 +941,7 @@ export default function CheckoutPage() {
                 {items.map(item => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-4 group">
                     <div className="w-16 h-20 bg-[var(--theme-bg)] rounded-sm overflow-hidden border border-[rgba(var(--theme-text-rgb),0.05)] relative flex-shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
+                      <Image fill sizes="64px" src={item.image} alt={item.name} className="object-cover opacity-80" />
                       <div className="absolute top-0 right-0 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] w-4 h-4 flex items-center justify-center font-bold">
                         {item.quantity}
                       </div>
