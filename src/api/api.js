@@ -2,10 +2,7 @@ import axios from "axios";
 import { tokenUtils } from "../utils/token";
 
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ||
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
-    "/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
   headers: {
     "Content-Type": "application/json",
   },
