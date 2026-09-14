@@ -17,6 +17,7 @@ import jewelleryWomen from '../assets/women jewellery.webp';
 import accessoriesCover from '../assets/static/accessories cover page.webp';
 import jewelleryHero from '../assets/jewellery hero section.webp';
 import accessoriesHero from '../assets/accessories hero section.webp';
+import './CollectionScroller.css';
 
 
 
@@ -160,7 +161,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
                 onMouseLeave={() => setHovered(null)}
                 onClick={(e) => { e.stopPropagation(); navTransition(() => router.push(col.menRoute)); }}
               >
-                <span>Men</span>
+                <span>MEN</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -171,7 +172,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
                 onMouseLeave={() => setHovered(null)}
                 onClick={(e) => { e.stopPropagation(); navTransition(() => router.push(col.womenRoute)); }}
               >
-                <span>Women</span>
+                <span>WOMEN</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -182,7 +183,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
               className="cs-card__cta"
               onClick={(e) => { e.stopPropagation(); navTransition(() => router.push('/accessories')); }}
             >
-              <span>Explore</span>
+              <span>EXPLORE</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>

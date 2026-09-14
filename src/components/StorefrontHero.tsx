@@ -64,7 +64,12 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
   };
 
   const runHeroAnimation = () => {
-    if (heroAnimatedRef.current || !heroRef.current) return;
+    if (!heroRef.current) return;
+    if (heroAnimatedRef.current) {
+      const letters = heroRef.current.querySelectorAll<HTMLElement>('.zv-hero-letter');
+      letters.forEach((el) => gsap.to(el, { yPercent: 0, duration: 0.3 }));
+      return;
+    }
     heroAnimatedRef.current = true;
 
     const letters = heroRef.current.querySelectorAll<HTMLElement>('.zv-hero-letter');
@@ -76,11 +81,13 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
     const tl = gsap.timeline();
 
     HERO_LETTER_ORDER.forEach((letterIdx, seqIdx) => {
-      tl.to(
-        letters[letterIdx],
-        { yPercent: 0, duration: 0.9, ease: 'power4.out' },
-        `${seqIdx * 0.09}`
-      );
+      if (letters[letterIdx]) {
+        tl.to(
+          letters[letterIdx],
+          { yPercent: 0, duration: 0.9, ease: 'power4.out' },
+          `${seqIdx * 0.09}`
+        );
+      }
     });
 
     if (line) {
@@ -93,26 +100,26 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
   };
 
   useEffect(() => {
-    resetHero();
-    if (hasCompletedOnce && !isTransitioningRef.current) {
-      setTimeout(runHeroAnimation, 50);
+    if (hasCompletedOnce) {
+      runHeroAnimation();
+    } else {
+      resetHero();
     }
   }, [hasCompletedOnce]);
 
   useEffect(() => {
-    const handle = () => {
-      setTimeout(runHeroAnimation, 500);
+    const handleSliding = () => {
+      setTimeout(runHeroAnimation, 350);
     };
-    window.addEventListener('preloader-sliding', handle);
-    return () => window.removeEventListener('preloader-sliding', handle);
-  }, []);
-
-  useEffect(() => {
-    const handle = () => {
-      setTimeout(runHeroAnimation, 100);
+    const handleReveal = () => {
+      setTimeout(runHeroAnimation, 50);
     };
-    window.addEventListener('hero-reveal', handle);
-    return () => window.removeEventListener('hero-reveal', handle);
+    window.addEventListener('preloader-sliding', handleSliding);
+    window.addEventListener('hero-reveal', handleReveal);
+    return () => {
+      window.removeEventListener('preloader-sliding', handleSliding);
+      window.removeEventListener('hero-reveal', handleReveal);
+    };
   }, []);
 
   return (
