@@ -1,8 +1,10 @@
+'use client';
+
 import React, { useState, useRef } from 'react';
 import { Minus, Plus, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from './hooks/UseAuth';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 import {
@@ -44,7 +46,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   if (!product) return null;
 
@@ -83,7 +85,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     }
 
     handleAddToCart();
-    navigate('/checkout');
+    router.push('/checkout');
   };
 
   const currentImg =

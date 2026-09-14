@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { customizableGarmentsApi, type CustomizableGarment } from '../../api/customization';
 import { CustomizeProvider, useCustomize } from './CustomizeContext';

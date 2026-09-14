@@ -1,12 +1,15 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '../api/auth';
 
 export default function ResetPassword() {
-  const { token } = useParams<{ token: string }>();
-  const navigate = useNavigate();
+  const params = useParams();
+  const token = params?.token as string;
+  const router = useRouter();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -91,7 +94,7 @@ export default function ResetPassword() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/')}
+                onClick={() => router.push('/')}
                 className="mt-2 w-full py-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-sm"
               >
                 SIGN IN TO YOUR ACCOUNT
@@ -190,7 +193,7 @@ export default function ResetPassword() {
 
                 <button
                   type="button"
-                  onClick={() => navigate('/')}
+                  onClick={() => router.push('/')}
                   className="w-full py-3 text-[11px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.35)] hover:text-[var(--theme-accent)] transition-colors tracking-wider"
                 >
                   Back to Home

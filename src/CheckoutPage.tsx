@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart, CartItem } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -33,8 +35,8 @@ export default function CheckoutPage() {
     item.category?.toLowerCase().includes('custom')
   );
   const { setIsLoginModalOpen } = useAuthModal();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { token, user } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedMethod, setSelectedMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -79,9 +81,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!user) {
       setIsLoginModalOpen(true);
-      navigate('/');
+      router.push('/');
     }
-  }, [user, navigate, setIsLoginModalOpen]);
+  }, [user, router, setIsLoginModalOpen]);
 
   const [shippingData, setShippingData] = useState({
     firstName: '',
@@ -364,7 +366,7 @@ export default function CheckoutPage() {
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-12 flex items-center justify-between">
         <button 
-          onClick={() => step > 2 ? setStep((prev) => (prev - 1) as 2 | 3 | 4) : navigate('/')}
+          onClick={() => step > 2 ? setStep((prev) => (prev - 1) as 2 | 3 | 4) : router.push('/')}
           className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors"
         >
           <ChevronLeft size={16} className="mr-2" />
@@ -738,7 +740,7 @@ export default function CheckoutPage() {
                         <button
                           onClick={() => {
                             receiptTimers.current.forEach(clearTimeout);
-                            navigate('/');
+                            router.push('/');
                           }}
                           className="flex items-center gap-1.5 text-[10px] font-plex-mono tracking-[0.15em] uppercase rounded-md border border-grayscale-12 dark:border-grayscale-1 px-2.5 py-1.5 text-grayscale-8 dark:text-grayscale-11 hover:text-grayscale-12 dark:hover:text-grayscale-1 transition-colors"
                         >
@@ -917,7 +919,7 @@ export default function CheckoutPage() {
                 <button
                   onClick={() => {
                     receiptTimers.current.forEach(clearTimeout);
-                    navigate('/');
+                    router.push('/');
                   }}
                   className="mt-8 bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
                 >

@@ -1,6 +1,8 @@
+'use client';
+
 import { motion } from 'motion/react';
 import { ShieldCheck, RefreshCw, Sparkles, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { usePageTransition } from '../features/PageTransitionContext';
 
 // Google OAuth verification requires the homepage to plainly state what the
@@ -36,12 +38,12 @@ const PILLARS = [
 ] as const;
 
 export function TrustSection() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { trigger: navTransition } = usePageTransition();
 
   const goTo = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
-    navTransition(() => navigate(path));
+    navTransition(() => router.push(path));
   };
 
   return (

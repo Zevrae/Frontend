@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Instagram,
   Twitter,
@@ -145,21 +147,21 @@ const PaymentIcons = () => (
 ───────────────────────────────────────────── */
 function FooterNavLink({ label, to }: NavLink) {
   const { trigger } = usePageTransition();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleClick = () => {
     // Handle hash-only links like /#clothing, /#jewellery, /#accessories
     if (to.startsWith('/#')) {
       const hash = to.slice(1); // e.g. "#clothing"
-      if (location.pathname === '/') {
+      if (pathname === '/') {
         // Already on homepage — just update hash and fire the event manually
         window.location.hash = hash;
         window.dispatchEvent(new HashChangeEvent('hashchange'));
       } else {
         // Navigate to homepage first, then set hash
         trigger(() => {
-          navigate('/');
+          router.push('/');
           setTimeout(() => {
             window.location.hash = hash;
             window.dispatchEvent(new HashChangeEvent('hashchange'));
@@ -167,7 +169,7 @@ function FooterNavLink({ label, to }: NavLink) {
         });
       }
     } else {
-      trigger(() => navigate(to));
+      trigger(() => router.push(to));
     }
   };
 

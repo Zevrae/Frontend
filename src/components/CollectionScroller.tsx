@@ -1,6 +1,8 @@
+'use client';
+
 import { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { usePageTransition } from '../features/PageTransitionContext';
 import { useSetTheme } from '../theme/ThemeProvider';
 import { useCollectionTransition } from '../features/CollectionTransitionContext';
@@ -107,7 +109,7 @@ interface CardProps {
 }
 
 function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { trigger: navTransition } = usePageTransition();
   const [hovered, setHovered] = useState<'men' | 'women' | null>(null);
 
@@ -156,7 +158,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
                 className="cs-card__cta cs-card__cta--men"
                 onMouseEnter={() => setHovered('men')}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => { e.stopPropagation(); navTransition(() => navigate(col.menRoute)); }}
+                onClick={(e) => { e.stopPropagation(); navTransition(() => router.push(col.menRoute)); }}
               >
                 <span>Men</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -167,7 +169,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
                 className="cs-card__cta cs-card__cta--women"
                 onMouseEnter={() => setHovered('women')}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => { e.stopPropagation(); navTransition(() => navigate(col.womenRoute)); }}
+                onClick={(e) => { e.stopPropagation(); navTransition(() => router.push(col.womenRoute)); }}
               >
                 <span>Women</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -178,7 +180,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           ) : (
             <button
               className="cs-card__cta"
-              onClick={(e) => { e.stopPropagation(); navTransition(() => navigate('/accessories')); }}
+              onClick={(e) => { e.stopPropagation(); navTransition(() => router.push('/accessories')); }}
             >
               <span>Explore</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

@@ -1,5 +1,7 @@
+'use client';
+
 import { lazy, Suspense, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/UseAuth';
 
@@ -27,13 +29,13 @@ function AdminLoadingScreen({ label }: { label: string }) {
 
 export default function AdminGate() {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const isAdmin = authLoading ? null : user?.role === 'admin';
 
   useEffect(() => {
     if (authLoading) return;
-    if (!isAdmin) navigate('/');
-  }, [authLoading, isAdmin, navigate]);
+    if (!isAdmin) router.push('/');
+  }, [authLoading, isAdmin, router]);
 
   // Still resolving the auth session — don't render or fetch the admin
   // chunk yet, we don't know the role.

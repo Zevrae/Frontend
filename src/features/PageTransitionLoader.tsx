@@ -1,4 +1,6 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+'use client';
+
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { usePageTransition } from "./PageTransitionContext";
@@ -14,10 +16,15 @@ const LETTER_ORDER = [3, 0, 5, 1, 4, 2];
  * Handles both page-to-page navigation and theme change transitions.
  */
 export function PageTransitionLoader() {
+  const [mounted, setMounted] = useState(false);
   const { phase, setPhase } = usePageTransition();
   const rootRef = useRef<HTMLDivElement>(null);
   const curtainRef = useRef<HTMLDivElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ─── LISTEN FOR THEME CHANGE EVENTS ───
   useEffect(() => {
@@ -203,6 +210,10 @@ export function PageTransitionLoader() {
   // "exiting" caused a second navTransition to race the active GSAP timeline,
   // leaving page content invisible / partially animated (the "messy" glitch).
   const blockPointer = phase !== "idle";
+
+  if (!mounted || typeof document === "undefined") {
+    return null;
+  }
 
   return createPortal(
     <div

@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
@@ -46,7 +48,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
   const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
   const isCancelled = order.order_status === 'cancelled';
   const isAwaitingPayment = order.order_status === 'payment_pending';
   const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
@@ -146,7 +148,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                     <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
                       <span>
                         <button
-                          onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.product}`); }}
+                          onClick={(e) => { e.stopPropagation(); router.push(`/product/${item.product}`); }}
                           className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
                           title="View product page"
                         >
@@ -190,12 +192,12 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
 
 export default function ProfilePage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [tab, setTab] = useState<'profile' | 'orders' | 'tryons'>('profile');
 
   useEffect(() => {
-    if (!authLoading && user === null) navigate('/');
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user === null) router.push('/');
+  }, [user, authLoading, router]);
 
   // ── Profile form ──────────────────────────────────────────────────────────
   const [name, setName] = useState(user?.name || '');
@@ -292,7 +294,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans pt-[140px] pb-24">
       {/* Back button wrapper - aligned with navbar/page edge */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-10">
-        <button onClick={() => navigate('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-accent)] transition-colors">
+        <button onClick={() => router.push('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-accent)] transition-colors">
           <ChevronLeft size={16} className="mr-2" /> Back to Home
         </button>
       </div>
@@ -387,7 +389,7 @@ export default function ProfilePage() {
             ) : orders.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-4">You haven't placed any orders yet.</p>
-                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Start Shopping</button>
+                <button onClick={() => router.push('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Start Shopping</button>
               </div>
             ) : (
               orders.map(order => (
@@ -409,7 +411,7 @@ export default function ProfilePage() {
             ) : tryons.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-4">You haven't generated any try-ons yet.</p>
-                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Browse Products</button>
+                <button onClick={() => router.push('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Browse Products</button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

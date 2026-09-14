@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+'use client';
+
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
@@ -55,7 +57,7 @@ const accessoriesCategories = [
 
 // ─── Reusable Jewellery Subcategory Grid ─────────────────────────────────────
 const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewelleryCategories }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
       {categories.map((item, i) => (
@@ -66,7 +68,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: (i % 4) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
           className="group relative flex flex-col cursor-pointer"
-          onClick={() => navigate(item.path)}
+          onClick={() => router.push(item.path)}
         >
           <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
             <img
@@ -92,28 +94,28 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
 
 // ─── Shared section heading ───────────────────────────────────────────────────
 const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
   const handleBack = () => {
     const eyebrowLower = eyebrow.toLowerCase();
 
     if (eyebrowLower === "men's jewellery") {
-      navigate('/jewellery/men');
+      router.push('/jewellery/men');
     } else if (eyebrowLower === "women's jewellery") {
-      navigate('/jewellery/women');
+      router.push('/jewellery/women');
     } else if (eyebrowLower === "men's collection") {
-      navigate('/men');
+      router.push('/men');
     } else if (eyebrowLower === "women's collection") {
-      navigate('/women');
+      router.push('/women');
     } else if (eyebrowLower === "accessories") {
-      navigate('/accessories');
+      router.push('/accessories');
     } else if (currentPath.startsWith('/jewellery')) {
-      navigate('/#jewellery');
+      router.push('/#jewellery');
     } else if (currentPath.startsWith('/accessories')) {
-      navigate('/#accessories');
+      router.push('/#accessories');
     } else {
-      navigate('/');
+      router.push('/');
     }
   };
 
@@ -233,9 +235,7 @@ export function getCachedProducts(): any[] | null {
   return cachedDbProducts;
 }
 
-export default function ProductGrid({
-  categoryFilter = 'all'
-}: {
+export type ProductGridProps = {
   categoryFilter?:
   | 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'search'
   | 'rings' | 'pendants' | 'earrings' | 'bracelet' | 'keychain' | 'keychains'
@@ -243,10 +243,14 @@ export default function ProductGrid({
   | 'men-tshirts' | 'men-lowers' | 'men-henleys' | 'women-tshirts' | 'women-lowers' | 'unisex'
   | 'jewellery-men' | 'jewellery-women'
   | 'men-rings' | 'men-pendants' | 'men-bracelets' | 'men-earrings'
-  | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings'
-}) {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings';
+};
+
+function ProductGridContent({
+  categoryFilter = 'all'
+}: ProductGridProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const searchTerm = categoryFilter === 'search' ? (searchParams.get('q') || '').trim() : '';
   const [dbProducts, setDbProducts] = useState<any[]>(cachedDbProducts || []);
   const [isLoading, setIsLoading] = useState(!cachedDbProducts);
@@ -340,8 +344,8 @@ export default function ProductGrid({
   }, [categoryFilter, dbJewelleryMenProducts, dbJewelleryWomenProducts]);
 
   const openProduct = useCallback((product: any) => {
-    navigate(`/product/${product.id}`, { state: { product } });
-  }, [navigate]);
+    router.push(`/product/${product.id}`);
+  }, [router]);
 
   // ─── Search results ───────────────────────────────────────────────────────────
   const searchResults = useMemo(() => {
@@ -380,7 +384,7 @@ export default function ProductGrid({
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="group relative flex flex-col cursor-pointer"
-                    onClick={() => navigate(item.path)}
+                    onClick={() => router.push(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
                       <img src={resolveImg(item.image)} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
@@ -459,7 +463,7 @@ export default function ProductGrid({
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 2) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="w-full md:w-[460px] max-w-[460px] group relative flex flex-col cursor-pointer"
-                    onClick={() => navigate(item.path)}
+                    onClick={() => router.push(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
                       <img src={resolveImg(item.image)} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
@@ -505,7 +509,7 @@ export default function ProductGrid({
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 6) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="group relative flex flex-col cursor-pointer"
-                    onClick={() => navigate(item.path)}
+                    onClick={() => router.push(item.path)}
                   >
                     <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
                       <img src={resolveImg(item.image)} alt={item.alt || item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" />
@@ -740,5 +744,19 @@ export default function ProductGrid({
 
       </AnimatePresence>
     </>
+  );
+}
+
+export default function ProductGrid(props: ProductGridProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[40vh] flex items-center justify-center">
+          <div className="w-6 h-6 border border-[rgba(var(--theme-accent-rgb),0.3)] border-t-[var(--theme-accent)] rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <ProductGridContent {...props} />
+    </Suspense>
   );
 }

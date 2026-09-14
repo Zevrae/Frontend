@@ -1,5 +1,7 @@
+'use client';
+
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useCustomize } from '../CustomizeContext';
 import { ClothTypeSelector, ColorSelector, SizeSelector, StepLabel } from './Selectors';
 import GarmentCanvas, { type GarmentCanvasHandle } from './GarmentCanvas';
@@ -11,7 +13,7 @@ const formatPrice = (val: number) =>
 
 export default function Designer({ garments }: { garments: CustomizableGarment[] }) {
   const { state, dispatch } = useCustomize();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [activeView, setActiveView] = useState<'front' | 'back'>('front');
   const frontRef = useRef<GarmentCanvasHandle>(null);
   const backRef = useRef<GarmentCanvasHandle>(null);
@@ -69,7 +71,7 @@ export default function Designer({ garments }: { garments: CustomizableGarment[]
 
   return (
     <div className="flow-screen">
-      <button className="back-link" onClick={() => navigate(-1)}>
+      <button className="back-link" onClick={() => router.back()}>
         ← Back
       </button>
 

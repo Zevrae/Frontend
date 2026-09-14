@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import {
   Package2, LayoutDashboard, ShoppingBag, Layers, FolderOpen, Percent,
   ChevronRight, Archive, ArrowLeft, BarChart3, Shirt,
@@ -95,7 +97,7 @@ function Sidebar({ active, setActive, isMobileOpen, onClose }: {
 // defense-in-depth belt-and-braces guard in case it's ever rendered from
 // somewhere else in the tree.
 export default function AdminLayout() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -184,7 +186,7 @@ export default function AdminLayout() {
             )}
 
             <button
-              onClick={() => navigate('/')}
+              onClick={() => router.push('/')}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.15em] font-sans bg-[#12100C] border border-[#EAE6E1]/15 text-[#EAE6E1]/70 hover:text-[#C5A059] hover:border-[#C5A059]/40 transition-colors rounded-sm"
             >
               Back to Site

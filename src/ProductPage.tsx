@@ -1,7 +1,9 @@
+'use client';
+
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check } from 'lucide-react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useRouter, useParams } from 'next/navigation';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
@@ -82,16 +84,14 @@ function AccordionSection({
 }
 
 export default function ProductPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const params = useParams();
-  const location = useLocation();
+  const productId = (params?.id as string) || '';
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token, user } = useAuth();
 
-  const [product, setProduct] = useState<ProductDetail | null>(
-    (location.state as { product?: ProductDetail } | null)?.product || null
-  );
+  const [product, setProduct] = useState<ProductDetail | null>(null);
 
   // ── Product-page SEO ──────────────────────────────────────────────────────
   // Build title, description, and canonical from real product data once loaded.
@@ -102,7 +102,7 @@ export default function ProductPage() {
   const productDescription = rawDescription.length > 160
     ? `${rawDescription.slice(0, 157).trimEnd()}...`
     : rawDescription || (product?.name ? `${product.name} — shop at ZEVRAE.` : '');
-  const productCanonical = params.id ? `https://zevrae.com/product/${params.id}` : undefined;
+  const productCanonical = productId ? `https://zevrae.com/product/${productId}` : undefined;
 
   // ── Product JSON-LD structured data ──────────────────────────────────────
   // Builds a schema.org/Product object from actual product data only.
@@ -260,7 +260,7 @@ export default function ProductPage() {
 
           setProduct(prev => ({
             ...prev,
-            id: p.id || p.$id || params.id || '',
+            id: p.id || p.$id || productId || '',
             name: p.name || prev?.name || '',
             price: p.price || prev?.price || 0,
             originalPrice: p.compare_price || prev?.originalPrice,
@@ -282,13 +282,8 @@ export default function ProductPage() {
       }
     };
 
-    const routeProduct = (location.state as any)?.product;
-    if (routeProduct) {
-      setProduct(routeProduct);
-    }
-
     hydrateProduct();
-  }, [params.id, location.state]);
+  }, [productId]);
 
   // ─── AGGRESSIVE IMAGE DEDUPLICATION ───
   const images = useMemo(() => {
@@ -546,7 +541,7 @@ export default function ProductPage() {
       return;
     }
     handleAddToCart();
-    navigate('/checkout');
+    router.push('/checkout');
   };
 
   const formatPrice = (n: number) =>
@@ -604,7 +599,7 @@ export default function ProductPage() {
 
           {/* Back link */}
           <motion.button
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -793,7 +788,7 @@ export default function ProductPage() {
                     </span>
                     <button
                       className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4"
-                      onClick={() => navigate('/size-guide')}
+                      onClick={() => router.push('/size-guide')}
                     >
                       Size Guide
                     </button>
@@ -1149,7 +1144,7 @@ export default function ProductPage() {
                     key={p.id}
                     product={p}
                     index={i}
-                    onClick={() => navigate(`/product/${p.id}`, { state: { product: p } })}
+                    onClick={() => router.push(`/product/${p.id}`)}
                   />
                 ))}
               </div>

@@ -1,7 +1,9 @@
+'use client';
+
 import { ShoppingBag, X } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from './hooks/UseAuth';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 import {
@@ -15,7 +17,7 @@ import { Button } from './components/ui/button';
 export default function CartDrawer() {
   const { items, removeFromCart, isCartOpen, setIsCartOpen, cartTotal } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { token } = useAuth();
 
   const handleCheckoutClick = () => {
@@ -23,7 +25,7 @@ export default function CartDrawer() {
     if (!token) {
       setIsLoginModalOpen(true);
     } else {
-      navigate('/checkout');
+      router.push('/checkout');
     }
   };
 

@@ -23,8 +23,11 @@
  * - No new product images — uses only images[0] from the existing product
  */
 
+'use client';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+import Image from 'next/image';
 import { useActiveCollection } from '../features/ActiveCollectionContext';
 import { getOrFetchAllProducts, getCachedProducts } from '../ProductGrid';
 import { BEST_SELLER_NAMES, type CollectionKey } from '../data/bestSellers';
@@ -294,20 +297,20 @@ export function BestSellers() {
                 {displayedVisible.map((product) => (
                   <Link
                     key={product.id}
-                    to={`/product/${product.id}`}
-                    state={{ product }}
+                    href={`/product/${product.id}`}
                     className="bs-product"
                     aria-label={`View ${product.name}`}
                   >
                     {/* Image — primary image only, no gallery */}
                     <div className="bs-product__img-wrap" data-cursor-image>
-                      <img
+                      <Image
                         src={product.frontImg}
                         alt={product.name}
-                        className="bs-product__img"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="bs-product__img object-cover"
                         loading="lazy"
-                        decoding="async"
-                        draggable={false}
+                        unoptimized={!product.frontImg.startsWith('http')}
                       />
                       {/* Discount badge — only if product has one */}
                       {product.discount && (

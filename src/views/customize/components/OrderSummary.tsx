@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { useCustomize } from '../CustomizeContext';
 import { findGarment, findColor } from '../garmentHelpers';
 import { customProductsApi } from '../../../api/customization';
@@ -15,7 +17,7 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
   const { addToCart, setIsCartOpen } = useCart();
   const { user } = useAuth();
   const { setIsLoginModalOpen } = useAuthModal();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const product = state.generatedProduct;
   if (!product) return null;
@@ -119,7 +121,7 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
         ) : (
           <>
             <div className="placed-note">Added to your bag — checkout whenever you're ready.</div>
-            <button className="place-order" style={{ marginTop: 12 }} onClick={() => navigate('/bag')}>
+            <button className="place-order" style={{ marginTop: 12 }} onClick={() => router.push('/bag')}>
               Go to bag
             </button>
           </>

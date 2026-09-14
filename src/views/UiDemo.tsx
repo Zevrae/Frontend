@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { ArrowLeft, Sparkles, ShoppingBag, Eye, SlidersHorizontal, CheckCircle2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import {
@@ -55,7 +57,7 @@ export default function UiDemo() {
         {/* Header */}
         <div className="mb-12">
           <Link
-            to="/"
+            href="/"
             className="inline-flex items-center gap-2 text-xs font-plex-mono text-[var(--theme-accent)] hover:brightness-125 mb-6 uppercase tracking-[0.2em] transition-all"
           >
             <ArrowLeft size={14} /> Back to Storefront
