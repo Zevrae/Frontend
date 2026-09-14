@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
 import { ordersApi, Order } from './api/orders';
 import { tryonApi, TryonResult } from './api/tryon';
 import { formatSoftToySize } from './utils/sizeFormatter';
+import { generateReceiptPdf } from './utils/generateReceiptPdf';
 
 
 const formatVal = (val: number) =>
@@ -180,6 +181,15 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                 <span>·</span>
                 <span className="capitalize">{order.payment_status}</span>
               </div>
+
+              {/* Download Receipt — available for all orders (regular & custom) */}
+              <button
+                onClick={(e) => { e.stopPropagation(); generateReceiptPdf(order); }}
+                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[9px] uppercase tracking-[0.15em] font-sans border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+              >
+                <Download size={12} />
+                Download Receipt
+              </button>
             </div>
           </motion.div>
         )}
