@@ -6,6 +6,7 @@ import './index.css';
 import { CartProvider } from './CartContext.tsx';
 import { AuthModalProvider } from './AuthModalContext.tsx';
 import { AuthProvider } from './context/AuthContext.tsx';
+import { WishlistProvider } from './context/WishlistContext.tsx';
 import { PreloaderProvider } from './features/PreloaderContext.tsx';
 import { PageTransitionProvider } from './features/PageTransitionContext.tsx';
 import { ThemeProvider } from './theme/ThemeProvider.tsx';
@@ -24,11 +25,13 @@ createRoot(document.getElementById('root')!).render(
               <PageTransitionProvider>
                 <AuthProvider>
                   <CartProvider>
-                    <AuthModalProvider>
-                      <SmoothScroll>
-                      <App />
-                      </SmoothScroll>
-                    </AuthModalProvider>
+                    <WishlistProvider>
+                      <AuthModalProvider>
+                        <SmoothScroll>
+                        <App />
+                        </SmoothScroll>
+                      </AuthModalProvider>
+                    </WishlistProvider>
                   </CartProvider>
                 </AuthProvider>
               </PageTransitionProvider>

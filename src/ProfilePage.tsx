@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download, Eye,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download, Eye, Heart,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
@@ -12,6 +12,7 @@ import { tryonApi, TryonResult } from './api/tryon';
 import { productsApi } from './api/products';
 import { formatSoftToySize } from './utils/sizeFormatter';
 import { generateReceiptPdf } from './utils/generateReceiptPdf';
+import { useWishlist } from './context/WishlistContext';
 
 
 const formatVal = (val: number) =>
@@ -373,7 +374,8 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
 export default function ProfilePage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<'profile' | 'orders' | 'tryons'>('profile');
+  const [tab, setTab] = useState<'profile' | 'orders' | 'tryons' | 'wishlist'>('profile');
+  const { items: wishlistItems, toggle: toggleWishlist, loading: wishlistLoading } = useWishlist();
 
   useEffect(() => {
     if (!authLoading && user === null) navigate('/');
@@ -503,6 +505,12 @@ export default function ProfilePage() {
           >
             <Sparkles size={13} /> Try-Ons
           </button>
+          <button
+            onClick={() => setTab('wishlist')}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'wishlist' ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.5)] border-transparent hover:text-[var(--theme-text)]'}`}
+          >
+            <Heart size={13} /> Wishlist
+          </button>
         </div>
 
         {tab === 'profile' ? (
@@ -581,7 +589,7 @@ export default function ProfilePage() {
               ))
             )}
           </div>
-        ) : (
+        ) : tab === 'tryons' ? (
           <div>
             {tryonsError && (
               <p className="text-[11px] font-sans text-red-500 bg-red-500/10 border border-red-500/30 rounded-sm px-4 py-3 mb-4">{tryonsError}</p>
@@ -612,7 +620,75 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-        )}
+        ) : tab === 'wishlist' ? (
+          <div>
+            {wishlistLoading ? (
+              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] animate-pulse text-center py-16">Loading wishlist...</p>
+            ) : wishlistItems.length === 0 ? (
+              <div className="text-center py-16">
+                <Heart size={32} className="mx-auto mb-4 text-[rgba(var(--theme-text-rgb),0.2)]" />
+                <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-2">Your wishlist is empty.</p>
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-6">Browse products and tap the ♡ to save your favourites.</p>
+                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Browse Products</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {wishlistItems.map(product => {
+                  const img = product.images?.[0] || '';
+                  const priceLabel = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price);
+                  return (
+                    <div key={product.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden group flex flex-col">
+                      {/* Product image */}
+                      <button
+                        onClick={() => navigate(`/product/${product.id}`)}
+                        className="aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full"
+                      >
+                        {img ? (
+                          <img
+                            src={img}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Heart size={24} className="text-[rgba(var(--theme-text-rgb),0.15)]" />
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Info */}
+                      <div className="p-3 flex flex-col gap-2 flex-1">
+                        <button
+                          onClick={() => navigate(`/product/${product.id}`)}
+                          className="text-[11px] font-sans text-[var(--theme-text)] text-left hover:text-[var(--theme-accent)] transition-colors leading-snug line-clamp-2"
+                        >
+                          {product.name}
+                        </button>
+                        <p className="text-[11px] font-mono text-[var(--theme-accent)]">{priceLabel}</p>
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 mt-auto pt-1">
+                          <button
+                            onClick={() => navigate(`/product/${product.id}`)}
+                            className="flex-1 text-[8px] uppercase tracking-[0.15em] font-sans text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => toggleWishlist({ id: product.id, name: product.name, price: product.price, images: product.images, category: product.category })}
+                            title="Remove from wishlist"
+                            className="flex items-center justify-center w-7 h-7 rounded-sm border border-[rgba(229,57,53,0.3)] text-red-500 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                          >
+                            <Heart size={11} fill="#e53935" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Address Modal */}
