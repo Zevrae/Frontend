@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download, Eye,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
-import { ordersApi, Order } from './api/orders';
+import { ordersApi, Order, OrderItem } from './api/orders';
 import { tryonApi, TryonResult } from './api/tryon';
+import { productsApi } from './api/products';
 import { formatSoftToySize } from './utils/sizeFormatter';
 import { generateReceiptPdf } from './utils/generateReceiptPdf';
 
@@ -43,10 +44,158 @@ function canCancelOrder(order: Order): boolean {
   return elapsed <= CANCELLATION_WINDOW_MS;
 }
 
+// ── Custom Design Preview Modal ───────────────────────────────────────────────
+function CustomDesignPreviewModal({
+  item,
+  onClose,
+}: {
+  item: OrderItem;
+  onClose: () => void;
+}) {
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Prefer embedded design_images, fall back to fetching by product id
+    if (item.design_images && item.design_images.length > 0) {
+      setImages(item.design_images);
+      setLoading(false);
+      return;
+    }
+    if (item.image) {
+      setImages([item.image]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    productsApi
+      .getById(item.product)
+      .then(product => {
+        setImages(product.images || []);
+      })
+      .catch(() => setError('Could not load design images.'))
+      .finally(() => setLoading(false));
+  }, [item]);
+
+  const frontImg = images[0] || null;
+  const backImg = images[1] || null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 16 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        onClick={e => e.stopPropagation()}
+        className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.12)] rounded-sm shadow-2xl w-full max-w-lg"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(var(--theme-text-rgb),0.08)]">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[var(--theme-accent)]">Design Preview</p>
+            <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mt-0.5 truncate max-w-[280px]">{item.name}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-text)] transition-colors p-1"
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] animate-pulse">Loading design…</p>
+            </div>
+          ) : error ? (
+            <p className="text-[11px] font-sans text-red-400 text-center py-8">{error}</p>
+          ) : images.length === 0 ? (
+            <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] text-center py-8">Design images are not available for this order.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {/* Front */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] text-center">Front</p>
+                <div className="aspect-square bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden flex items-center justify-center relative group">
+                  {frontImg ? (
+                    <img
+                      src={frontImg}
+                      alt="Front design"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No front design</span>
+                  )}
+                  {frontImg && (
+                    <a
+                      href={frontImg}
+                      download={`design-front.png`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 text-[8px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-surface)]/80 backdrop-blur-sm border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                    >
+                      <Download size={9} /> Save
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Back */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] text-center">Back</p>
+                <div className="aspect-square bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden flex items-center justify-center relative group">
+                  {backImg ? (
+                    <img
+                      src={backImg}
+                      alt="Back design"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No back design</span>
+                  )}
+                  {backImg && (
+                    <a
+                      href={backImg}
+                      download={`design-back.png`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 text-[8px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-surface)]/80 backdrop-blur-sm border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                    >
+                      <Download size={9} /> Save
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.35)] text-center mt-4">
+            Hover over an image to download it.
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: (updated: Order) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
+  const [previewItem, setPreviewItem] = useState<OrderItem | null>(null);
   const navigate = useNavigate();
   const isCancelled = order.order_status === 'cancelled';
   const isAwaitingPayment = order.order_status === 'payment_pending';
@@ -143,21 +292,34 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-2">Items</p>
                 <div className="space-y-2">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
-                      <span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.product}`); }}
-                          className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
-                          title="View product page"
-                        >
-                          {item.name}
-                        </button>
-                        {item.size ? ` (${formatSoftToySize(item.size)})` : ''} × {item.quantity}
-                      </span>
-                      <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
-                    </div>
-                  ))}
+                  {order.items.map((item, idx) => {
+                    const isCustom = item.category?.toLowerCase().includes('custom');
+                    return (
+                      <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
+                        <span className="flex flex-col gap-1">
+                          <span className="flex items-center gap-2 flex-wrap">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.product}`); }}
+                              className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
+                              title="View product page"
+                            >
+                              {item.name}
+                            </button>
+                            {item.size ? ` (${formatSoftToySize(item.size)})` : ''} × {item.quantity}
+                          </span>
+                          {isCustom && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setPreviewItem(item); }}
+                              className="self-start flex items-center gap-1 text-[8px] uppercase tracking-[0.15em] font-sans text-[var(--theme-accent)] border border-[rgba(var(--theme-accent-rgb),0.35)] hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200 px-2 py-1 rounded-sm"
+                            >
+                              <Eye size={9} /> Preview Design
+                            </button>
+                          )}
+                        </span>
+                        <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="mt-3 pt-3 border-t border-[rgba(var(--theme-text-rgb),0.1)] space-y-1 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.6)]">
                   <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{formatVal(order.subtotal)}</span></div>
@@ -192,6 +354,16 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
               </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Design Preview Modal */}
+      <AnimatePresence>
+        {previewItem && (
+          <CustomDesignPreviewModal
+            item={previewItem}
+            onClose={() => setPreviewItem(null)}
+          />
         )}
       </AnimatePresence>
     </div>
