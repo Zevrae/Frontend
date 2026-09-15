@@ -198,17 +198,23 @@ export default function ProductPage() {
   const availableSizes = useMemo(() => {
     if (!product) return [];
 
-    // 1. If it is categorized as non-apparel (jewellery, keychains, etc.), ALWAYS return an empty array (no sizes)
+    // 1. Non-apparel products (jewellery, keychains, etc.) never have sizes.
     if (isNonApparel) return [];
 
-    // 2. Check if the product has explicitly defined sizes/stock in DB
-    const dbSizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
-    if (dbSizes.length > 0) {
-      return dbSizes;
-    }
+    // Filter out blank keys — the backend can persist size_stock with an empty-string
+    // key ("": 0) when a product is saved without size data, which we treat as "not
+    // configured" rather than a real size entry.
+    const sizeStockKeys = Object.keys(product.size_stock || {}).filter(k => k.trim() !== '');
 
-    // 3. Fallback to default apparel sizes if not defined in DB but categorized as apparel
-    return DEFAULT_SIZES;
+    // 2. If size_stock has NO valid entries, the admin hasn't configured stock yet.
+    //    Hide the size selector entirely — there's nothing meaningful to show.
+    //    This is different from size_stock = { S: 0, M: 0 } where stock WAS configured
+    //    but sold out; in that case we still show sizes + Notify Me.
+    if (sizeStockKeys.length === 0) return [];
+
+    // 3. size_stock has valid entries — use product.sizes if defined, otherwise derive
+    //    from the stock keys themselves.
+    return product.sizes?.length ? product.sizes : sizeStockKeys;
   }, [product, isNonApparel]);
 
   const requireSizeSelection = availableSizes.length > 0;
@@ -458,7 +464,9 @@ export default function ProductPage() {
     try {
       await productsApi.notifyMe(product.id, {
         email: user ? undefined : email,
-        size: requireSizeSelection ? selectedSize : undefined,
+        // When all sizes are OOS and none is selected, omit size so the
+        // backend records a general restock request for this product.
+        size: requireSizeSelection && selectedSize ? selectedSize : undefined,
       });
       setNotifyStatus('done');
     } catch (err: any) {
@@ -574,13 +582,17 @@ export default function ProductPage() {
   const isNoSizeProduct = !requireSizeSelection;
   const isSizeOutOfStock = (size: string) => (sizeStock[size] ?? 0) <= 0;
 
+  // true when every available size has 0 stock — we should jump straight to
+  // "Notify Me" without forcing the user to click a size first.
+  const allSizesOutOfStock = requireSizeSelection && availableSizes.every(s => isSizeOutOfStock(s));
+
   const overallInStock = isNoSizeProduct
     ? (product.stock_quantity ?? 0) > 0
     : availableSizes.some(s => !isSizeOutOfStock(s));
 
   const showNotifyMe = isNoSizeProduct
     ? !overallInStock
-    : !!selectedSize && isSizeOutOfStock(selectedSize);
+    : allSizesOutOfStock || (!!selectedSize && isSizeOutOfStock(selectedSize));
 
   return (
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
@@ -941,7 +953,8 @@ export default function ProductPage() {
                         Size not available
                       </motion.p>
                     )}
-                    {!selectedSize && !sizeError && (
+                    {/* Only ask to select a size when at least one is in stock */}
+                    {!selectedSize && !sizeError && !allSizesOutOfStock && (
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1061,7 +1074,9 @@ export default function ProductPage() {
                 {showNotifyMe ? (
                   <div className="border border-[rgba(var(--theme-text-rgb),0.12)] p-5">
                     <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] mb-1">
-                      {isNoSizeProduct ? 'Currently Out of Stock' : `Size ${selectedSize} is Out of Stock`}
+                      {isNoSizeProduct || allSizesOutOfStock
+                        ? 'Currently Out of Stock'
+                        : `Size ${selectedSize} is Out of Stock`}
                     </p>
                     <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-4">
                       Enter your email and we'll let you know the moment it's back.
