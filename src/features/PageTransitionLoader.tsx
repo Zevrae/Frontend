@@ -21,6 +21,8 @@ export function PageTransitionLoader() {
   const rootRef = useRef<HTMLDivElement>(null);
   const curtainRef = useRef<HTMLDivElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
+  // Separate ref for the holding delayedCall so ctx.revert() doesn't kill it
+  const holdingTimerRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -50,6 +52,8 @@ export function PageTransitionLoader() {
     const handlePopstate = () => {
       tlRef.current?.kill();
       tlRef.current = null;
+      holdingTimerRef.current?.kill();
+      holdingTimerRef.current = null;
       const pageContent = document.querySelector<HTMLElement>("[data-page-content]");
       if (pageContent) {
         gsap.set(pageContent, { clearProps: "y,opacity,transform" });
@@ -125,12 +129,17 @@ export function PageTransitionLoader() {
 
       if (phase === "holding") {
         tlRef.current?.kill();
-
-        const tl = gsap.timeline({
-          delay: 0.25,
-          onComplete: () => setPhase("exiting"),
+        // Kill any previous holding timer
+        holdingTimerRef.current?.kill();
+        holdingTimerRef.current = null;
+        // Use gsap.delayedCall OUTSIDE the context so ctx.revert() on the next
+        // phase change doesn't kill it before the 0.25 s hold finishes.
+        // An empty timeline with only a `delay` has totalDuration=0 and fires
+        // onComplete immediately — delayedCall is the correct primitive here.
+        holdingTimerRef.current = gsap.delayedCall(0.25, () => {
+          holdingTimerRef.current = null;
+          setPhase("exiting");
         });
-        tlRef.current = tl;
       }
 
       if (phase === "exiting") {
@@ -197,7 +206,14 @@ export function PageTransitionLoader() {
       }
     }, rootRef);
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      // If leaving the holding phase (e.g. component unmounts mid-hold), clean up the timer
+      if (phase === "holding") {
+        holdingTimerRef.current?.kill();
+        holdingTimerRef.current = null;
+      }
+    };
   }, [phase, setPhase]);
 
   const isVisible = phase !== "idle";

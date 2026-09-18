@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   icons: {
-    icon: '/favicon.png',
+    icon: '/ZEVRAE LOGO NAVBAR.png',
   },
   openGraph: {
     type: 'website',

@@ -377,10 +377,17 @@ export function StorefrontNav() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 2, delay: 0.2 }}
-              className="text-xl md:text-3xl font-archivo font-bold tracking-[0.1em] absolute left-1/2 transform -translate-x-1/2 text-[var(--theme-text)] cursor-pointer"
-              style={{ fontStretch: '125%' }}
+              className="absolute left-1/2 transform -translate-x-1/2 cursor-pointer flex items-center justify-center py-1"
+              aria-label="ZEVRAE"
             >
-              ZEVRAE
+              <Image
+                src="/ZEVRAE LOGO NAVBAR.png"
+                alt="ZEVRAE"
+                width={160}
+                height={50}
+                className="h-10 md:h-16 w-auto object-contain transition-all duration-300 hover:opacity-85"
+                priority
+              />
             </motion.button>
 
             {/* Desktop Right: Actions */}
