@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function SearchPage() {
   return (
-    <div className="pt-28 md:pt-32">
+    <div className="pt-24 md:pt-28">
       <Suspense
         fallback={
           <div className="min-h-[50vh] flex items-center justify-center">

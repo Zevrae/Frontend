@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function MenSubPage({ params }: Props) {
   const { sub } = await params;
   return (
-    <div className="pt-28 md:pt-32">
+    <div className="pt-26 md:pt-32">
       <ProductGrid categoryFilter={`men-${sub}` as any} />
     </div>
   );

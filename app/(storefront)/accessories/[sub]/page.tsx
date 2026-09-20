@@ -25,7 +25,7 @@ export default async function AccessoriesSubPage({ params }: Props) {
   const filter = sub === 'toys' || sub === 'soft-toys' ? 'soft-toys' : 'keychains';
 
   return (
-    <div className="pt-28 md:pt-32">
+    <div className="pt-26 md:pt-32">
       <ProductGrid categoryFilter={filter} />
     </div>
   );

@@ -31,7 +31,7 @@ export default async function JewellerySubPage({ params }: Props) {
   }
 
   return (
-    <div className="pt-28 md:pt-32">
+    <div className="pt-26 md:pt-32">
       <ProductGrid categoryFilter={categoryFilter as any} />
     </div>
   );

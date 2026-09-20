@@ -1,5 +1,4 @@
 import { useRef, useCallback, useEffect } from 'react';
-import Image from 'next/image';
 import { motion } from 'motion/react';
 import './PinterestCard.css';
 
@@ -123,12 +122,15 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
   const formatPrice = (value: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
 
+  const isEager = index < 4;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay: (index % 5) * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={isEager ? { opacity: 1, y: 0 } : undefined}
+      whileInView={!isEager ? { opacity: 1, y: 0 } : undefined}
+      viewport={!isEager ? { once: true, margin: '-30px' } : undefined}
+      transition={{ duration: 0.35, delay: isEager ? index * 0.04 : (index % 5) * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
       className="pinterest-card"
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
@@ -136,13 +138,13 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
     >
       <div className="pinterest-card__image-wrap">
         {product.frontImg ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={product.frontImg}
             alt={product.name}
-            fill
-            sizes="(max-width: 768px) 50vw, 25vw"
             className="pinterest-card__front"
             referrerPolicy="no-referrer"
+            loading="lazy"
           />
         ) : (
           <div className="pinterest-card__placeholder">Image Pending</div>
@@ -151,14 +153,14 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
         {/* Back image layer — wipe reveal */}
         {backSrc && (
           <>
-            <Image
-              ref={backImgRef}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              ref={backImgRef as any}
               src={backSrc}
               alt={`${product.name} alternate`}
-              fill
-              sizes="(max-width: 768px) 50vw, 25vw"
               className="pinterest-card__back"
               referrerPolicy="no-referrer"
+              loading="lazy"
             />
             <div ref={wipeLineRef} className="pinterest-card__wipe-line" />
           </>

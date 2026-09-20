@@ -92,7 +92,7 @@ export function PageTransitionLoader() {
         // Curtain slides up from bottom
         tl.to(curtainRef.current, {
           yPercent: 0,
-          duration: 0.85,
+          duration: 0.45,
           ease: "power2.inOut",
           force3D: true,
         });
@@ -102,9 +102,9 @@ export function PageTransitionLoader() {
           tl.to(
             pageContent,
             {
-              y: -60,
+              y: -40,
               opacity: 0,
-              duration: 0.7,
+              duration: 0.35,
               ease: "power2.inOut",
               force3D: true,
             },
@@ -118,11 +118,11 @@ export function PageTransitionLoader() {
             letters[letterIdx],
             {
               yPercent: 0,
-              duration: 0.5,
+              duration: 0.28,
               ease: "expo.out",
               force3D: true,
             },
-            `${0.55 + seqIdx * 0.05}`,
+            `${0.28 + seqIdx * 0.03}`,
           );
         });
       }
@@ -136,7 +136,7 @@ export function PageTransitionLoader() {
         // phase change doesn't kill it before the 0.25 s hold finishes.
         // An empty timeline with only a `delay` has totalDuration=0 and fires
         // onComplete immediately — delayedCall is the correct primitive here.
-        holdingTimerRef.current = gsap.delayedCall(0.25, () => {
+        holdingTimerRef.current = gsap.delayedCall(0.1, () => {
           holdingTimerRef.current = null;
           setPhase("exiting");
         });
@@ -164,11 +164,11 @@ export function PageTransitionLoader() {
             letters[letterIdx],
             {
               yPercent: -120,
-              duration: 0.38,
+              duration: 0.22,
               ease: "expo.in",
               force3D: true,
             },
-            seqIdx * 0.03,
+            seqIdx * 0.02,
           );
         });
 
@@ -177,7 +177,7 @@ export function PageTransitionLoader() {
           curtainRef.current,
           {
             yPercent: -100,
-            duration: 0.75,
+            duration: 0.4,
             ease: "power2.inOut",
             force3D: true,
             onStart: () => {
@@ -185,22 +185,22 @@ export function PageTransitionLoader() {
               window.dispatchEvent(new CustomEvent("zevrae:page-reveal"));
             },
           },
-          0.45,
+          0.25,
         );
 
         // Fade page content back in from slightly below
         if (pageContent) {
           tl.fromTo(
             pageContent,
-            { y: 30, opacity: 0 },
+            { y: 20, opacity: 0 },
             {
               y: 0,
               opacity: 1,
-              duration: 0.5,
+              duration: 0.35,
               ease: "power2.out",
               force3D: true,
             },
-            0.65,
+            0.35,
           );
         }
       }

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function MenPage() {
   return (
-    <div className="pt-28 md:pt-32">
+    <div className="pt-26 md:pt-32">
       <ProductGrid categoryFilter="men" />
     </div>
   );

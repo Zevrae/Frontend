@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
@@ -96,7 +96,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
 // ─── Shared section heading ───────────────────────────────────────────────────
 const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) => {
   const router = useRouter();
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  const currentPath = usePathname();
 
   const handleBack = () => {
     const eyebrowLower = eyebrow.toLowerCase();
@@ -297,7 +297,10 @@ function ProductGridContent({
     [dbProducts]
   );
   const dbAccessoriesProducts = useMemo(
-    () => dbProducts.filter(p => p.gender === 'accessories'),
+    () => dbProducts.filter(p =>
+      p.gender === 'accessories' ||
+      (p.rawCategory || '').toLowerCase().includes('accessor')
+    ),
     [dbProducts]
   );
   const allWomenProducts = dbWomenProducts;
@@ -372,7 +375,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="men"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading eyebrow="LATEST DROPS" title="Men's Collection" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -418,7 +421,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="gendered-category"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading
               eyebrow={isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
@@ -451,7 +454,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="women"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading eyebrow="NEW ARRIVALS" title="Women's Collection" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -497,7 +500,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="accessories"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading eyebrow="NEW ARRIVALS" title="ACCESSORIES COLLECTION" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -563,7 +566,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="jewellery-men"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading eyebrow="JEWELLERY" title="MEN'S JEWELLERY" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -589,7 +592,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="jewellery-women"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading eyebrow="JEWELLERY" title="WOMEN'S JEWELLERY" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -615,7 +618,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="gendered-jewellery-sub"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading
               eyebrow={categoryFilter.startsWith('men-') ? "MEN'S JEWELLERY" : "WOMEN'S JEWELLERY"}
@@ -652,7 +655,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="accessories-category"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 border-t border-[rgba(var(--theme-accent-rgb),0.1)] min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <SectionHeading
               eyebrow="ACCESSORIES"
@@ -660,8 +663,16 @@ function ProductGridContent({
             />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
               {(() => {
-                const normalizedFilter = (categoryFilter === 'keychain' || categoryFilter === 'keychains') ? 'keychains' : 'soft toys';
-                const filtered = dbAccessoriesProducts.filter(p => p.category === normalizedFilter);
+                const isKeychains = categoryFilter === 'keychain' || categoryFilter === 'keychains';
+                const filtered = dbAccessoriesProducts.filter(p => {
+                  const cat = (p.category || '').toLowerCase().replace(/-/g, ' ').trim();
+                  const rawSub = (p.rawSubcategory || '').toLowerCase().replace(/-/g, ' ').trim();
+                  if (isKeychains) {
+                    return cat.includes('keychain') || rawSub.includes('keychain');
+                  } else {
+                    return cat.includes('soft') || cat.includes('toy') || rawSub.includes('soft') || rawSub.includes('toy');
+                  }
+                });
                 if (isLoading) return (
                   <div className="w-full flex justify-center py-24">
                     <div className="animate-pulse w-8 h-8 rounded-full bg-[var(--theme-accent)]/20" />
@@ -690,7 +701,7 @@ function ProductGridContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             id="search-results"
-            className="py-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
+            className="pt-0 pb-[120px] bg-[var(--theme-bg)] relative z-10 min-h-screen"
           >
             <div className="relative z-[9999] max-w-[1400px] mx-auto px-6 md:px-12 mb-16">
               <div className="flex flex-col items-center md:items-start gap-4">
