@@ -92,8 +92,8 @@ export function PageTransitionLoader() {
         // Curtain slides up from bottom
         tl.to(curtainRef.current, {
           yPercent: 0,
-          duration: 0.45,
-          ease: "power2.inOut",
+          duration: 0.85,
+          ease: "power3.inOut",
           force3D: true,
         });
 
@@ -104,7 +104,7 @@ export function PageTransitionLoader() {
             {
               y: -40,
               opacity: 0,
-              duration: 0.35,
+              duration: 0.75,
               ease: "power2.inOut",
               force3D: true,
             },
@@ -118,7 +118,7 @@ export function PageTransitionLoader() {
             letters[letterIdx],
             {
               yPercent: 0,
-              duration: 0.28,
+              duration: 0.38,
               ease: "expo.out",
               force3D: true,
             },
@@ -132,11 +132,8 @@ export function PageTransitionLoader() {
         // Kill any previous holding timer
         holdingTimerRef.current?.kill();
         holdingTimerRef.current = null;
-        // Use gsap.delayedCall OUTSIDE the context so ctx.revert() on the next
-        // phase change doesn't kill it before the 0.25 s hold finishes.
-        // An empty timeline with only a `delay` has totalDuration=0 and fires
-        // onComplete immediately — delayedCall is the correct primitive here.
-        holdingTimerRef.current = gsap.delayedCall(0.1, () => {
+        // Holding timer for smooth brand visibility pause
+        holdingTimerRef.current = gsap.delayedCall(0.25, () => {
           holdingTimerRef.current = null;
           setPhase("exiting");
         });
@@ -164,7 +161,7 @@ export function PageTransitionLoader() {
             letters[letterIdx],
             {
               yPercent: -120,
-              duration: 0.22,
+              duration: 0.28,
               ease: "expo.in",
               force3D: true,
             },
@@ -177,8 +174,8 @@ export function PageTransitionLoader() {
           curtainRef.current,
           {
             yPercent: -100,
-            duration: 0.4,
-            ease: "power2.inOut",
+            duration: 0.75,
+            ease: "power3.inOut",
             force3D: true,
             onStart: () => {
               window.dispatchEvent(new CustomEvent("hero-reveal"));
@@ -196,7 +193,7 @@ export function PageTransitionLoader() {
             {
               y: 0,
               opacity: 1,
-              duration: 0.35,
+              duration: 0.75,
               ease: "power2.out",
               force3D: true,
             },

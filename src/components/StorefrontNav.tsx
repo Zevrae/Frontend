@@ -413,11 +413,16 @@ export function StorefrontNav() {
                     >
                       <ShinyText
                         text="AI WARDROBE"
+                        speed={2}
+                        delay={0}
+                        color="var(--shiny-text-color, var(--theme-accent))"
+                        shineColor="#ffffff"
+                        spread={120}
+                        direction="left"
+                        yoyo={false}
+                        pauseOnHover={false}
                         disabled={false}
-                        speed={3}
                         className="tracking-[0.3em]"
-                        color="var(--theme-accent)"
-                        shineColor="#FFFFFF"
                       />
                       <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                     </button>
@@ -427,10 +432,22 @@ export function StorefrontNav() {
                   {isAdmin && (
                     <button
                       onClick={() => navTransition(() => router.push('/admin'))}
-                      className="group relative pb-1 text-[#daa520] hover:text-[#fff] transition-colors duration-700"
+                      className="group relative pb-1 transition-colors duration-700"
                     >
-                      ADMIN
-                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#daa520] nav-underline" />
+                      <ShinyText
+                        text="ADMIN PANEL"
+                        speed={2}
+                        delay={0}
+                        color="var(--shiny-text-color, var(--theme-accent))"
+                        shineColor="#ffffff"
+                        spread={120}
+                        direction="left"
+                        yoyo={false}
+                        pauseOnHover={false}
+                        disabled={false}
+                        className="tracking-[0.3em]"
+                      />
+                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
                     </button>
                   )}
 
@@ -916,7 +933,22 @@ export function StorefrontNav() {
                   }
                 }}
               >
-                {item.name}
+                {item.name === 'AI Wardrobe' || item.name === 'Admin Panel' ? (
+                  <ShinyText
+                    text={item.name.toUpperCase()}
+                    speed={2}
+                    delay={0}
+                    color="var(--shiny-text-color, var(--theme-accent))"
+                    shineColor="#ffffff"
+                    spread={120}
+                    direction="left"
+                    yoyo={false}
+                    pauseOnHover={false}
+                    disabled={false}
+                  />
+                ) : (
+                  item.name
+                )}
               </motion.a>
             ))}
           </motion.div>

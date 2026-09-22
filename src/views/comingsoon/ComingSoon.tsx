@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { Sparkles } from 'lucide-react';
+import ShinyText from '@/components/ShinyText';
 import './ComingSoon.css';
 
 export default function ComingSoon() {
@@ -40,8 +41,6 @@ export default function ComingSoon() {
     return () => ctx.revert();
   }, []);
 
-
-
   const notifyClick = () => {
     // No backend endpoint for a waitlist exists yet — this is a placeholder
     // interaction until one is wired up (e.g. POST /api/waitlist).
@@ -57,8 +56,20 @@ export default function ComingSoon() {
       <div ref={glowRef} className="cs-glow" aria-hidden="true" />
 
       <div className="cs-content">
-        <p className="cs-eyebrow">
-          <Sparkles size={12} /> AI Wardrobe
+        <p className="cs-eyebrow flex items-center justify-center gap-1.5">
+          <Sparkles size={12} />
+          <ShinyText
+            text="AI WARDROBE"
+            speed={2}
+            delay={0}
+            color="#b5b5b5"
+            shineColor="#ffffff"
+            spread={120}
+            direction="left"
+            yoyo={false}
+            pauseOnHover={false}
+            disabled={false}
+          />
         </p>
         <h1 ref={titleRef} className="cs-title" aria-label="Coming Soon">
           {'COMING SOON'.split('').map((ch, i) => (
