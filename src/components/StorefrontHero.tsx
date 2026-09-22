@@ -202,8 +202,8 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
 
           {/* Tagline */}
           <p
-            className="font-sans italic text-[rgba(var(--theme-text-rgb),0.6)] text-center"
-            style={{ fontSize: '0.9rem', marginTop: '1.4rem', letterSpacing: '0.01em' }}
+            className="font-serif italic text-[rgba(var(--theme-text-rgb),0.75)] text-center tracking-[0.02em]"
+            style={{ fontFamily: '"Playfair Display", ui-serif, Georgia, serif', fontSize: '1.05rem', marginTop: '1.4rem' }}
           >
             Luxury is a Matter of Choice
           </p>

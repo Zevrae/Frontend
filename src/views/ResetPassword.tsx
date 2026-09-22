@@ -203,7 +203,7 @@ export default function ResetPassword() {
           )}
         </AnimatePresence>
 
-        <p className="mt-10 text-[10px] font-plex-mono uppercase tracking-[0.1em] text-[rgba(var(--theme-text-rgb),0.2)] text-center">
+        <p className="mt-10 text-[12px] font-sans italic tracking-[0.01em] text-[rgba(var(--theme-text-rgb),0.5)] text-center">
           ZEVRAE — Luxury is a Matter of Choice
         </p>
       </motion.div>
