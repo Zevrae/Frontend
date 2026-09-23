@@ -201,13 +201,12 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
    --------------------------------------------------------- */
 export function CollectionScroller() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(() => {
-    if (typeof window !== 'undefined') {
-      if (window.location.hash === '#jewellery') return 1;
-      if (window.location.hash === '#accessories') return 2;
-    }
-    return 0;
-  });
+  // Always start at 0 (clothing) — never read the hash for initial state.
+  // Reading window.location.hash on mount caused the accessories theme to be
+  // applied when pressing browser-back from /accessories/* pages, because the
+  // browser can restore a stale #accessories hash into the URL during popstate.
+  // Hash-based navigation is handled exclusively by the hashchange listener below.
+  const [activeIdx, setActiveIdx] = useState(0);
   const setTheme = useSetTheme();
   const { triggerTransition } = useCollectionTransition();
   const { setActiveCollectionId } = useActiveCollection();
@@ -317,16 +316,6 @@ export function CollectionScroller() {
     const viewCenter = window.innerWidth / 2;
     const targetX    = currentX + (viewCenter - cardCenter);
     gsap.set(track, { x: targetX });
-
-    // Scroll directly to the collection scroller if returning to a subcategory
-    if (typeof window !== 'undefined' && window.location.hash) {
-      setTimeout(() => {
-        const element = document.getElementById('collection');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
   }, [activeIdx]);
 
   useEffect(() => {

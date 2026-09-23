@@ -14,7 +14,7 @@ import {
   Truck,
   Lock,
 } from 'lucide-react';
-import { usePageTransition } from '../features/PageTransitionContext';
+
 
 const WhatsappIcon = ({ size = 17, strokeWidth = 1.5 }: { size?: number; strokeWidth?: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -146,7 +146,6 @@ const PaymentIcons = () => (
    Sub-components
 ───────────────────────────────────────────── */
 function FooterNavLink({ label, to }: NavLink) {
-  const { trigger } = usePageTransition();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -160,16 +159,14 @@ function FooterNavLink({ label, to }: NavLink) {
         window.dispatchEvent(new HashChangeEvent('hashchange'));
       } else {
         // Navigate to homepage first, then set hash
-        trigger(() => {
-          router.push('/');
-          setTimeout(() => {
-            window.location.hash = hash;
-            window.dispatchEvent(new HashChangeEvent('hashchange'));
-          }, 400);
-        });
+        router.push('/');
+        setTimeout(() => {
+          window.location.hash = hash;
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        }, 400);
       }
     } else {
-      trigger(() => router.push(to));
+      router.push(to);
     }
   };
 

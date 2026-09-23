@@ -86,12 +86,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // behind, so the CSS `transition` declared on `html`/`body` for these
     // custom properties takes over instead, and the palette crossfades.
     document.documentElement.setAttribute('data-theme', theme);
-    // Every theme change — whether from route navigation, the scroll-linked
-    // override, or a future explicit theme switcher — is persisted
-    // immediately so the next load/refresh picks up right where this one
-    // left off.
-    persistTheme(theme);
-  }, [theme]);
+    // Persist the theme so non-category routes (/bag, /product/:id, etc.)
+    // restore the last palette on refresh. Skip persisting when on the
+    // homepage ('/') — the CollectionScroller always reinitializes to
+    // 'clothing' on mount, so storing the mid-session homepage theme would
+    // cause a stale accessories/jewellery flash on back-navigation.
+    if (pathname !== '/') {
+      persistTheme(theme);
+    }
+  }, [theme, pathname]);
 
   const setTheme = useCallback((next: ThemeName) => setThemeState(next), []);
 
