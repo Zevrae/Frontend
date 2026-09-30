@@ -3,39 +3,131 @@
 import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
-import { useTheme } from '../theme/ThemeProvider';
+import { useTheme, useSetTheme } from '../theme/ThemeProvider';
 import { usePreloader } from '../features/PreloaderContext';
 import { usePageTransition } from '../features/PageTransitionContext';
 import { useCollectionTransition } from '../features/CollectionTransitionContext';
+import { useActiveCollection } from '../features/ActiveCollectionContext';
 import HeroCountdown from '../features/HeroCountdown';
 import heroImage from '../assets/hero section try.webp';
 import jewelleryHeroImage from '../assets/jewellery hero section.webp';
 import accessoriesHeroImage from '../assets/accessories hero section.webp';
+import type { ThemeName } from '../theme/themeConfig';
 
 interface StorefrontHeroProps {
   isLiveMode?: boolean;
   setIsLiveMode?: (val: boolean) => void;
 }
 
+// Mirrors the data shape that CollectionScroller uses — keeps all transition
+// params (veilColor, brightness, etc.) in one place so both components stay
+// in sync automatically.
+interface HeroSlide {
+  theme: ThemeName;
+  label: string;
+  veilColor: string;
+  heroImage: any;
+  heroBrightness?: number;
+  heroVignetteOpacity?: number;
+  heroObjectPosition?: string;
+}
+
+const SLIDES: HeroSlide[] = [
+  {
+    theme: 'clothing',
+    label: 'Clothing',
+    veilColor: '#12100C',
+    heroImage,
+    // clothing uses :root CSS defaults — no overrides needed
+  },
+  {
+    theme: 'jewellery',
+    label: 'Jewellery',
+    veilColor: '#FAEAB1',
+    heroImage: jewelleryHeroImage,
+    heroBrightness: 0.75,
+    heroVignetteOpacity: 0.10,
+    heroObjectPosition: '30% center',
+  },
+  {
+    theme: 'accessories',
+    label: 'Accessories',
+    veilColor: '#F5F5F5',
+    heroImage: accessoriesHeroImage,
+    heroBrightness: 0.75,
+    heroVignetteOpacity: 0.10,
+    heroObjectPosition: 'center center',
+  },
+];
+
+/** Apply all CSS custom-property overrides for the given slide —
+ *  identical to what CollectionScroller does inside its activeIdx effect. */
+function applyHeroCSS(slide: HeroSlide) {
+  const root = document.documentElement;
+
+  if (slide.heroBrightness !== undefined) {
+    root.style.setProperty('--hero-brightness', String(slide.heroBrightness));
+  } else {
+    root.style.removeProperty('--hero-brightness');
+  }
+
+  if (slide.heroVignetteOpacity !== undefined) {
+    root.style.setProperty('--hero-vignette-opacity', String(slide.heroVignetteOpacity));
+  } else {
+    root.style.removeProperty('--hero-vignette-opacity');
+  }
+
+  if (slide.heroObjectPosition) {
+    root.style.setProperty('--hero-object-position', slide.heroObjectPosition);
+  } else {
+    root.style.removeProperty('--hero-object-position');
+  }
+}
+
 export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontHeroProps) {
   const theme = useTheme();
+  const setTheme = useSetTheme();
   const { hasCompletedOnce } = usePreloader();
   const { isTransitioning } = usePageTransition();
-  const { isCollectionTransitioning } = useCollectionTransition();
+  const { triggerTransition, isCollectionTransitioning } = useCollectionTransition();
+  const { setActiveCollectionId } = useActiveCollection();
+  const isAnimating = useRef(false);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroImageRef = useRef<HTMLImageElement>(null);
   const heroAnimatedRef = useRef(false);
   const isTransitioningRef = useRef(false);
 
-  const activeHeroImage =
-    theme === 'jewellery'
-      ? jewelleryHeroImage
-      : theme === 'accessories'
-      ? accessoriesHeroImage
-      : heroImage;
+  const currentIndex = SLIDES.findIndex((s) => s.theme === theme);
+  // Guard: if theme doesn't match any slide (e.g. on a category sub-page),
+  // clamp to 0 so the arrows still render safely.
+  const safeIndex = currentIndex === -1 ? 0 : currentIndex;
+  const activeSlide = SLIDES[safeIndex];
 
-  // Hero scale pulse during collection transition
+  // ── Navigate using the exact same veil system as CollectionScroller ────────
+  const goTo = (idx: number) => {
+    if (isAnimating.current) return;
+    const clamped = (idx + SLIDES.length) % SLIDES.length;
+    if (clamped === safeIndex) return;
+
+    isAnimating.current = true;
+    const incoming = SLIDES[clamped];
+
+    triggerTransition(() => {
+      // Runs while the veil is fully opaque — swap everything here
+      setTheme(incoming.theme);
+      setActiveCollectionId(incoming.theme);
+      applyHeroCSS(incoming);
+    }, incoming.veilColor);
+
+    // Release the lock after the veil animation completes (~800ms total)
+    setTimeout(() => { isAnimating.current = false; }, 850);
+  };
+
+  const handlePrev = () => goTo(safeIndex - 1);
+  const handleNext = () => goTo(safeIndex + 1);
+
+  // ── Hero scale pulse during collection transition ──────────────────────────
   useEffect(() => {
     const img = heroImageRef.current;
     if (!img) return;
@@ -109,12 +201,8 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
   }, [hasCompletedOnce]);
 
   useEffect(() => {
-    const handleSliding = () => {
-      setTimeout(runHeroAnimation, 350);
-    };
-    const handleReveal = () => {
-      setTimeout(runHeroAnimation, 50);
-    };
+    const handleSliding = () => { setTimeout(runHeroAnimation, 350); };
+    const handleReveal = () => { setTimeout(runHeroAnimation, 50); };
     window.addEventListener('preloader-sliding', handleSliding);
     window.addEventListener('hero-reveal', handleReveal);
     return () => {
@@ -130,7 +218,7 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
     >
       <Image
         ref={heroImageRef}
-        src={typeof activeHeroImage === 'string' ? activeHeroImage : (activeHeroImage as any)?.src || ''}
+        src={typeof activeSlide.heroImage === 'string' ? activeSlide.heroImage : (activeSlide.heroImage as any)?.src || ''}
         alt="ZEVRAE Contemporary Luxury"
         fill
         priority
@@ -213,6 +301,117 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
             <HeroCountdown onLive={() => setIsLiveMode(true)} />
           )}
         </div>
+      </div>
+
+      {/* Prev Arrow */}
+      <button
+        onClick={handlePrev}
+        aria-label="Previous collection"
+        style={{
+          position: 'absolute',
+          left: '1.5rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 30,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '3rem',
+          height: '3rem',
+          borderRadius: '50%',
+          border: '1px solid rgba(255,255,255,0.3)',
+          background: 'rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          color: 'var(--theme-text)',
+          cursor: 'pointer',
+          transition: 'background 0.2s, transform 0.2s',
+          outline: 'none',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.18)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-50%) scale(1.1)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-50%) scale(1)';
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+
+      {/* Next Arrow */}
+      <button
+        onClick={handleNext}
+        aria-label="Next collection"
+        style={{
+          position: 'absolute',
+          right: '1.5rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 30,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '3rem',
+          height: '3rem',
+          borderRadius: '50%',
+          border: '1px solid rgba(255,255,255,0.3)',
+          background: 'rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          color: 'var(--theme-text)',
+          cursor: 'pointer',
+          transition: 'background 0.2s, transform 0.2s',
+          outline: 'none',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.18)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-50%) scale(1.1)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-50%) scale(1)';
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+
+      {/* Dot indicator */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 30,
+          display: 'flex',
+          gap: '0.5rem',
+          alignItems: 'center',
+        }}
+      >
+        {SLIDES.map((s, i) => (
+            <button
+              key={s.theme}
+              onClick={() => goTo(i)}
+              aria-label={`Go to ${s.label}`}
+              style={{
+                width: i === safeIndex ? '1.5rem' : '0.4rem',
+                height: '0.4rem',
+                borderRadius: '999px',
+                background: i === safeIndex ? 'var(--theme-text)' : 'rgba(255,255,255,0.35)',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'width 0.35s cubic-bezier(0.22,1,0.36,1), background 0.35s',
+                outline: 'none',
+              }}
+            />
+          ))}
       </div>
     </section>
   );

@@ -201,26 +201,52 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
    --------------------------------------------------------- */
 export function CollectionScroller() {
   const trackRef = useRef<HTMLDivElement>(null);
-  // Always start at 0 (clothing) — never read the hash for initial state.
-  // Reading window.location.hash on mount caused the accessories theme to be
-  // applied when pressing browser-back from /accessories/* pages, because the
-  // browser can restore a stale #accessories hash into the URL during popstate.
-  // Hash-based navigation is handled exclusively by the hashchange listener below.
   const [activeIdx, setActiveIdx] = useState(0);
   const setTheme = useSetTheme();
   const { triggerTransition } = useCollectionTransition();
-  const { setActiveCollectionId } = useActiveCollection();
+  const { activeCollectionId, setActiveCollectionId } = useActiveCollection();
   const isAnimating = useRef(false);
+  // Track whether the current goTo call originated internally (from scroller arrows/clicks)
+  // so we can skip the re-sync when the scroller itself is the one changing the collection.
+  const internalChangeRef = useRef(false);
 
   // Swipe gesture refs
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
+  // ── Sync from external source (e.g. hero arrows) ──────────────────────────
+  // When the hero arrows change the active collection, activeCollectionId in
+  // context will update. We need to slide the card track to match.
+  useEffect(() => {
+    if (internalChangeRef.current) {
+      internalChangeRef.current = false;
+      return;
+    }
+    const newIdx = collections.findIndex((c) => c.id === activeCollectionId);
+    if (newIdx === -1 || newIdx === activeIdx) return;
+
+    // Slide cards to match without re-triggering a veil transition
+    setActiveIdx(newIdx);
+
+    // Animate the track to center the new card
+    const track = trackRef.current;
+    if (track) {
+      const cards = track.querySelectorAll<HTMLElement>('.cs-card');
+      const card = cards[newIdx];
+      if (card) {
+        const cardRect = card.getBoundingClientRect();
+        const currentX = gsap.getProperty(track, 'x') as number;
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const viewCenter = window.innerWidth / 2;
+        const targetX = currentX + (viewCenter - cardCenter);
+        gsap.to(track, { x: targetX, duration: 0.75, ease: 'power3.inOut' });
+      }
+    }
+  }, [activeCollectionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     const active = collections[activeIdx];
     setTheme(active.id as ThemeName);
-    // Propagate the active collection ID so BestSellers (a sibling below) can
-    // filter its products without any prop-drilling through App.
     setActiveCollectionId(active.id as ThemeName);
 
     // ── Hero image ──────────────────────────────────────────────────────────
@@ -263,6 +289,7 @@ export function CollectionScroller() {
     if (clamped === activeIdx) return;
 
     isAnimating.current = true;
+    internalChangeRef.current = true; // mark as internal so the sync effect skips it
     const incoming = collections[clamped];
 
     // ── Veil transition ────────────────────────────────────────────────────
@@ -375,7 +402,6 @@ export function CollectionScroller() {
                 aria-label={`Go to ${col.label}`}
               >
                 <span className="cs-dot__bar" />
-                <span className="cs-dot__label">{col.label}</span>
               </button>
             ))}
           </div>
