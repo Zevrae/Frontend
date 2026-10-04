@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, RefreshCw,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { usersApi, Address } from './api/users';
@@ -43,6 +43,93 @@ function canCancelOrder(order: Order): boolean {
   if (!['placed', 'processing'].includes(order.order_status)) return false;
   const elapsed = Date.now() - new Date(order.created_at).getTime();
   return elapsed <= CANCELLATION_WINDOW_MS;
+}
+
+// Exchanges are open for 3 days after delivery. The backend re-checks this.
+const EXCHANGE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+function getExchangeDeadline(order: Order): number {
+  const base = order.delivered_at || order.updated_at || order.created_at;
+  return new Date(base).getTime() + EXCHANGE_WINDOW_MS;
+}
+function canExchangeOrder(order: Order): boolean {
+  if (order.order_status !== 'delivered') return false;
+  if (order.exchange_request) return false;
+  return Date.now() <= getExchangeDeadline(order);
+}
+
+function ExchangeSection({ order, onUpdated }: { order: Order; onUpdated: (updated: Order) => void }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  if (order.order_status !== 'delivered') return null;
+
+  if (order.exchange_request) {
+    const ex = order.exchange_request;
+    return (
+      <div className="mt-4 text-[11px] font-sans text-[var(--theme-accent)] bg-[rgba(var(--theme-accent-rgb),0.1)] border border-[rgba(var(--theme-accent-rgb),0.3)] rounded-sm px-3 py-2">
+        <p className="flex items-center gap-2"><RefreshCw size={13} /> Exchange {ex.status} · {formatDate(ex.requested_at)}</p>
+        <p className="text-[10px] text-[rgba(var(--theme-text-rgb),0.7)] mt-1">“{ex.reason}”</p>
+      </div>
+    );
+  }
+
+  if (!canExchangeOrder(order)) {
+    return <p className="mt-4 text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)]">The 3-day exchange window for this order has closed.</p>;
+  }
+
+  const daysLeft = Math.max(1, Math.ceil((getExchangeDeadline(order) - Date.now()) / (24 * 60 * 60 * 1000)));
+
+  const submit = async () => {
+    if (reason.trim().length < 5) { setError('Please tell us why you want to exchange (min 5 characters).'); return; }
+    setSubmitting(true);
+    setError('');
+    try {
+      const updated = await ordersApi.requestExchange(order.id, { reason: reason.trim() });
+      onUpdated(updated);
+      setOpen(false);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err.message || 'Could not request an exchange.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mt-4">
+      {!open ? (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+            className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-sans text-[var(--theme-accent)] border border-[rgba(var(--theme-accent-rgb),0.4)] hover:bg-[rgba(var(--theme-accent-rgb),0.1)] transition-colors px-3 py-1.5 rounded-sm"
+          >
+            <RefreshCw size={12} /> Exchange Product
+          </button>
+          <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mt-1.5">Exchange window closes in {daysLeft} day{daysLeft !== 1 ? 's' : ''} (3 days from delivery).</p>
+        </>
+      ) : (
+        <div className="border border-[rgba(var(--theme-text-rgb),0.15)] rounded-sm p-4 space-y-3">
+          <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)]">Request an Exchange</p>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={4}
+            maxLength={1000}
+            placeholder="Tell us why you're exchanging — your suggestion or complaint helps us improve."
+            className="w-full bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.2)] px-3 py-2 text-[12px] font-sans text-[var(--theme-text)] placeholder:text-[rgba(var(--theme-text-rgb),0.4)] focus:border-[var(--theme-accent)] focus:outline-none rounded-sm resize-none"
+          />
+          {error && <p className="text-[10px] font-sans text-red-500">{error}</p>}
+          <div className="flex gap-2">
+            <button onClick={submit} disabled={submitting} className="px-4 py-2 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] uppercase tracking-[0.2em] font-sans rounded-sm hover:opacity-80 disabled:opacity-50">
+              {submitting ? 'Submitting...' : 'Submit Request'}
+            </button>
+            <button onClick={() => { setOpen(false); setError(''); }} className="px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-sans text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-text)]">Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: (updated: Order) => void }) {
@@ -130,6 +217,8 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
             {cancelError && <p className="text-[10px] font-sans text-red-500 mt-1.5">{cancelError}</p>}
           </div>
         )}
+
+        <ExchangeSection order={order} onUpdated={onCancelled} />
       </div>
 
       <AnimatePresence>
