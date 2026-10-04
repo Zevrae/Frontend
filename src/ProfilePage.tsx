@@ -292,7 +292,7 @@ export default function ProfilePage() {
   const inputCls = "w-full bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.2)] px-4 py-2.5 text-[12px] font-sans text-[var(--theme-text)] placeholder:text-[rgba(var(--theme-text-rgb),0.4)] focus:border-[var(--theme-accent)] focus:outline-none rounded-sm transition-colors";
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans pt-[140px] pb-24">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans pt-28 md:pt-[140px] pb-24">
       {/* Back button wrapper - aligned with navbar/page edge */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-10">
         <button onClick={() => router.push('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-accent)] transition-colors">

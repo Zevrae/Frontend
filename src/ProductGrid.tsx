@@ -121,34 +121,27 @@ const SectionHeading = ({ eyebrow, title }: { eyebrow: string; title: string }) 
   };
 
   return (
-    <div className="relative z-[9999] max-w-[1400px] mx-auto px-6 md:px-12 mb-16 pointer-events-none">
-      {/* ── SEPARATED TITLES BLOCK ── */}
-      <div className="flex flex-col items-center md:items-start gap-4">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="relative z-[9999] pointer-events-auto text-[12px] uppercase tracking-[0.4em] font-plex-mono text-[var(--theme-accent)]"
-        >
-          <button 
-            onClick={handleBack} 
-            className="flex items-center hover:text-white transition-colors duration-300 outline-none cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            {eyebrow}
-          </button>
-        </motion.h2>
-        <motion.h3
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase pointer-events-auto"
-        >
-          {title}
-        </motion.h3>
-      </div>
+    <div className="relative z-20 max-w-[1400px] mx-auto px-6 md:px-12 mb-12 md:mb-16">
+      {/* Back link — same markup/styling as the product page */}
+      <motion.button
+        type="button"
+        onClick={handleBack}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-accent)] transition-colors duration-300 mb-8 md:mb-10 group cursor-pointer"
+      >
+        <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform duration-300" />
+        {eyebrow}
+      </motion.button>
+      <motion.h3
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+        className="w-full text-3xl md:text-5xl font-archivo font-bold tracking-[0.1em] text-[var(--theme-text)] text-center md:text-left uppercase"
+      >
+        {title}
+      </motion.h3>
     </div>
   );
 };

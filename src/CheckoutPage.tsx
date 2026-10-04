@@ -363,7 +363,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-[140px] pb-24 relative z-10">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-28 md:pt-[140px] pb-24 relative z-10">
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-12 flex items-center justify-between">
         <button 

@@ -423,6 +423,10 @@
     width: 100%;
   }
 
+  .bag-page {
+    padding-top: 7rem;
+  }
+
   .bag-footer {
     flex-direction: column;
     align-items: flex-start;
@@ -430,6 +434,29 @@
   }
 
   .bag-checkout-cta {
-    font-size: clamp(2.2rem, 12vw, 5rem);
+    font-size: 8vw;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  .bag-heading {
+    /* Override the 4rem floor, which is wider than a phone viewport */
+    font-size: 11.5vw;
+  }
+
+  .bag-footer,
+  .bag-subtotal {
+    min-width: 0;
+    max-width: 100%;
   }
 }
+
+@media (max-width: 380px) {
+  .bag-heading {
+    font-size: 11vw;
+  }
+
+  .bag-checkout-cta {
+    font-size: 7.5vw;
+  }
+}
