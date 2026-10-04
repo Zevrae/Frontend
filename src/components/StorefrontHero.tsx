@@ -127,6 +127,58 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
   const handlePrev = () => goTo(safeIndex - 1);
   const handleNext = () => goTo(safeIndex + 1);
 
+  // ── Swipe handlers (Touch & Pointer support) ──────────────────────────────
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const touchEndY = useRef<number | null>(null);
+  const isDragging = useRef(false);
+
+  const minSwipeDistance = 45;
+
+  const handleTouchStart = (e: React.TouchEvent | React.PointerEvent) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.PointerEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.PointerEvent).clientY;
+    touchStartX.current = clientX;
+    touchStartY.current = clientY;
+    touchEndX.current = clientX;
+    touchEndY.current = clientY;
+    isDragging.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent | React.PointerEvent) => {
+    if (!isDragging.current || touchStartX.current === null) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.PointerEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.PointerEvent).clientY;
+    touchEndX.current = clientX;
+    touchEndY.current = clientY;
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging.current || touchStartX.current === null || touchEndX.current === null) {
+      isDragging.current = false;
+      return;
+    }
+
+    const distanceX = touchStartX.current - touchEndX.current;
+    const distanceY = (touchStartY.current ?? 0) - (touchEndY.current ?? 0);
+
+    // Only trigger if horizontal swipe distance is greater than vertical movement & exceeds threshold
+    if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > minSwipeDistance) {
+      if (distanceX > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+    touchEndX.current = null;
+    touchEndY.current = null;
+    isDragging.current = false;
+  };
+
   // ── Hero scale pulse during collection transition ──────────────────────────
   useEffect(() => {
     const img = heroImageRef.current;
@@ -214,7 +266,15 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
   return (
     <section
       ref={heroRef}
-      className="relative bg-[var(--theme-bg)] overflow-hidden min-h-screen flex flex-col items-center justify-center"
+      className="relative bg-[var(--theme-bg)] overflow-hidden min-h-screen flex flex-col items-center justify-center select-none cursor-grab active:cursor-grabbing"
+      style={{ touchAction: 'pan-y' }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onPointerDown={handleTouchStart}
+      onPointerMove={handleTouchMove}
+      onPointerUp={handleTouchEnd}
+      onPointerCancel={handleTouchEnd}
     >
       <Image
         ref={heroImageRef}
@@ -306,6 +366,8 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
       {/* Prev Arrow */}
       <button
         onClick={handlePrev}
+        onPointerDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         aria-label="Previous collection"
         style={{
           position: 'absolute',
@@ -345,6 +407,8 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
       {/* Next Arrow */}
       <button
         onClick={handleNext}
+        onPointerDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         aria-label="Next collection"
         style={{
           position: 'absolute',
@@ -398,6 +462,8 @@ export function StorefrontHero({ isLiveMode = true, setIsLiveMode }: StorefrontH
             <button
               key={s.theme}
               onClick={() => goTo(i)}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               aria-label={`Go to ${s.label}`}
               style={{
                 width: i === safeIndex ? '1.5rem' : '0.4rem',
