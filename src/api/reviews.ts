@@ -63,14 +63,39 @@ export const reviewsApi = {
 
   // Fetches the most-recent reviews site-wide (any product) for the scrolling
   // ticker strip. Returns an empty array silently if the endpoint is unavailable.
-  listAll: async (params?: { page?: number; limit?: number }): Promise<Review[]> => {
+  listAll: (params?: { page?: number; limit?: number }): Promise<Review[]> => {
+    const FLAG = 'reviews_listall_unavailable';
     try {
-      const response = await api.get('/reviews', { params: { limit: 40, ...params } });
-      const body = response.data;
-      // Some backends return { data: [...] }, others return the array directly.
-      return Array.isArray(body) ? body : (body?.data ?? []);
+      if (typeof window !== 'undefined' && sessionStorage.getItem(FLAG)) {
+        return Promise.resolve([]);
+      }
     } catch {
-      return [];
+      /* sessionStorage unavailable */
     }
+    if (!listAllPromise) {
+      listAllPromise = api
+        .get('/reviews', {
+          params: { limit: 40, ...params },
+          validateStatus: (s: number) => s < 500,
+        })
+        .then((response: any) => {
+          if (response.status === 404) {
+            // Endpoint doesn't exist on the backend — remember so we never retry.
+            try {
+              sessionStorage.setItem(FLAG, '1');
+            } catch {
+              /* ignore */
+            }
+            return [] as Review[];
+          }
+          const body = response.data;
+          // Some backends return { data: [...] }, others return the array directly.
+          return (Array.isArray(body) ? body : (body?.data ?? [])) as Review[];
+        })
+        .catch(() => [] as Review[]);
+    }
+    return listAllPromise;
   },
 };
+
+let listAllPromise: Promise<Review[]> | null = null;

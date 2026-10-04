@@ -237,29 +237,29 @@ export default function TryOnReviewTicker() {
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    reviewsApi.listAll({ limit: 40 }).then((data) => {
-      console.log('[ReviewTicker] raw data from /reviews:', data);
-      if (!Array.isArray(data) || data.length === 0) {
-        setLoadError('No reviews returned from API (listAll returned empty).');
-        return;
-      }
-      // Show all 4–5 star reviews (normal product + try-on, no comment requirement)
-      const filtered = data.filter((r) => r.rating >= 4);
-      console.log(`[ReviewTicker] ${data.length} total → ${filtered.length} with rating ≥ 4`);
-      if (filtered.length === 0) {
-        setLoadError(`${data.length} reviews found but none have rating ≥ 4.`);
-      }
-      setReviews(filtered);
-    }).catch((err) => {
-      console.error('[ReviewTicker] Failed to fetch reviews:', err);
-      setLoadError(err?.message || 'Fetch failed.');
-    });
+    let cancelled = false;
+    const run = () => {
+      reviewsApi.listAll({ limit: 40 }).then((data) => {
+        if (cancelled) return;
+        if (!Array.isArray(data) || data.length === 0) return;
+        // Show all 4–5 star reviews (normal product + try-on, no comment requirement)
+        const filtered = data.filter((r) => r.rating >= 4);
+        if (filtered.length === 0) {
+          setLoadError(`${data.length} reviews found but none have rating ≥ 4.`);
+        }
+        setReviews(filtered);
+      });
+    };
+    const w = window as any;
+    const handle = w.requestIdleCallback
+      ? w.requestIdleCallback(run, { timeout: 3000 })
+      : setTimeout(run, 1500);
+    return () => {
+      cancelled = true;
+      if (w.cancelIdleCallback && w.requestIdleCallback) w.cancelIdleCallback(handle);
+      else clearTimeout(handle);
+    };
   }, []);
-
-  // Log any load issues for easy debugging
-  useEffect(() => {
-    if (loadError) console.warn('[ReviewTicker] Load issue:', loadError);
-  }, [loadError]);
 
   // Need at least 2 reviews to show a meaningful ticker
   if (reviews.length < 2) return null;
