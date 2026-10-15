@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 import { useRouter } from 'next/navigation';
-import { usePageTransition } from '../features/PageTransitionContext';
+import { useNavTransition } from '../hooks/useNavTransition';
 import { useSetTheme } from '../theme/ThemeProvider';
 import { useCollectionTransition } from '../features/CollectionTransitionContext';
 import { useActiveCollection } from '../features/ActiveCollectionContext';
@@ -112,7 +112,7 @@ interface CardProps {
 
 function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
   const router = useRouter();
-  const { trigger: navTransition } = usePageTransition();
+  const navTransition = useNavTransition();
   const [hovered, setHovered] = useState<'men' | 'women' | null>(null);
 
   return (
@@ -158,9 +158,9 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
             <>
               <button
                 className="cs-card__cta cs-card__cta--men"
-                onMouseEnter={() => setHovered('men')}
+                onMouseEnter={() => { setHovered('men'); router.prefetch(col.menRoute); }}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => { e.stopPropagation(); navTransition(() => router.push(col.menRoute)); }}
+                onClick={(e) => { e.stopPropagation(); navTransition(col.menRoute); }}
               >
                 <span>MEN</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -169,9 +169,9 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
               </button>
               <button
                 className="cs-card__cta cs-card__cta--women"
-                onMouseEnter={() => setHovered('women')}
+                onMouseEnter={() => { setHovered('women'); router.prefetch(col.womenRoute); }}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => { e.stopPropagation(); navTransition(() => router.push(col.womenRoute)); }}
+                onClick={(e) => { e.stopPropagation(); navTransition(col.womenRoute); }}
               >
                 <span>WOMEN</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -182,7 +182,8 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           ) : (
             <button
               className="cs-card__cta"
-              onClick={(e) => { e.stopPropagation(); navTransition(() => router.push('/accessories')); }}
+              onMouseEnter={() => router.prefetch('/accessories')}
+              onClick={(e) => { e.stopPropagation(); navTransition('/accessories'); }}
             >
               <span>EXPLORE</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

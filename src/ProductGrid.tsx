@@ -69,6 +69,7 @@ const JewellerySubcategoryGrid = ({ categories }: { categories: typeof mensJewel
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: (i % 4) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
           className="group relative flex flex-col cursor-pointer"
+          onMouseEnter={() => router.prefetch(item.path)}
           onClick={() => router.push(item.path)}
         >
           <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
@@ -381,6 +382,7 @@ function ProductGridContent({
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="group relative flex flex-col cursor-pointer"
+                    onMouseEnter={() => router.prefetch(item.path)}
                     onClick={() => router.push(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
@@ -460,6 +462,7 @@ function ProductGridContent({
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 2) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="w-full md:w-[460px] max-w-[460px] group relative flex flex-col cursor-pointer"
+                    onMouseEnter={() => router.prefetch(item.path)}
                     onClick={() => router.push(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
@@ -506,6 +509,7 @@ function ProductGridContent({
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.8, delay: (i % 6) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="group relative flex flex-col cursor-pointer"
+                    onMouseEnter={() => router.prefetch(item.path)}
                     onClick={() => router.push(item.path)}
                   >
                     <div className="relative aspect-[3/4] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>

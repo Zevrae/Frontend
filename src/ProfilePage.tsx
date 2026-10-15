@@ -384,7 +384,11 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans pt-28 md:pt-[140px] pb-24">
       {/* Back button wrapper - aligned with navbar/page edge */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-10">
-        <button onClick={() => router.push('/')} className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-accent)] transition-colors">
+        <button
+          onMouseEnter={() => router.prefetch('/')}
+          onClick={() => router.push('/')}
+          className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.6)] hover:text-[var(--theme-accent)] transition-colors"
+        >
           <ChevronLeft size={16} className="mr-2" /> Back to Home
         </button>
       </div>
@@ -479,7 +483,13 @@ export default function ProfilePage() {
             ) : orders.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-4">You haven't placed any orders yet.</p>
-                <button onClick={() => router.push('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Start Shopping</button>
+                <button
+                  onMouseEnter={() => router.prefetch('/')}
+                  onClick={() => router.push('/')}
+                  className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity"
+                >
+                  Start Shopping
+                </button>
               </div>
             ) : (
               orders.map(order => (
@@ -501,7 +511,13 @@ export default function ProfilePage() {
             ) : tryons.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-4">You haven't generated any try-ons yet.</p>
-                <button onClick={() => router.push('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Browse Products</button>
+                <button
+                  onMouseEnter={() => router.prefetch('/')}
+                  onClick={() => router.push('/')}
+                  className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity"
+                >
+                  Browse Products
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

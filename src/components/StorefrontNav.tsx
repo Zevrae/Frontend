@@ -9,7 +9,7 @@ import { ChevronDown, Menu, X, Search } from 'lucide-react';
 import { useCart } from '../CartContext';
 import { useAuthModal } from '../AuthModalContext';
 import { useAuth } from '../hooks/UseAuth';
-import { usePageTransition } from '../features/PageTransitionContext';
+import { useNavTransition } from '../hooks/useNavTransition';
 import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from '../config/launch';
 import { getOrFetchAllProducts } from '../ProductGrid';
 import ShinyText from './index';
@@ -21,7 +21,7 @@ export function StorefrontNav() {
   const isAdmin = user?.role === 'admin';
   const { items, setIsCartOpen } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
-  const { trigger: navTransition } = usePageTransition();
+  const navTransition = useNavTransition();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -164,10 +164,9 @@ export function StorefrontNav() {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
-    navTransition(() => {
+    navTransition(`/search?q=${encodeURIComponent(trimmed)}`, () => {
       setIsSearchOpen(false);
       setSearchQuery('');
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
     });
   };
 
@@ -224,10 +223,10 @@ export function StorefrontNav() {
                         >
                           <Link
                             href="/men"
+                            onMouseEnter={() => router.prefetch('/men')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsClothingOpen(false);
-                              navTransition(() => router.push('/men'));
+                              navTransition('/men', () => setIsClothingOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                           >
@@ -235,10 +234,10 @@ export function StorefrontNav() {
                           </Link>
                           <Link
                             href="/women"
+                            onMouseEnter={() => router.prefetch('/women')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsClothingOpen(false);
-                              navTransition(() => router.push('/women'));
+                              navTransition('/women', () => setIsClothingOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                           >
@@ -246,10 +245,10 @@ export function StorefrontNav() {
                           </Link>
                           <Link
                             href="/customize"
+                            onMouseEnter={() => router.prefetch('/customize')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsClothingOpen(false);
-                              navTransition(() => router.push('/customize'));
+                              navTransition('/customize', () => setIsClothingOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] border-t border-[rgba(var(--theme-accent-rgb),0.1)] mt-1 pt-3"
                           >
@@ -268,9 +267,9 @@ export function StorefrontNav() {
                     onMouseLeave={() => setIsJewelleryOpen(false)}
                   >
                     <button
+                      onMouseEnter={() => router.prefetch('/jewellery/men')}
                       onClick={() => {
-                        setIsJewelleryOpen(false);
-                        navTransition(() => router.push('/jewellery/men'));
+                        navTransition('/jewellery/men', () => setIsJewelleryOpen(false));
                       }}
                       className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
                     >
@@ -289,10 +288,10 @@ export function StorefrontNav() {
                         >
                           <Link
                             href="/jewellery/men"
+                            onMouseEnter={() => router.prefetch('/jewellery/men')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsJewelleryOpen(false);
-                              navTransition(() => router.push('/jewellery/men'));
+                              navTransition('/jewellery/men', () => setIsJewelleryOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                           >
@@ -300,10 +299,10 @@ export function StorefrontNav() {
                           </Link>
                           <Link
                             href="/jewellery/women"
+                            onMouseEnter={() => router.prefetch('/jewellery/women')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsJewelleryOpen(false);
-                              navTransition(() => router.push('/jewellery/women'));
+                              navTransition('/jewellery/women', () => setIsJewelleryOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                           >
@@ -322,9 +321,9 @@ export function StorefrontNav() {
                     onMouseLeave={() => setIsAccessoriesOpen(false)}
                   >
                     <button
+                      onMouseEnter={() => router.prefetch('/accessories')}
                       onClick={() => {
-                        setIsAccessoriesOpen(false);
-                        navTransition(() => router.push('/accessories'));
+                        navTransition('/accessories', () => setIsAccessoriesOpen(false));
                       }}
                       className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
                     >
@@ -343,10 +342,10 @@ export function StorefrontNav() {
                         >
                           <Link
                             href="/accessories/keychains"
+                            onMouseEnter={() => router.prefetch('/accessories/keychains')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsAccessoriesOpen(false);
-                              navTransition(() => router.push('/accessories/keychains'));
+                              navTransition('/accessories/keychains', () => setIsAccessoriesOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                           >
@@ -354,10 +353,10 @@ export function StorefrontNav() {
                           </Link>
                           <Link
                             href="/accessories/soft-toys"
+                            onMouseEnter={() => router.prefetch('/accessories/soft-toys')}
                             onClick={(e) => {
                               e.preventDefault();
-                              setIsAccessoriesOpen(false);
-                              navTransition(() => router.push('/accessories/soft-toys'));
+                              navTransition('/accessories/soft-toys', () => setIsAccessoriesOpen(false));
                             }}
                             className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em]"
                           >
@@ -373,7 +372,8 @@ export function StorefrontNav() {
 
             {/* Logo in Center */}
             <motion.button
-              onClick={() => navTransition(() => router.push('/'))}
+              onMouseEnter={() => router.prefetch('/')}
+              onClick={() => navTransition('/')}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 2, delay: 0.2 }}
@@ -408,7 +408,8 @@ export function StorefrontNav() {
                   {/* AI Wardrobe */}
                   {!isAdmin && (
                     <button
-                      onClick={() => navTransition(() => router.push('/ai-wardrobe'))}
+                      onMouseEnter={() => router.prefetch('/ai-wardrobe')}
+                      onClick={() => navTransition('/ai-wardrobe')}
                       className="group relative pb-1 transition-colors duration-700"
                     >
                       <ShinyText
@@ -431,7 +432,8 @@ export function StorefrontNav() {
                   {/* Admin link if admin */}
                   {isAdmin && (
                     <button
-                      onClick={() => navTransition(() => router.push('/admin'))}
+                      onMouseEnter={() => router.prefetch('/admin')}
+                      onClick={() => navTransition('/admin')}
                       className="group relative pb-1 transition-colors duration-700"
                     >
                       <ShinyText
@@ -473,9 +475,9 @@ export function StorefrontNav() {
                             className="absolute top-[calc(100%+1.5rem)] right-0 w-48 bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md border border-[rgba(var(--theme-accent-rgb),0.1)] py-4 flex flex-col gap-4 shadow-2xl z-50"
                           >
                             <button
+                              onMouseEnter={() => router.prefetch('/profile')}
                               onClick={() => {
-                                setIsProfileOpen(false);
-                                navTransition(() => router.push('/profile'));
+                                navTransition('/profile', () => setIsProfileOpen(false));
                               }}
                               className="text-left px-6 py-2 hover:text-[var(--theme-accent)] hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 w-full tracking-[0.3em] uppercase"
                             >
@@ -496,7 +498,7 @@ export function StorefrontNav() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => navTransition(() => setIsLoginModalOpen(true))}
+                      onClick={() => setIsLoginModalOpen(true)}
                       className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
                     >
                       LOGIN
@@ -506,7 +508,8 @@ export function StorefrontNav() {
 
                   {/* Cart / Bag */}
                   <button
-                    onClick={() => navTransition(() => router.push('/bag'))}
+                    onMouseEnter={() => router.prefetch('/bag')}
+                    onClick={() => navTransition('/bag')}
                     className="group relative pb-1 hover:text-[var(--theme-text)] transition-colors duration-700"
                   >
                     BAG({items.reduce((total, item) => total + item.quantity, 0)})
@@ -651,10 +654,9 @@ export function StorefrontNav() {
                           <div
                             key={p.id}
                             onClick={() => {
-                              navTransition(() => {
+                              navTransition(`/product/${p.id}`, () => {
                                 setIsSearchOpen(false);
                                 setSearchQuery('');
-                                router.push(`/product/${p.id}`);
                               });
                             }}
                             className="flex items-center justify-between p-2 hover:bg-[rgba(var(--theme-accent-rgb),0.05)] cursor-pointer transition-colors border border-transparent hover:border-[rgba(var(--theme-accent-rgb),0.1)] group"
@@ -713,7 +715,7 @@ export function StorefrontNav() {
                 if (!trimmed) return;
                 setMobileSearchQuery('');
                 setIsMenuOpen(false);
-                navTransition(() => router.push(`/search?q=${encodeURIComponent(trimmed)}`));
+                navTransition(`/search?q=${encodeURIComponent(trimmed)}`);
               }}
               className="flex items-center gap-3 border-b border-[rgba(var(--theme-text-rgb),0.2)] pb-3 w-64"
             >
@@ -753,9 +755,10 @@ export function StorefrontNav() {
                       name: '- Men',
                       href: '/men',
                       onClick: () => {
-                        navTransition(() => router.push('/men'));
-                        setIsMenuOpen(false);
-                        setIsMobileClothingOpen(false);
+                        navTransition('/men', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileClothingOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -763,9 +766,10 @@ export function StorefrontNav() {
                       name: '- Women',
                       href: '/women',
                       onClick: () => {
-                        navTransition(() => router.push('/women'));
-                        setIsMenuOpen(false);
-                        setIsMobileClothingOpen(false);
+                        navTransition('/women', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileClothingOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -773,9 +777,10 @@ export function StorefrontNav() {
                       name: '- Customize',
                       href: '/customize',
                       onClick: () => {
-                        navTransition(() => router.push('/customize'));
-                        setIsMenuOpen(false);
-                        setIsMobileClothingOpen(false);
+                        navTransition('/customize', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileClothingOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -792,9 +797,10 @@ export function StorefrontNav() {
                       name: '- Men',
                       href: '/jewellery/men',
                       onClick: () => {
-                        navTransition(() => router.push('/jewellery/men'));
-                        setIsMenuOpen(false);
-                        setIsMobileJewelleryOpen(false);
+                        navTransition('/jewellery/men', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileJewelleryOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -802,9 +808,10 @@ export function StorefrontNav() {
                       name: '- Women',
                       href: '/jewellery/women',
                       onClick: () => {
-                        navTransition(() => router.push('/jewellery/women'));
-                        setIsMenuOpen(false);
-                        setIsMobileJewelleryOpen(false);
+                        navTransition('/jewellery/women', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileJewelleryOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -821,9 +828,10 @@ export function StorefrontNav() {
                       name: '- Keychains',
                       href: '/accessories/keychains',
                       onClick: () => {
-                        navTransition(() => router.push('/accessories/keychains'));
-                        setIsMenuOpen(false);
-                        setIsMobileAccessoriesOpen(false);
+                        navTransition('/accessories/keychains', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileAccessoriesOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -831,9 +839,10 @@ export function StorefrontNav() {
                       name: '- Soft Toys',
                       href: '/accessories/soft-toys',
                       onClick: () => {
-                        navTransition(() => router.push('/accessories/soft-toys'));
-                        setIsMenuOpen(false);
-                        setIsMobileAccessoriesOpen(false);
+                        navTransition('/accessories/soft-toys', () => {
+                          setIsMenuOpen(false);
+                          setIsMobileAccessoriesOpen(false);
+                        });
                       },
                       isSubItem: true,
                     },
@@ -846,8 +855,7 @@ export function StorefrontNav() {
                       name: 'AI Wardrobe',
                       href: '/ai-wardrobe',
                       onClick: () => {
-                        navTransition(() => router.push('/ai-wardrobe'));
-                        setIsMenuOpen(false);
+                        navTransition('/ai-wardrobe', () => setIsMenuOpen(false));
                       },
                     },
                   ]),
@@ -857,8 +865,7 @@ export function StorefrontNav() {
                       name: 'Admin Panel',
                       href: '#',
                       onClick: () => {
-                        navTransition(() => router.push('/admin'));
-                        setIsMenuOpen(false);
+                        navTransition('/admin', () => setIsMenuOpen(false));
                       },
                     },
                   ]
@@ -876,9 +883,10 @@ export function StorefrontNav() {
                             name: '- Profile',
                             href: '/profile',
                             onClick: () => {
-                              navTransition(() => router.push('/profile'));
-                              setIsMenuOpen(false);
-                              setIsMobileProfileOpen(false);
+                              navTransition('/profile', () => {
+                                setIsMenuOpen(false);
+                                setIsMobileProfileOpen(false);
+                              });
                             },
                             isSubItem: true,
                           },
@@ -900,7 +908,7 @@ export function StorefrontNav() {
                       name: 'Login',
                       href: '#',
                       onClick: () => {
-                        navTransition(() => setIsLoginModalOpen(true));
+                        setIsLoginModalOpen(true);
                         setIsMenuOpen(false);
                       },
                     },
@@ -909,10 +917,10 @@ export function StorefrontNav() {
                 name: `Bag(${items.reduce((total, item) => total + item.quantity, 0)})`,
                 href: '/bag',
                 onClick: () => {
-                  navTransition(() => router.push('/bag'));
-                  setIsMenuOpen(false);
+                  navTransition('/bag', () => setIsMenuOpen(false));
                 },
               },
+
             ].map((item, i) => (
               <motion.a
                 key={item.name}

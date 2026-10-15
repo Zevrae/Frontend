@@ -122,7 +122,12 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
         ) : (
           <>
             <div className="placed-note">Added to your bag — checkout whenever you're ready.</div>
-            <button className="place-order" style={{ marginTop: 12 }} onClick={() => router.push('/bag')}>
+            <button
+              className="place-order"
+              style={{ marginTop: 12 }}
+              onMouseEnter={() => router.prefetch('/bag')}
+              onClick={() => router.push('/bag')}
+            >
               Go to bag
             </button>
           </>

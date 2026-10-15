@@ -309,7 +309,12 @@ export default function BagPage() {
             <p className="bag-empty-sub" ref={emptySubRef} style={{ willChange: 'transform' }}>The right one stays.</p>
           </div>
           <div style={{ overflow: 'hidden', marginTop: 'clamp(2rem, 5vh, 4rem)' }}>
-            <button className="bag-empty-cta" onClick={() => router.push('/')} style={{ willChange: 'transform' }}>
+            <button
+              className="bag-empty-cta"
+              onMouseEnter={() => router.prefetch('/')}
+              onClick={() => router.push('/')}
+              style={{ willChange: 'transform' }}
+            >
               Continue Shopping ↗
             </button>
           </div>
@@ -405,6 +410,7 @@ export default function BagPage() {
             {/* Right — Oversized checkout CTA */}
             <button
               className="bag-checkout-cta"
+              onMouseEnter={() => router.prefetch('/checkout')}
               onClick={handleCheckout}
               aria-label="Proceed to checkout"
             >
