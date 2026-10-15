@@ -56,7 +56,7 @@ const mergeDisplayFields = (backendItems: Cart['items'], previous: CartItem[]): 
 };
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       if (typeof window === 'undefined') return [];
@@ -83,7 +83,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // purely local, in-memory cart (there's nothing to hydrate from, and
   // nothing is persisted between sessions for them).
   useEffect(() => {
-    if (!token) return;
+    // Wait for AuthContext to finish validating the stored token before
+    // hitting the cart API. Without this guard, a stale/expired token in
+    // localStorage causes an immediate 401 here before AuthContext can clear it.
+    if (authLoading || !token) return;
     cartApi
       .getCart()
       .then(async (cart) => {
@@ -123,7 +126,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
       })
       .catch((err) => console.error('Failed to load cart:', err));
-  }, [token]);
+  }, [token, authLoading]);
 
   // Adds an item to the cart, capping the combined quantity for that
   // product+size at MAX_QTY_PER_SIZE. Returns the quantity actually added

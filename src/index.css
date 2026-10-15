@@ -232,10 +232,29 @@ svg {
     @apply font-sans antialiased;
   }
 
+  /* On desktop the custom gold dot communicates interactivity (ring on
+     buttons/links, expanded circle on images), so the native hand cursor
+     is redundant and jarring. Lock everything to the arrow so the browser
+     cursor stays consistent while the dot trails behind it.
+     Mobile is unaffected — CustomCursor is hidden on small screens. */
+  @media (min-width: 768px) {
+    *, *::before, *::after {
+      cursor: default !important;
+    }
+
+    /* Keep the text caret inside editable fields */
+    input,
+    textarea,
+    [contenteditable="true"] {
+      cursor: text !important;
+    }
+  }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-archivo font-bold uppercase;
   }
 }
+
 
 /* Custom scrollbar for luxury feel */
 ::-webkit-scrollbar {
