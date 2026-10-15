@@ -9,6 +9,7 @@ import { PageTransitionProvider } from '@/features/PageTransitionContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/CartContext';
 import { AuthModalProvider } from '@/AuthModalContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -20,7 +21,9 @@ export function Providers({ children }: { children: ReactNode }) {
               <AuthProvider>
                 <CartProvider>
                   <AuthModalProvider>
-                    {children}
+                    <WishlistProvider>
+                      {children}
+                    </WishlistProvider>
                   </AuthModalProvider>
                 </CartProvider>
               </AuthProvider>

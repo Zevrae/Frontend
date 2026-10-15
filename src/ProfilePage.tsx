@@ -7,11 +7,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
   CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, RefreshCw,
+  ExternalLink, Eye, Maximize2, Heart,
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
+import { useWishlist } from './context/WishlistContext';
 import { usersApi, Address } from './api/users';
 import { ordersApi, Order } from './api/orders';
 import { tryonApi, TryonResult } from './api/tryon';
+import { getCachedProducts, getOrFetchAllProducts } from './ProductGrid';
 import { formatSoftToySize } from './utils/sizeFormatter';
 
 
@@ -283,7 +286,8 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
 export default function ProfilePage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<'profile' | 'orders' | 'tryons'>('profile');
+  const [tab, setTab] = useState<'profile' | 'orders' | 'tryons' | 'wishlist'>('profile');
+  const { items: wishlistItems, toggle: toggleWishlist, loading: wishlistLoading } = useWishlist();
 
   useEffect(() => {
     if (!authLoading && user === null) router.push('/');
@@ -359,6 +363,31 @@ export default function ProfilePage() {
   const [tryons, setTryons] = useState<TryonResult[]>([]);
   const [tryonsLoading, setTryonsLoading] = useState(true);
   const [tryonsError, setTryonsError] = useState('');
+  const [previewTryon, setPreviewTryon] = useState<TryonResult | null>(null);
+  const [catalogProducts, setCatalogProducts] = useState<any[]>(() => getCachedProducts() || []);
+
+  useEffect(() => {
+    if (tab === 'tryons' && catalogProducts.length === 0) {
+      getOrFetchAllProducts()
+        .then((products) => setCatalogProducts(products))
+        .catch(() => {});
+    }
+  }, [tab, catalogProducts.length]);
+
+  // Close big preview modal on Escape key and lock body scroll
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewTryon(null);
+    };
+    if (previewTryon) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [previewTryon]);
 
   useEffect(() => {
     if (tab !== 'tryons' || !user) return;
@@ -416,6 +445,12 @@ export default function ProfilePage() {
             className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'tryons' ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.5)] border-transparent hover:text-[var(--theme-text)]'}`}
           >
             <Sparkles size={13} /> Try-Ons
+          </button>
+          <button
+            onClick={() => setTab('wishlist')}
+            className={`pb-3 text-[10px] uppercase tracking-[0.2em] font-plex-mono flex items-center gap-2 border-b-2 transition-colors ${tab === 'wishlist' ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]' : 'text-[rgba(var(--theme-text-rgb),0.5)] border-transparent hover:text-[var(--theme-text)]'}`}
+          >
+            <Heart size={13} /> Wishlist
           </button>
         </div>
 
@@ -501,7 +536,7 @@ export default function ProfilePage() {
               ))
             )}
           </div>
-        ) : (
+        ) : tab === 'tryons' ? (
           <div>
             {tryonsError && (
               <p className="text-[11px] font-sans text-red-500 bg-red-500/10 border border-red-500/30 rounded-sm px-4 py-3 mb-4">{tryonsError}</p>
@@ -522,15 +557,74 @@ export default function ProfilePage() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {tryons.filter(t => t.status === 'completed' && t.imageUrl).map(t => {
-                  const productInfo = typeof t.product === 'object' ? t.product : null;
+                  const productObj = typeof t.product === 'object' && t.product !== null ? (t.product as any) : null;
+                  const productId = productObj?.id || productObj?._id || (typeof t.product === 'string' ? t.product : '');
+                  const matchedCatalog = catalogProducts.find(p => p.id === productId);
+                  const productName = productObj?.name || matchedCatalog?.name || (productId ? 'View Product' : 'Product');
+
                   return (
-                    <div key={t.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden group">
-                      <div className="relative aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden">
-                        <Image fill sizes="(max-width: 768px) 50vw, 25vw" src={t.imageUrl!} alt={productInfo?.name || 'Try-on result'} className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div
+                      key={t.id}
+                      className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-accent-rgb),0.35)] rounded-sm overflow-hidden group transition-all duration-300 flex flex-col"
+                    >
+                      {/* Clickable Image -> Opens Big Preview */}
+                      <div
+                        onClick={() => setPreviewTryon(t)}
+                        className="relative aspect-[3/4] bg-[var(--theme-surface)] overflow-hidden cursor-pointer"
+                        title="Click to view big preview"
+                      >
+                        <Image
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          src={t.imageUrl!}
+                          alt={productName}
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {/* Hover Overlay with Enlarge prompt */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                          <span className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-white bg-black/70 px-3 py-1.5 rounded-sm flex items-center gap-1.5 backdrop-blur-sm border border-white/20 shadow-md">
+                            <Eye size={12} className="text-[var(--theme-accent)]" /> Preview
+                          </span>
+                        </div>
                       </div>
-                      <div className="p-3">
-                        <p className="text-[10px] font-sans text-[var(--theme-text)] truncate">{productInfo?.name || 'Product'}</p>
-                        <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.5)] mt-0.5">{formatDate(t.created_at)}</p>
+
+                      {/* Card Content Below Photo */}
+                      <div className="p-3 flex flex-col justify-between flex-1">
+                        <div>
+                          {productId ? (
+                            <button
+                              type="button"
+                              onMouseEnter={() => router.prefetch(`/product/${productId}`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/product/${productId}`);
+                              }}
+                              className="text-[11px] font-sans font-medium text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors text-left line-clamp-1 flex items-center gap-1 group/link w-full"
+                              title={`Go to ${productName}`}
+                            >
+                              <span className="truncate">{productName}</span>
+                              <ExternalLink size={10} className="shrink-0 opacity-50 group-hover/link:opacity-100 group-hover/link:translate-x-0.5 transition-all text-[var(--theme-accent)]" />
+                            </button>
+                          ) : (
+                            <p className="text-[11px] font-sans font-medium text-[var(--theme-text)] truncate">{productName}</p>
+                          )}
+                          <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.5)] mt-1">{formatDate(t.created_at)}</p>
+                        </div>
+
+                        {productId && (
+                          <button
+                            type="button"
+                            onMouseEnter={() => router.prefetch(`/product/${productId}`)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/product/${productId}`);
+                            }}
+                            className="mt-2.5 text-[9px] uppercase tracking-[0.18em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity inline-flex items-center gap-1 self-start group/btn"
+                          >
+                            <span>Original Product</span>
+                            <span className="group-hover/btn:translate-x-0.5 transition-transform">↗</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -538,7 +632,93 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-        )}
+        ) : tab === 'wishlist' ? (
+          <div>
+            {wishlistLoading ? (
+              <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] animate-pulse text-center py-16">Loading wishlist...</p>
+            ) : wishlistItems.length === 0 ? (
+              <div className="text-center py-16">
+                <Heart size={32} className="mx-auto mb-4 text-[rgba(var(--theme-text-rgb),0.2)]" />
+                <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-2">Your wishlist is empty.</p>
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-6">Browse products and tap the ♡ icon to save your favourites.</p>
+                <button
+                  onMouseEnter={() => router.prefetch('/')}
+                  onClick={() => router.push('/')}
+                  className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity"
+                >
+                  Browse Products
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {wishlistItems.map((product) => {
+                  const img = product.images?.[0] || '';
+                  const priceLabel = formatVal(product.price);
+                  return (
+                    <div
+                      key={product.id}
+                      className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] hover:border-[rgba(var(--theme-accent-rgb),0.35)] rounded-sm overflow-hidden group transition-all duration-300 flex flex-col"
+                    >
+                      {/* Product image */}
+                      <button
+                        type="button"
+                        onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
+                        onClick={() => router.push(`/product/${product.id}`)}
+                        className="relative aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full cursor-pointer text-left"
+                      >
+                        {img ? (
+                          <img
+                            src={img}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Heart size={24} className="text-[rgba(var(--theme-text-rgb),0.15)]" />
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Info */}
+                      <div className="p-3 flex flex-col gap-2 flex-1 justify-between">
+                        <div>
+                          <button
+                            type="button"
+                            onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
+                            onClick={() => router.push(`/product/${product.id}`)}
+                            className="text-[11px] font-sans text-[var(--theme-text)] text-left hover:text-[var(--theme-accent)] transition-colors leading-snug line-clamp-2 w-full font-medium"
+                          >
+                            {product.name}
+                          </button>
+                          <p className="text-[11px] font-mono text-[var(--theme-accent)] mt-1">{priceLabel}</p>
+                        </div>
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 mt-auto pt-2">
+                          <button
+                            type="button"
+                            onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
+                            onClick={() => router.push(`/product/${product.id}`)}
+                            className="flex-1 text-[9px] uppercase tracking-[0.15em] font-plex-mono text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleWishlist({ id: product.id, name: product.name, price: product.price, images: product.images, category: product.category })}
+                            title="Remove from wishlist"
+                            className="flex items-center justify-center w-7 h-7 rounded-sm border border-[rgba(229,57,53,0.3)] text-red-500 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                          >
+                            <Heart size={12} fill="#e53935" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Address Modal */}
@@ -590,6 +770,142 @@ export default function ProfilePage() {
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Try-On Big Preview Modal */}
+      <AnimatePresence>
+        {previewTryon && (() => {
+          const productObj = typeof previewTryon.product === 'object' && previewTryon.product !== null ? (previewTryon.product as any) : null;
+          const productId = productObj?.id || productObj?._id || (typeof previewTryon.product === 'string' ? previewTryon.product : '');
+          const matchedCatalog = catalogProducts.find(p => p.id === productId);
+          const productName = productObj?.name || matchedCatalog?.name || (productId ? 'View Product' : 'Product');
+          const productPrice = matchedCatalog?.price || productObj?.price;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/85 backdrop-blur-md z-[120] flex items-center justify-center p-4 md:p-6"
+              onClick={() => setPreviewTryon(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.15)] rounded-sm overflow-hidden w-full max-w-4xl shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
+              >
+                {/* Large Preview Image */}
+                <div className="relative flex-1 bg-black/60 flex items-center justify-center p-3 sm:p-5 overflow-hidden min-h-[340px] md:min-h-[500px]">
+                  {previewTryon.imageUrl && (
+                    <img
+                      src={previewTryon.imageUrl}
+                      alt={productName}
+                      className="max-h-[55vh] md:max-h-[75vh] w-auto max-w-full object-contain rounded-xs shadow-lg"
+                    />
+                  )}
+                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-sm flex items-center gap-1.5 shadow-md">
+                    <Sparkles size={11} className="text-[var(--theme-accent)]" />
+                    <span className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)]">
+                      AI Virtual Try-On
+                    </span>
+                  </div>
+                </div>
+
+                {/* Details & Action Sidebar */}
+                <div className="w-full md:w-80 p-5 md:p-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[rgba(var(--theme-text-rgb),0.1)] bg-[var(--theme-surface)]">
+                  <div>
+                    {/* Header with Close */}
+                    <div className="flex items-start justify-between gap-4 mb-5">
+                      <div>
+                        <p className="text-[9px] uppercase tracking-[0.25em] font-plex-mono text-[var(--theme-accent)]">
+                          Virtual Preview
+                        </p>
+                        <h2 className="text-sm font-archivo font-bold uppercase tracking-wider text-[var(--theme-text)] mt-1">
+                          {productName}
+                        </h2>
+                      </div>
+                      <button
+                        onClick={() => setPreviewTryon(null)}
+                        className="p-1.5 text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-text)] hover:bg-[rgba(var(--theme-text-rgb),0.05)] rounded-sm transition-colors"
+                        aria-label="Close preview"
+                      >
+                        <XIcon size={18} />
+                      </button>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="space-y-3 py-3 border-y border-[rgba(var(--theme-text-rgb),0.1)] text-[11px] font-sans">
+                      <div className="flex justify-between items-center text-[rgba(var(--theme-text-rgb),0.7)]">
+                        <span className="text-[9px] uppercase tracking-wider font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)]">Created</span>
+                        <span>{formatDate(previewTryon.created_at)}</span>
+                      </div>
+                      {productPrice && (
+                        <div className="flex justify-between items-center text-[rgba(var(--theme-text-rgb),0.7)]">
+                          <span className="text-[9px] uppercase tracking-wider font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)]">Price</span>
+                          <span className="font-plex-mono text-[var(--theme-text)]">{formatVal(productPrice)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-[rgba(var(--theme-text-rgb),0.7)]">
+                        <span className="text-[9px] uppercase tracking-wider font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)]">Status</span>
+                        <span className="text-emerald-400 flex items-center gap-1 font-mono text-[10px]">
+                          <CheckCircle2 size={12} /> Ready
+                        </span>
+                      </div>
+                    </div>
+
+                    {previewTryon.clothImageUrls && previewTryon.clothImageUrls.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] mb-2">
+                          Tried On Garment
+                        </p>
+                        <div className="flex gap-2 flex-wrap">
+                          {previewTryon.clothImageUrls.map((url, idx) => (
+                            <div key={idx} className="relative w-12 h-14 bg-black/40 rounded-xs overflow-hidden border border-[rgba(var(--theme-text-rgb),0.1)]">
+                              <img src={url} alt="Garment" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="space-y-2.5 pt-5 mt-4 border-t border-[rgba(var(--theme-text-rgb),0.1)]">
+                    {productId && (
+                      <button
+                        type="button"
+                        onMouseEnter={() => router.prefetch(`/product/${productId}`)}
+                        onClick={() => {
+                          setPreviewTryon(null);
+                          router.push(`/product/${productId}`);
+                        }}
+                        className="w-full py-3 px-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[10px] uppercase font-bold tracking-[0.2em] font-plex-mono rounded-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                      >
+                        <span>View Original Product</span>
+                        <ExternalLink size={13} />
+                      </button>
+                    )}
+
+                    {previewTryon.imageUrl && (
+                      <a
+                        href={previewTryon.imageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2.5 px-4 bg-transparent border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] text-[10px] uppercase tracking-[0.2em] font-plex-mono rounded-sm hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span>Open High-Res Image</span>
+                        <Maximize2 size={12} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

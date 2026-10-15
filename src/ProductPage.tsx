@@ -3,11 +3,12 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check, Heart } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import { useCart } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
+import { useWishlist } from './context/WishlistContext';
 import { productsApi } from './api/products';
 import TryOn from './components/TryOn';
 import dynamic from 'next/dynamic';
@@ -92,6 +93,8 @@ export default function ProductPage() {
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token, user } = useAuth();
+  const { toggle: toggleWishlist, isWishlisted } = useWishlist();
+  const [wishlistPulse, setWishlistPulse] = useState(false);
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
 
@@ -745,7 +748,7 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
 
-                {/* Price and Share row */}
+                {/* Price and Share + Wishlist row */}
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-baseline gap-4">
                     <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
@@ -757,22 +760,61 @@ export default function ProductPage() {
                       </span>
                     )}
                   </div>
-                  <button
-                    onClick={() => {
-                      const url = window.location.origin + '/product/' + product.id;
-                      if (navigator.share) {
-                        navigator.share({ title: product.name, url }).catch(console.error);
-                      } else {
-                        navigator.clipboard.writeText(url);
-                        alert('Link copied to clipboard!');
-                      }
-                    }}
-                    className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors"
-                    title="Share this product"
-                    aria-label="Share product"
-                  >
-                    <span className="text-xl leading-none">↗</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* Wishlist toggle — at the left of share button */}
+                    <motion.button
+                      id="wishlist-toggle"
+                      onClick={async () => {
+                        if (!user) {
+                          setIsLoginModalOpen(true);
+                          return;
+                        }
+                        setWishlistPulse(true);
+                        setTimeout(() => setWishlistPulse(false), 400);
+                        await toggleWishlist({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          images: images,
+                          category: product.category,
+                        });
+                      }}
+                      animate={wishlistPulse ? { scale: [1, 1.28, 1] } : { scale: 1 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] transition-colors cursor-pointer"
+                      style={{
+                        color: isWishlisted(product.id) ? '#e53935' : 'var(--theme-text)',
+                        borderColor: isWishlisted(product.id) ? 'rgba(229,57,53,0.4)' : undefined,
+                        background: isWishlisted(product.id) ? 'rgba(229,57,53,0.08)' : undefined,
+                      }}
+                      title={isWishlisted(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                      aria-label="Toggle wishlist"
+                    >
+                      <Heart
+                        size={17}
+                        strokeWidth={1.5}
+                        fill={isWishlisted(product.id) ? '#e53935' : 'none'}
+                      />
+                    </motion.button>
+
+                    {/* Share button */}
+                    <button
+                      onClick={() => {
+                        const url = window.location.origin + '/product/' + product.id;
+                        if (navigator.share) {
+                          navigator.share({ title: product.name, url }).catch(console.error);
+                        } else {
+                          navigator.clipboard.writeText(url);
+                          alert('Link copied to clipboard!');
+                        }
+                      }}
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors cursor-pointer"
+                      title="Share this product"
+                      aria-label="Share product"
+                    >
+                      <span className="text-xl leading-none">↗</span>
+                    </button>
+                  </div>
                 </div>
               </motion.div>
 
