@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { StorefrontHero } from '@/components/StorefrontHero';
+import { WinterCollectionBanner } from '@/components/WinterCollectionBanner';
 import { CollectionScroller } from '@/components/CollectionScroller';
 import { BestSellers } from '@/components/BestSellers';
 import { TrustSection } from '@/components/TrustSection';
@@ -29,6 +30,7 @@ export function HomePageClient() {
       <StorefrontHero isLiveMode={isLiveMode} setIsLiveMode={setIsLiveMode} />
       {isLiveMode && (
         <>
+          <WinterCollectionBanner />
           <CollectionScroller />
           <BestSellers />
           <TrustSection />
