@@ -1,12 +1,36 @@
 import type { NextConfig } from 'next';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isDev ? ["'unsafe-eval'"] : []),
+  'https://checkout.razorpay.com',
+  'https://accounts.google.com',
+].join(' ');
+
+const connectSrc = [
+  "'self'",
+  ...(isDev ? ['http://localhost:5000'] : []),
+  'https://api.zevrae.com',
+  'https://tryon.zevrae.com',
+  'https://cloud.appwrite.io',
+  'https://*.appwrite.io',
+  'https://accounts.google.com',
+  'https://api.razorpay.com',
+  'https://checkout.razorpay.com',
+  'https://lumberjack.razorpay.com',
+  ...(isDev ? ['ws:', 'wss:'] : []),
+].join(' ');
+
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://accounts.google.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  img-src 'self' data: blob: https://api.zevrae.com https://zevrae.com https://www.zevrae.com https://images.unsplash.com https://res.cloudinary.com https://cloud.appwrite.io https://*.appwrite.io https://i.ibb.co https://*.googleusercontent.com;
+  script-src ${scriptSrc};
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
+  img-src 'self' data: blob: https://api.zevrae.com https://zevrae.com https://www.zevrae.com https://images.unsplash.com https://res.cloudinary.com https://cloud.appwrite.io https://*.appwrite.io https://i.ibb.co https://*.googleusercontent.com https://*.razorpay.com;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' http://localhost:5000 https://api.zevrae.com https://tryon.zevrae.com https://cloud.appwrite.io https://*.appwrite.io https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com https://lumberjack.razorpay.com ws: wss:;
+  connect-src ${connectSrc};
   frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://accounts.google.com;
   worker-src 'self' blob:;
   child-src 'self' blob: https://checkout.razorpay.com https://api.razorpay.com https://accounts.google.com;
