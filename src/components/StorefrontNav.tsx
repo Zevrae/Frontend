@@ -372,9 +372,12 @@ export function StorefrontNav() {
             </div>
 
             {/* Logo in Center */}
-            <motion.button
-              onMouseEnter={() => router.prefetch('/')}
-              onClick={() => navTransition('/')}
+            <motion.a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/';
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 2, delay: 0.2 }}
@@ -389,7 +392,7 @@ export function StorefrontNav() {
                 className="h-10 md:h-16 w-auto object-contain transition-all duration-300 hover:opacity-85"
                 priority
               />
-            </motion.button>
+            </motion.a>
 
             {/* Desktop Right: Actions */}
             <div className="hidden md:flex items-center space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">

@@ -72,7 +72,15 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center py-1" aria-label="ZEVRAE">
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/';
+          }}
+          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center py-1"
+          aria-label="ZEVRAE"
+        >
           <Image
             src="/ZEVRAE LOGO NAVBAR.png"
             alt="ZEVRAE"
@@ -81,7 +89,7 @@ export const Navbar: React.FC = () => {
             className="h-10 md:h-16 w-auto object-contain transition-opacity duration-300 hover:opacity-85"
             priority
           />
-        </Link>
+        </a>
 
         <div className="flex items-center gap-6">
           <button 
