@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import './specularbutton.css';
 
 interface SpecularButtonProps {
@@ -44,7 +44,6 @@ const SpecularButton = ({
   type = 'button'
 }: SpecularButtonProps) => {
   const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ x: 50, y: 50, active: false });
 
   const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!followMouse || disabled) return;
@@ -53,11 +52,16 @@ const SpecularButton = ({
     const rect = btn.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setPos({ x, y, active: true });
+    btn.style.setProperty('--sb-mx', `${x}%`);
+    btn.style.setProperty('--sb-my', `${y}%`);
+    btn.style.setProperty('--sb-active', '1');
   };
 
   const handlePointerLeave = () => {
-    setPos((prev) => ({ ...prev, active: false }));
+    const btn = btnRef.current;
+    if (btn) {
+      btn.style.setProperty('--sb-active', '0');
+    }
   };
 
   return (
@@ -78,9 +82,9 @@ const SpecularButton = ({
         '--sb-line-color': lineColor,
         '--sb-base-color': baseColor,
         '--sb-intensity': intensity,
-        '--sb-mx': `${pos.x}%`,
-        '--sb-my': `${pos.y}%`,
-        '--sb-active': pos.active ? 1 : 0,
+        '--sb-mx': '50%',
+        '--sb-my': '50%',
+        '--sb-active': 0,
       } as React.CSSProperties}
     >
       <span className="specular-button__fx" aria-hidden="true" />

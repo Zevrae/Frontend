@@ -11,13 +11,16 @@ import {
   type ReactNode,
 } from "react";
 
+import type { ThemeName } from "@/theme/themeConfig";
+
 export type TransitionPhase = "idle" | "entering" | "holding" | "exiting";
 
 interface PageTransitionState {
   isTransitioning: boolean;
   phase: TransitionPhase;
-  /** Start a transition. `callback` fires once the curtain fully covers the screen. */
-  trigger: (callback?: () => void) => void;
+  transitionTheme: ThemeName | null;
+  /** Start a transition with optional targetTheme color. `callback` fires once the curtain fully covers the screen. */
+  trigger: (callback?: () => void, targetTheme?: ThemeName | null) => void;
   /** Called by the loader when animation phases complete */
   setPhase: (phase: TransitionPhase) => void;
 }
@@ -34,19 +37,24 @@ const WATCHDOG_MS = 4000;
 
 export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<TransitionPhase>("idle");
+  const [transitionTheme, setTransitionTheme] = useState<ThemeName | null>(null);
   const callbackRef = useRef<(() => void) | undefined>(undefined);
   const busyRef = useRef(false);
 
   const forceReset = useCallback(() => {
     busyRef.current = false;
     callbackRef.current = undefined;
+    setTransitionTheme(null);
     setPhase("idle");
   }, []);
 
-  const trigger = useCallback((callback?: () => void) => {
+  const trigger = useCallback((callback?: () => void, targetTheme?: ThemeName | null) => {
     if (busyRef.current) return;
     busyRef.current = true;
     callbackRef.current = callback;
+    if (targetTheme) {
+      setTransitionTheme(targetTheme);
+    }
     setPhase("entering");
   }, []);
 
@@ -65,13 +73,17 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     if (p === "idle") {
       busyRef.current = false;
       callbackRef.current = undefined;
+      setTransitionTheme(null);
     }
     setPhase(p);
   }, []);
 
   // ── Theme change events go through trigger() so they respect busyRef ──────
   useEffect(() => {
-    const onThemeChange = () => trigger();
+    const onThemeChange = (e: Event) => {
+      const customTheme = (e as CustomEvent<{ theme?: ThemeName }>)?.detail?.theme;
+      trigger(undefined, customTheme);
+    };
     window.addEventListener("zevrae:theme-change", onThemeChange);
     return () =>
       window.removeEventListener("zevrae:theme-change", onThemeChange);
@@ -102,10 +114,11 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     () => ({
       isTransitioning: phase !== "idle",
       phase,
+      transitionTheme,
       trigger,
       setPhase: setPhaseWrapped,
     }),
-    [phase, trigger, setPhaseWrapped],
+    [phase, transitionTheme, trigger, setPhaseWrapped],
   );
 
   return (

@@ -99,8 +99,8 @@ export function Preloader() {
       counter,
       {
         value: 100,
-        duration: 2.2,
-        ease: "expo.inOut",
+        duration: 1.2,
+        ease: "power2.inOut",
         onUpdate: () => {
           if (counterRef.current) {
             counterRef.current.textContent = Math.floor(counter.value)
@@ -118,9 +118,9 @@ export function Preloader() {
       {
         opacity: 1,
         scale: 1,
-        duration: 0.45,
+        duration: 0.35,
         ease: "back.out(1.2)",
-        stagger: { each: 0.18, from: "start" },
+        stagger: { each: 0.1, from: "start" },
       },
       "<",
     );
@@ -131,15 +131,15 @@ export function Preloader() {
         letters[letterIdx],
         {
           yPercent: 0,
-          duration: 0.4,
+          duration: 0.3,
           ease: "expo.out",
         },
-        `${0.9 + seqIdx * 0.07}`,
+        `${0.5 + seqIdx * 0.05}`,
       );
     });
 
     // Hold
-    tl.to({}, { duration: 0.45 });
+    tl.to({}, { duration: 0.15 });
 
     // ═══════════════════════════════
     //  REVERSE + MORPH
@@ -152,10 +152,10 @@ export function Preloader() {
         letters[letterIdx],
         {
           yPercent: -110,
-          duration: 0.3,
+          duration: 0.22,
           ease: "expo.in",
         },
-        seqIdx === 0 ? "rev" : `rev+=${seqIdx * 0.04}`,
+        seqIdx === 0 ? "rev" : `rev+=${seqIdx * 0.025}`,
       );
     });
 
@@ -165,19 +165,19 @@ export function Preloader() {
       {
         opacity: 0,
         scale: 0.35,
-        y: "+=40",
-        duration: 0.4,
+        y: "+=30",
+        duration: 0.3,
         ease: "power3.in",
-        stagger: { each: 0.04, from: "end" },
+        stagger: { each: 0.025, from: "end" },
       },
-      "rev+=0.1",
+      "rev+=0.05",
     );
 
     // Counter out
     tl.to(
       counterRef.current,
-      { opacity: 0, duration: 0.3, ease: "power2.in" },
-      "-=0.25",
+      { opacity: 0, duration: 0.2, ease: "power2.in" },
+      "-=0.15",
     );
 
     // ── Slide the ENTIRE preloader root UP to reveal the hero beneath ──
@@ -185,8 +185,8 @@ export function Preloader() {
       root,
       {
         yPercent: -100,
-        duration: 1.0,
-        ease: "power3.inOut",
+        duration: 0.6,
+        ease: "power2.inOut",
         onStart: () => {
           // Dispatch event so hero can start animating while slide is in progress
           window.dispatchEvent(new CustomEvent("preloader-sliding"));
@@ -200,7 +200,7 @@ export function Preloader() {
           setDone(true);
         },
       },
-      "-=0.1",
+      "-=0.05",
     );
 
     return () => {

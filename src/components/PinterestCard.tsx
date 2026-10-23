@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import './PinterestCard.css';
 
@@ -27,6 +28,7 @@ interface PinterestCardProps {
  * for visual brand consistency.
  */
 export default function PinterestCard({ product, index = 0, onClick }: PinterestCardProps) {
+  const router = useRouter();
   const backImgRef = useRef<HTMLImageElement>(null);
   const wipeLineRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -81,8 +83,11 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
     }
   }, [applyProgress]);
 
-  /* ── Mouse enter → wipe in ── */
+  /* ── Mouse enter → prefetch + wipe in ── */
   const handleMouseEnter = useCallback(() => {
+    if (product.id) {
+      router.prefetch(`/product/${product.id}`);
+    }
     if (!backSrc) return;
     cancelAnimationFrame(rafRef.current);
     fromRef.current = progressRef.current;
@@ -93,7 +98,7 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
       tick(ts);
     };
     rafRef.current = requestAnimationFrame(startTick);
-  }, [backSrc, tick]);
+  }, [backSrc, tick, product.id, router]);
 
   /* ── Mouse leave → wipe out ── */
   const handleMouseLeave = useCallback(() => {

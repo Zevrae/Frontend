@@ -23,6 +23,21 @@ export type ThemeName = 'clothing' | 'jewellery' | 'accessories';
 
 export const DEFAULT_THEME: ThemeName = 'clothing';
 
+export const THEME_COLORS: Record<ThemeName, { accent: string; bg: string }> = {
+  clothing: {
+    accent: '#C5A059',
+    bg: '#12100C',
+  },
+  jewellery: {
+    accent: '#34656D',
+    bg: '#FAEAB1',
+  },
+  accessories: {
+    accent: '#C81E3A',
+    bg: '#F5F5F5',
+  },
+};
+
 export function getThemeForPath(pathname: string): ThemeName | null {
   const segment = pathname.split('/').filter(Boolean)[0]?.toLowerCase();
 

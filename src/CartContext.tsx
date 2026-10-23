@@ -57,27 +57,34 @@ const mergeDisplayFields = (backendItems: Cart['items'], previous: CartItem[]): 
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { token, loading: authLoading } = useAuth();
-  const [items, setItems] = useState<CartItem[]>(() => {
-    try {
-      if (typeof window === 'undefined') return [];
-      const saved = localStorage.getItem('zevrae_cart_cache') || localStorage.getItem('zevrae_guest_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Persist cart to local storage whenever it changes.
-  // This acts as a robust display cache (for images/categories) across reloads for ALL users.
+  // Restore cart on client mount to eliminate SSR hydration mismatches
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem('zevrae_cart_cache') || localStorage.getItem('zevrae_guest_cart');
+      if (saved) {
+        setItems(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Persist cart to local storage whenever it changes (only after initial load).
+  useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem('zevrae_cart_cache', JSON.stringify(items));
     if (!token) {
       localStorage.setItem('zevrae_guest_cart', JSON.stringify(items));
     } else {
       localStorage.removeItem('zevrae_guest_cart');
     }
-  }, [items, token]);
+  }, [items, token, isLoaded]);
 
   // Hydrate from the backend whenever the user logs in. Guests keep a
   // purely local, in-memory cart (there's nothing to hydrate from, and

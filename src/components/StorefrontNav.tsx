@@ -105,32 +105,33 @@ export function StorefrontNav() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Click outside to close dropdowns
+  // Click outside to close dropdowns without cancelling button clicks
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (clothingDropdownRef.current && !clothingDropdownRef.current.contains(event.target as Node)) {
-        setIsClothingOpen(false);
+      const target = event.target as Node;
+      if (clothingDropdownRef.current && !clothingDropdownRef.current.contains(target)) {
+        setIsClothingOpen((prev) => (prev ? false : prev));
       }
-      if (jewelleryDropdownRef.current && !jewelleryDropdownRef.current.contains(event.target as Node)) {
-        setIsJewelleryOpen(false);
+      if (jewelleryDropdownRef.current && !jewelleryDropdownRef.current.contains(target)) {
+        setIsJewelleryOpen((prev) => (prev ? false : prev));
       }
-      if (accessoriesDropdownRef.current && !accessoriesDropdownRef.current.contains(event.target as Node)) {
-        setIsAccessoriesOpen(false);
+      if (accessoriesDropdownRef.current && !accessoriesDropdownRef.current.contains(target)) {
+        setIsAccessoriesOpen((prev) => (prev ? false : prev));
       }
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
-        setIsProfileOpen(false);
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(target)) {
+        setIsProfileOpen((prev) => (prev ? false : prev));
       }
       if (
         searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node) &&
+        !searchContainerRef.current.contains(target) &&
         searchIconRef.current &&
-        !searchIconRef.current.contains(event.target as Node)
+        !searchIconRef.current.contains(target)
       ) {
-        setIsSearchOpen(false);
+        setIsSearchOpen((prev) => (prev ? false : prev));
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   // Close search on Escape key

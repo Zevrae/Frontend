@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { usePageTransition } from "./PageTransitionContext";
+import { THEME_COLORS } from "../theme/themeConfig";
 
 const useIsoLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -17,15 +18,13 @@ const getPageContent = () =>
   document.querySelector<HTMLElement>("[data-page-content]");
 
 /**
- * PageTransitionLoader — Luxury gold curtain transition.
- * Handles both page-to-page navigation and theme change transitions.
- *
- * The phase is owned by PageTransitionContext. This component only plays
- * the animation for the current phase and reports back when it finishes.
+ * PageTransitionLoader — Luxury curtain transition.
+ * Arrives immediately in the destination palette (gold, blue, or crimson)
+ * to avoid mid-animation color shifting and GPU compositing lag.
  */
 export function PageTransitionLoader() {
   const [mounted, setMounted] = useState(false);
-  const { phase, setPhase } = usePageTransition();
+  const { phase, setPhase, transitionTheme } = usePageTransition();
   const rootRef = useRef<HTMLDivElement>(null);
   const curtainRef = useRef<HTMLDivElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
@@ -201,6 +200,9 @@ export function PageTransitionLoader() {
   }
 
   const isActive = phase !== "idle";
+  const activeColors = transitionTheme ? THEME_COLORS[transitionTheme] : null;
+  const curtainBg = activeColors ? activeColors.accent : "var(--theme-accent)";
+  const brandTextColor = activeColors ? activeColors.bg : "var(--theme-bg)";
 
   return createPortal(
     <div
@@ -221,7 +223,7 @@ export function PageTransitionLoader() {
         style={{
           position: "absolute",
           inset: 0,
-          backgroundColor: "var(--theme-accent)",
+          backgroundColor: curtainBg,
           willChange: "transform",
           backfaceVisibility: "hidden",
           display: "flex",
@@ -255,7 +257,7 @@ export function PageTransitionLoader() {
                   fontWeight: 700,
                   fontStretch: "125%",
                   letterSpacing: "0.03em",
-                  color: "var(--theme-bg)",
+                  color: brandTextColor,
                   lineHeight: 1,
                   textTransform: "uppercase",
                   willChange: "transform",
@@ -273,7 +275,7 @@ export function PageTransitionLoader() {
               fontFamily: "'Archivo', sans-serif",
               fontSize: "clamp(0.45rem, 1.2vw, 0.75rem)",
               fontWeight: 500,
-              color: "var(--theme-bg)",
+              color: brandTextColor,
               letterSpacing: "0.05em",
               lineHeight: 1,
               opacity: 0.6,

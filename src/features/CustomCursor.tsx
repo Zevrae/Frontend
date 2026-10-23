@@ -112,6 +112,8 @@ export function CustomCursor() {
     }
   }, []);
 
+  const lastTargetRef = useRef<EventTarget | null>(null);
+
   // ── Event handlers ───────────────────────────────────────────────────────
   const onMouseMove = useCallback((e: MouseEvent) => {
     const v = vars.current;
@@ -122,7 +124,10 @@ export function CustomCursor() {
       v.y = e.clientY;
       v.isVisible = true;
     }
-    resolveState(e.target as Element | null);
+    if (e.target !== lastTargetRef.current) {
+      lastTargetRef.current = e.target;
+      resolveState(e.target as Element | null);
+    }
   }, [resolveState]);
 
   const onMouseDown = useCallback(() => {
