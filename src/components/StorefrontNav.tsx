@@ -406,52 +406,26 @@ export function StorefrontNav() {
                   </button>
 
                   {/* AI Wardrobe */}
-                  {!isAdmin && (
-                    <button
-                      onMouseEnter={() => router.prefetch('/ai-wardrobe')}
-                      onClick={() => navTransition('/ai-wardrobe')}
-                      className="group relative pb-1 transition-colors duration-700"
-                    >
-                      <ShinyText
-                        text="AI WARDROBE"
-                        speed={2}
-                        delay={0}
-                        color="var(--shiny-text-color, var(--theme-accent))"
-                        shineColor="#ffffff"
-                        spread={120}
-                        direction="left"
-                        yoyo={false}
-                        pauseOnHover={false}
-                        disabled={false}
-                        className="tracking-[0.3em]"
-                      />
-                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
-                    </button>
-                  )}
-
-                  {/* Admin link if admin */}
-                  {isAdmin && (
-                    <button
-                      onMouseEnter={() => router.prefetch('/admin')}
-                      onClick={() => navTransition('/admin')}
-                      className="group relative pb-1 transition-colors duration-700"
-                    >
-                      <ShinyText
-                        text="ADMIN PANEL"
-                        speed={2}
-                        delay={0}
-                        color="var(--shiny-text-color, var(--theme-accent))"
-                        shineColor="#ffffff"
-                        spread={120}
-                        direction="left"
-                        yoyo={false}
-                        pauseOnHover={false}
-                        disabled={false}
-                        className="tracking-[0.3em]"
-                      />
-                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
-                    </button>
-                  )}
+                  <button
+                    onMouseEnter={() => router.prefetch('/ai-wardrobe')}
+                    onClick={() => navTransition('/ai-wardrobe')}
+                    className="group relative pb-1 transition-colors duration-700"
+                  >
+                    <ShinyText
+                      text="AI WARDROBE"
+                      speed={2}
+                      delay={0}
+                      color="var(--shiny-text-color, var(--theme-accent))"
+                      shineColor="#ffffff"
+                      spread={120}
+                      direction="left"
+                      yoyo={false}
+                      pauseOnHover={false}
+                      disabled={false}
+                      className="tracking-[0.3em]"
+                    />
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[rgba(var(--theme-accent-rgb),0.4)] nav-underline" />
+                  </button>
 
                   {/* User Profile / Login */}
                   {user ? (
@@ -848,28 +822,13 @@ export function StorefrontNav() {
                     },
                   ]
                 : []),
-              ...(isAdmin
-                ? []
-                : [
-                    {
-                      name: 'AI Wardrobe',
-                      href: '/ai-wardrobe',
-                      onClick: () => {
-                        navTransition('/ai-wardrobe', () => setIsMenuOpen(false));
-                      },
-                    },
-                  ]),
-              ...(isAdmin
-                ? [
-                    {
-                      name: 'Admin Panel',
-                      href: '#',
-                      onClick: () => {
-                        navTransition('/admin', () => setIsMenuOpen(false));
-                      },
-                    },
-                  ]
-                : []),
+              {
+                name: 'AI Wardrobe',
+                href: '/ai-wardrobe',
+                onClick: () => {
+                  navTransition('/ai-wardrobe', () => setIsMenuOpen(false));
+                },
+              },
               ...(user
                 ? [
                     {
@@ -941,7 +900,7 @@ export function StorefrontNav() {
                   }
                 }}
               >
-                {item.name === 'AI Wardrobe' || item.name === 'Admin Panel' ? (
+                {item.name === 'AI Wardrobe' ? (
                   <ShinyText
                     text={item.name.toUpperCase()}
                     speed={2}

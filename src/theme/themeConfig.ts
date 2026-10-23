@@ -17,7 +17,7 @@
  *   /men/tshirts            -> "clothing"
  *   /customize              -> "clothing"
  *   /product/64f2c1         -> null (persist current theme)
- *   /bag, /checkout, /profile, /admin/*, policy pages, etc. -> null
+ *   /bag, /checkout, /profile, policy pages, etc. -> null
  */
 export type ThemeName = 'clothing' | 'jewellery' | 'accessories';
 
@@ -37,7 +37,7 @@ export function getThemeForPath(pathname: string): ThemeName | null {
     case 'customize':
       return 'clothing';
     default:
-      // product/:id, bag, checkout, profile, admin*, ai-wardrobe, policy
+      // product/:id, bag, checkout, profile, ai-wardrobe, policy
       // pages, verify-email, etc. — none of these belong to a category,
       // so don't touch the currently active theme.
       return null;
