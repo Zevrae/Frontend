@@ -21,17 +21,21 @@ import menRingImg from "./assets/men ring.webp";
 import menPendantImg from "./assets/men pendant.webp";
 import menEarringsImg from "./assets/men earrings.webp";
 import menBraceletImg from "./assets/men bracelet.webp";
+import blackHoodieMen from "./assets/blackhoodiemen.png";
+import greyHoodieWomen from "./assets/greyhoodiewomen.png";
 
 const resolveImg = (img: any): string => (img && typeof img === 'object' && 'src' in img ? img.src : img || '');
 
 const mensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE men's T-shirts collection", image: menTshirts, path: '/men/tshirts' },
+  { id: 'hoodies', name: 'HOODIES', alt: "ZEVRAE men's hoodies collection", image: blackHoodieMen, path: '/men/hoodies' },
   { id: 'lowers', name: 'LOWERS', alt: "ZEVRAE men's lowers collection", image: 'https://i.ibb.co/RGyBrL7q/THE-DRAGON-LOWER-FRONT.jpg', path: '/men/lowers' },
   { id: 'henleys', name: 'HENLEYS', alt: "ZEVRAE men's henley collection", image: menHenley, path: '/men/henleys' },
 ];
 
 const womensCategories = [
   { id: 'tshirts', name: 'TSHIRTS', alt: "ZEVRAE women's tops and T-shirts", image: womenTops, path: '/women/tshirts' },
+  { id: 'hoodies', name: 'HOODIES', alt: "ZEVRAE women's hoodies collection", image: greyHoodieWomen, path: '/women/hoodies' },
   { id: 'lowers', name: 'LOWERS', alt: "ZEVRAE women's lowers collection", image: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1920&auto=format&fit=crop', path: '/women/lowers' }
 ];
 
@@ -202,7 +206,9 @@ export async function getOrFetchAllProducts(): Promise<any[]> {
             ? 'lower'
             : (p.subcategory?.toLowerCase()?.includes('henley')
               ? 'henley'
-              : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt'))),
+              : (p.subcategory?.toLowerCase()?.includes('hoodie')
+                ? 'hoodie'
+                : (p.subcategory?.toLowerCase()?.includes('shirt') ? 'tshirt' : (p.subcategory?.toLowerCase() || 'tshirt')))),
           sizes: p.sizes,
           discount: p.discount || (p.compare_price && p.compare_price > p.price
             ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
@@ -235,7 +241,7 @@ export type ProductGridProps = {
   | 'all' | 'men' | 'women' | 'jewellery' | 'accessories' | '' | 'search'
   | 'rings' | 'pendants' | 'earrings' | 'bracelet' | 'keychain' | 'keychains'
   | 'toys' | 'soft-toys' | 'ear'
-  | 'men-tshirts' | 'men-lowers' | 'men-henleys' | 'women-tshirts' | 'women-lowers' | 'unisex'
+  | 'men-tshirts' | 'men-hoodies' | 'men-lowers' | 'men-henleys' | 'women-tshirts' | 'women-hoodies' | 'women-lowers' | 'unisex'
   | 'jewellery-men' | 'jewellery-women'
   | 'men-rings' | 'men-pendants' | 'men-bracelets' | 'men-earrings'
   | 'women-rings' | 'women-pendants' | 'women-bracelets' | 'women-earrings';
@@ -303,20 +309,26 @@ function ProductGridContent({
   const isMenFilter = categoryFilter.startsWith('men') && !categoryFilter.startsWith('men-rings') && !categoryFilter.startsWith('men-pendants') && !categoryFilter.startsWith('men-bracelets') && !categoryFilter.startsWith('men-earrings');
   const isTshirtFilter = categoryFilter.includes('tshirts');
   const isHenleyFilter = categoryFilter.includes('henleys');
+  const isHoodieFilter = categoryFilter.includes('hoodies');
 
   const getApparelType = useCallback(() => {
     if (isTshirtFilter) return 'tshirt';
     if (isHenleyFilter) return 'henley';
+    if (isHoodieFilter) return 'hoodie';
     return 'lower';
-  }, [isTshirtFilter, isHenleyFilter]);
+  }, [isTshirtFilter, isHenleyFilter, isHoodieFilter]);
 
   const activeSubcategoryProducts = useMemo(() => {
     const apparelType = getApparelType();
     return dbProducts.filter(p =>
       (p.gender === (isMenFilter ? 'men' : 'women') || p.gender === 'unisex') &&
-      (isHenleyFilter ? (p.type === 'henley' || p.type === 'henleys') : p.type === apparelType)
+      (isHenleyFilter
+        ? (p.type === 'henley' || p.type === 'henleys')
+        : isHoodieFilter
+          ? (p.type === 'hoodie' || p.type === 'hoodies')
+          : p.type === apparelType)
     );
-  }, [dbProducts, isMenFilter, isHenleyFilter, getApparelType]);
+  }, [dbProducts, isMenFilter, isHenleyFilter, isHoodieFilter, getApparelType]);
 
   // ─── Gendered jewellery helpers ───────────────────────────────────────────────
   const JEWELLERY_MEN_SUBS = useMemo(() => ['men-rings', 'men-pendants', 'men-bracelets', 'men-earrings'], []);
@@ -373,20 +385,20 @@ function ProductGridContent({
           >
             <SectionHeading eyebrow="LATEST DROPS" title="Men's Collection" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
                 {mensCategories.map((item, i) => (
                   <motion.div
                     key={item.id}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                    transition={{ duration: 0.8, delay: (i % 4) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     className="group relative flex flex-col cursor-pointer"
                     onMouseEnter={() => router.prefetch(item.path)}
                     onClick={() => router.push(item.path)}
                   >
                     <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <Image src={resolveImg(item.image)} alt={item.alt || item.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                      <Image src={resolveImg(item.image)} alt={item.alt || item.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
@@ -407,8 +419,8 @@ function ProductGridContent({
           </motion.section>
         )}
 
-        {/* ── GENDERED SUBCATEGORIES (MEN/WOMEN TSHIRTS, LOWERS & HENLEYS) ── */}
-        {['men-tshirts', 'men-lowers', 'men-henleys', 'women-tshirts', 'women-lowers'].includes(categoryFilter) && (
+        {/* ── GENDERED SUBCATEGORIES (MEN/WOMEN TSHIRTS, HOODIES, LOWERS & HENLEYS) ── */}
+        {['men-tshirts', 'men-hoodies', 'men-lowers', 'men-henleys', 'women-tshirts', 'women-hoodies', 'women-lowers'].includes(categoryFilter) && (
           <motion.section
             key="gendered-category"
             initial={{ opacity: 0, y: 16 }}
@@ -420,7 +432,7 @@ function ProductGridContent({
           >
             <SectionHeading
               eyebrow={isMenFilter ? "MEN'S COLLECTION" : "WOMEN'S COLLECTION"}
-              title={`${isMenFilter ? "MEN'S" : "WOMEN'S"} ${isTshirtFilter ? 'TSHIRTS' : isHenleyFilter ? 'HENLEYS' : 'LOWERS'}`}
+              title={`${isMenFilter ? "MEN'S" : "WOMEN'S"} ${isTshirtFilter ? 'TSHIRTS' : isHenleyFilter ? 'HENLEYS' : isHoodieFilter ? 'HOODIES' : 'LOWERS'}`}
             />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
               {isLoading ? (
@@ -453,23 +465,23 @@ function ProductGridContent({
           >
             <SectionHeading eyebrow="NEW ARRIVALS" title="Women's Collection" />
             <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-              <div className="flex flex-col md:flex-row flex-wrap justify-center gap-[36px] items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
                 {womensCategories.map((item, i) => (
                   <motion.div
                     key={item.id}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.8, delay: (i % 2) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="w-full md:w-[460px] max-w-[460px] group relative flex flex-col cursor-pointer"
+                    transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="group relative flex flex-col cursor-pointer"
                     onMouseEnter={() => router.prefetch(item.path)}
                     onClick={() => router.push(item.path)}
                   >
-                    <div className="relative w-full aspect-[3/4] min-h-[540px] mb-6 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
-                      <Image src={resolveImg(item.image)} alt={item.alt || item.name} fill sizes="(max-width: 768px) 100vw, 460px" className="object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
+                    <div className="relative w-full aspect-[3/4] mb-4 bg-[var(--theme-surface)] rounded-sm overflow-hidden transition-all duration-700 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_6px_24px_-8px_rgba(var(--theme-accent-rgb),0.2)]" data-cursor-image>
+                      <Image src={resolveImg(item.image)} alt={item.alt || item.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-[transform,opacity] duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-[rgba(var(--theme-bg-rgb),0.45)] group-hover:bg-[rgba(var(--theme-bg-rgb),0.2)] transition-colors duration-500" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <h3 className="text-3xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
+                        <h3 className="text-xl md:text-2xl font-archivo font-bold tracking-[0.2em] text-[var(--theme-text)] uppercase">{item.name}</h3>
                       </div>
                     </div>
                   </motion.div>
