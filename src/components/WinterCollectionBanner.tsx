@@ -5,11 +5,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useNavTransition } from '../hooks/useNavTransition';
+import { useActiveCollection } from '../features/ActiveCollectionContext';
 import winterBanner from '../assets/Zevrae Winter Collection Banner.png';
 
 export function WinterCollectionBanner() {
+  const { activeCollectionId } = useActiveCollection();
   const navTransition = useNavTransition();
   const router = useRouter();
+
+  if (activeCollectionId !== 'clothing') {
+    return null;
+  }
 
   const handleWomenClick = (e: React.MouseEvent) => {
     e.preventDefault();

@@ -9,10 +9,12 @@ import { TrustSection } from '@/components/TrustSection';
 import ProductGrid from '@/ProductGrid';
 import { useAuth } from '@/hooks/UseAuth';
 import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from '@/config/launch';
+import { useActiveCollection } from '@/features/ActiveCollectionContext';
 
 export function HomePageClient() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const { activeCollectionId } = useActiveCollection();
 
   const [isLiveMode, setIsLiveMode] = useState(() => {
     const now = Date.now();
@@ -30,7 +32,7 @@ export function HomePageClient() {
       <StorefrontHero isLiveMode={isLiveMode} setIsLiveMode={setIsLiveMode} />
       {isLiveMode && (
         <>
-          <WinterCollectionBanner />
+          {activeCollectionId === 'clothing' && <WinterCollectionBanner />}
           <CollectionScroller />
           <BestSellers />
           <TrustSection />
