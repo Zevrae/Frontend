@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useMemo, ReactNode } from 'react';
-import { useAuth } from './hooks/UseAuth';
+import { useAuthStore } from './store/authStore';
 import { useCartStore, MAX_QTY_PER_SIZE as STORE_MAX_QTY } from './store/cartStore';
 import type { CartItem } from './store/types';
 
@@ -22,7 +22,8 @@ export interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { token, loading: authLoading } = useAuth();
+  const token = useAuthStore((s) => s.token);
+  const authLoading = useAuthStore((s) => s.loading);
   
   const items = useCartStore((s) => s.items);
   const isLoaded = useCartStore((s) => s.isLoaded);

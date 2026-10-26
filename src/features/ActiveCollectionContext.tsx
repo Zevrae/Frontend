@@ -1,15 +1,9 @@
 'use client';
 
-/**
- * ActiveCollectionContext
- *
- * Tracks which collection tab is currently active on the homepage
- * (CLOTHING / JEWELLERY / ACCESSORIES). Powered by Zustand uiStore.
- */
-
 import {
   createContext,
   useContext,
+  useMemo,
   type ReactNode,
 } from 'react';
 import type { ThemeName } from '../theme/themeConfig';
@@ -22,29 +16,30 @@ export interface ActiveCollectionContextValue {
   setActiveCollectionId: (id: ThemeName) => void;
 }
 
-const ActiveCollectionContext = createContext<ActiveCollectionContextValue>({
-  activeCollectionId: 'clothing',
-  setActiveCollectionId: () => {},
-});
-
-export function useActiveCollection(): ActiveCollectionContextValue {
-  const ctx = useContext(ActiveCollectionContext);
-  const activeCollectionId = useUIStore((s) => s.activeCollectionId);
-  const setActiveCollectionId = useUIStore((s) => s.setActiveCollectionId);
-
-  return {
-    activeCollectionId: ctx?.activeCollectionId ?? activeCollectionId,
-    setActiveCollectionId: ctx?.setActiveCollectionId ?? setActiveCollectionId,
-  };
-}
+const ActiveCollectionContext = createContext<ActiveCollectionContextValue | null>(null);
 
 export function ActiveCollectionProvider({ children }: { children: ReactNode }) {
   const activeCollectionId = useUIStore((s) => s.activeCollectionId);
   const setActiveCollectionId = useUIStore((s) => s.setActiveCollectionId);
 
+  const value = useMemo(
+    () => ({ activeCollectionId, setActiveCollectionId }),
+    [activeCollectionId, setActiveCollectionId]
+  );
+
   return (
-    <ActiveCollectionContext.Provider value={{ activeCollectionId, setActiveCollectionId }}>
+    <ActiveCollectionContext.Provider value={value}>
       {children}
     </ActiveCollectionContext.Provider>
   );
+}
+
+export function useActiveCollection(): ActiveCollectionContextValue {
+  const ctx = useContext(ActiveCollectionContext);
+  if (ctx) return ctx;
+  const store = useUIStore.getState();
+  return {
+    activeCollectionId: store.activeCollectionId,
+    setActiveCollectionId: store.setActiveCollectionId,
+  };
 }
