@@ -1,34 +1,13 @@
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { authApi, LoginData, RegisterData } from '../api/auth';
-import { tokenUtils } from '../utils/token';
+import React, { createContext, useEffect, ReactNode } from 'react';
+import { useAuthStore } from '../store/authStore';
+import type { User, Address } from '../store/types';
+import type { LoginData, RegisterData } from '../api/auth';
 
-interface Address {
-  id?: string;
-  label?: string;
-  line1: string;
-  line2?: string;
-  city: string;
-  state?: string;
-  postal_code: string;
-  country: string;
-  is_default?: boolean;
-}
+export type { User, Address };
 
-interface User {
-  _id: string;
-  id?: string;
-  name: string;
-  email: string;
-  role: string;
-  phone?: string;
-  addresses?: Address[];
-  is_active: boolean;
-  is_email_verified: boolean;
-}
-
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
@@ -42,103 +21,33 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(tokenUtils.getToken());
-  const [loading, setLoading] = useState<boolean>(true);
+  const user = useAuthStore((s) => s.user);
+  const token = useAuthStore((s) => s.token);
+  const loading = useAuthStore((s) => s.loading);
+  const login = useAuthStore((s) => s.login);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
+  const register = useAuthStore((s) => s.register);
+  const logout = useAuthStore((s) => s.logout);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
+  const initializeAuth = useAuthStore((s) => s.initializeAuth);
 
-  // On startup: restore authenticated user if a token is stored
   useEffect(() => {
-    const initAuth = async () => {
-      const currentToken = tokenUtils.getToken();
-      if (currentToken) {
-        try {
-          const userData = await authApi.getCurrentUser();
-          setUser(userData.data || userData);
-          setToken(currentToken);
-        } catch (error) {
-          console.error('Failed to restore session:', error);
-          tokenUtils.removeToken();
-          setToken(null);
-          setUser(null);
-        }
-      }
-      setLoading(false);
-    };
-
-    initAuth();
-  }, []);
-
-  const login = async (formData: LoginData) => {
-    setLoading(true);
-    try {
-      const response = await authApi.login(formData);
-      const { token, data } = response;
-
-      tokenUtils.setToken(token);
-      setToken(token);
-      setUser(data);
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loginWithGoogle = async (credential: string) => {
-    setLoading(true);
-    try {
-      const response = await authApi.googleLogin(credential);
-      const { token, data } = response;
-
-      tokenUtils.setToken(token);
-      setToken(token);
-      setUser(data);
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Register does NOT log the user in — no token or user state is set.
-  // Just returns the backend response so the UI can show the success message.
-  const register = async (formData: RegisterData) => {
-    setLoading(true);
-    try {
-      const response = await authApi.register(formData);
-      return response;
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    setLoading(true);
-    try {
-      await authApi.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      tokenUtils.removeToken();
-      setToken(null);
-      setUser(null);
-      setLoading(false);
-    }
-  };
-
-  const refreshUser = async () => {
-    try {
-      const userData = await authApi.getCurrentUser();
-      setUser(userData.data || userData);
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
-    }
-  };
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, loginWithGoogle, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        loginWithGoogle,
+        register,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

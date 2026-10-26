@@ -4,28 +4,18 @@
  * ActiveCollectionContext
  *
  * Tracks which collection tab is currently active on the homepage
- * (CLOTHING / JEWELLERY / ACCESSORIES).
- *
- * CollectionScroller is the *writer* — it calls setActiveCollectionId
- * whenever activeIdx changes (inside the same effect that updates the theme).
- *
- * BestSellers is the *reader* — it reacts to activeCollectionId to
- * filter and display the correct set of best-selling products.
- *
- * This context deliberately holds only a simple string ID (not the full
- * Collection object) so it remains a lean, single-purpose channel.
+ * (CLOTHING / JEWELLERY / ACCESSORIES). Powered by Zustand uiStore.
  */
 
 import {
   createContext,
-  useCallback,
   useContext,
-  useState,
   type ReactNode,
 } from 'react';
 import type { ThemeName } from '../theme/themeConfig';
+import { useUIStore } from '../store/uiStore';
 
-interface ActiveCollectionContextValue {
+export interface ActiveCollectionContextValue {
   /** The ID of the currently active homepage collection tab. */
   activeCollectionId: ThemeName;
   /** Called by CollectionScroller when the active tab changes. */
@@ -38,15 +28,19 @@ const ActiveCollectionContext = createContext<ActiveCollectionContextValue>({
 });
 
 export function useActiveCollection(): ActiveCollectionContextValue {
-  return useContext(ActiveCollectionContext);
+  const ctx = useContext(ActiveCollectionContext);
+  const activeCollectionId = useUIStore((s) => s.activeCollectionId);
+  const setActiveCollectionId = useUIStore((s) => s.setActiveCollectionId);
+
+  return {
+    activeCollectionId: ctx?.activeCollectionId ?? activeCollectionId,
+    setActiveCollectionId: ctx?.setActiveCollectionId ?? setActiveCollectionId,
+  };
 }
 
 export function ActiveCollectionProvider({ children }: { children: ReactNode }) {
-  const [activeCollectionId, setActiveCollectionIdState] = useState<ThemeName>('clothing');
-
-  const setActiveCollectionId = useCallback((id: ThemeName) => {
-    setActiveCollectionIdState(id);
-  }, []);
+  const activeCollectionId = useUIStore((s) => s.activeCollectionId);
+  const setActiveCollectionId = useUIStore((s) => s.setActiveCollectionId);
 
   return (
     <ActiveCollectionContext.Provider value={{ activeCollectionId, setActiveCollectionId }}>

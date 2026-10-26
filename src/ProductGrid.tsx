@@ -21,8 +21,8 @@ import menRingImg from "./assets/men ring.webp";
 import menPendantImg from "./assets/men pendant.webp";
 import menEarringsImg from "./assets/men earrings.webp";
 import menBraceletImg from "./assets/men bracelet.webp";
-import blackHoodieMen from "./assets/blackhoodiemen.png";
-import greyHoodieWomen from "./assets/greyhoodiewomen.png";
+import blackHoodieMen from "./assets/blackhoodiemen.webp";
+import greyHoodieWomen from "./assets/greyhoodiewomen.webp";
 
 const resolveImg = (img: any): string => (img && typeof img === 'object' && 'src' in img ? img.src : img || '');
 

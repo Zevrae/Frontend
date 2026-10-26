@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode } from 'react';
+import { QueryProvider } from '@/providers/QueryProvider';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { CollectionTransitionProvider } from '@/features/CollectionTransitionContext';
 import { ActiveCollectionProvider } from '@/features/ActiveCollectionContext';
@@ -13,24 +14,26 @@ import { WishlistProvider } from '@/context/WishlistContext';
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
-      <CollectionTransitionProvider>
-        <ActiveCollectionProvider>
-          <PreloaderProvider>
-            <PageTransitionProvider>
-              <AuthProvider>
-                <CartProvider>
-                  <AuthModalProvider>
-                    <WishlistProvider>
-                      {children}
-                    </WishlistProvider>
-                  </AuthModalProvider>
-                </CartProvider>
-              </AuthProvider>
-            </PageTransitionProvider>
-          </PreloaderProvider>
-        </ActiveCollectionProvider>
-      </CollectionTransitionProvider>
-    </ThemeProvider>
+    <QueryProvider>
+      <ThemeProvider>
+        <CollectionTransitionProvider>
+          <ActiveCollectionProvider>
+            <PreloaderProvider>
+              <PageTransitionProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <AuthModalProvider>
+                      <WishlistProvider>
+                        {children}
+                      </WishlistProvider>
+                    </AuthModalProvider>
+                  </CartProvider>
+                </AuthProvider>
+              </PageTransitionProvider>
+            </PreloaderProvider>
+          </ActiveCollectionProvider>
+        </CollectionTransitionProvider>
+      </ThemeProvider>
+    </QueryProvider>
   );
 }
