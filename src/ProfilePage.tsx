@@ -654,6 +654,7 @@ export default function ProfilePage() {
                 {wishlistItems.map((product) => {
                   const img = product.images?.[0] || '';
                   const priceLabel = formatVal(product.price);
+                  const productKey = product.slug || product.id;
                   return (
                     <div
                       key={product.id}
@@ -662,8 +663,8 @@ export default function ProfilePage() {
                       {/* Product image */}
                       <button
                         type="button"
-                        onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
-                        onClick={() => router.push(`/product/${product.id}`)}
+                        onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
+                        onClick={() => router.push(`/product/${productKey}`)}
                         className="relative aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full cursor-pointer text-left"
                       >
                         {img ? (
@@ -684,8 +685,8 @@ export default function ProfilePage() {
                         <div>
                           <button
                             type="button"
-                            onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
-                            onClick={() => router.push(`/product/${product.id}`)}
+                            onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
+                            onClick={() => router.push(`/product/${productKey}`)}
                             className="text-[11px] font-sans text-[var(--theme-text)] text-left hover:text-[var(--theme-accent)] transition-colors leading-snug line-clamp-2 w-full font-medium"
                           >
                             {product.name}
@@ -696,8 +697,8 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2 mt-auto pt-2">
                           <button
                             type="button"
-                            onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
-                            onClick={() => router.push(`/product/${product.id}`)}
+                            onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
+                            onClick={() => router.push(`/product/${productKey}`)}
                             className="flex-1 text-[9px] uppercase tracking-[0.15em] font-plex-mono text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
                           >
                             View

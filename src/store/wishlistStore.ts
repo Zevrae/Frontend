@@ -1,3 +1,5 @@
+'use client';
+
 import { create } from 'zustand';
 import { wishlistApi, WishlistProduct } from '../api/wishlist';
 import { useAuthStore } from './authStore';

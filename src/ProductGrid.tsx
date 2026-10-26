@@ -354,7 +354,7 @@ function ProductGridContent({
   }, [categoryFilter, dbJewelleryMenProducts, dbJewelleryWomenProducts]);
 
   const openProduct = useCallback((product: any) => {
-    router.push(`/product/${product.id}`);
+    router.push(`/product/${product.slug || product.id}`);
   }, [router]);
 
   // ─── Search results ───────────────────────────────────────────────────────────

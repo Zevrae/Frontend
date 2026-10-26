@@ -84,9 +84,10 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
   }, [applyProgress]);
 
   /* ── Mouse enter → prefetch + wipe in ── */
+  const productKey = product.slug || product.id;
   const handleMouseEnter = useCallback(() => {
-    if (product.id) {
-      router.prefetch(`/product/${product.id}`);
+    if (productKey) {
+      router.prefetch(`/product/${productKey}`);
     }
     if (!backSrc) return;
     cancelAnimationFrame(rafRef.current);
@@ -98,7 +99,7 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
       tick(ts);
     };
     rafRef.current = requestAnimationFrame(startTick);
-  }, [backSrc, tick, product.id, router]);
+  }, [backSrc, tick, productKey, router]);
 
   /* ── Mouse leave → wipe out ── */
   const handleMouseLeave = useCallback(() => {

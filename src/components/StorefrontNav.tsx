@@ -632,7 +632,7 @@ export function StorefrontNav() {
                           <div
                             key={p.id}
                             onClick={() => {
-                              navTransition(`/product/${p.id}`, () => {
+                              navTransition(`/product/${p.slug || p.id}`, () => {
                                 setIsSearchOpen(false);
                                 setSearchQuery('');
                               });

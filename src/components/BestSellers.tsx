@@ -297,7 +297,7 @@ export function BestSellers() {
                 {displayedVisible.map((product) => (
                   <Link
                     key={product.id}
-                    href={`/product/${product.id}`}
+                    href={`/product/${product.slug || product.id}`}
                     className="bs-product"
                     aria-label={`View ${product.name}`}
                   >

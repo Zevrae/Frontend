@@ -1,3 +1,5 @@
+'use client';
+
 import { create } from 'zustand';
 import { cartApi, Cart } from '../api/cart';
 import { productsApi } from '../api/products';

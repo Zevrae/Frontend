@@ -5,12 +5,11 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check, Heart } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
-import { useCart } from './CartContext';
+import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { useWishlist } from './context/WishlistContext';
 import { productsApi } from './api/products';
-import TryOn from './components/TryOn';
 import dynamic from 'next/dynamic';
 const TryOnModal = dynamic(() => import('./components/TryOnModal'), { ssr: false });
 import SpecularButton from './components/specularbutton';
@@ -19,11 +18,11 @@ import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import SEO from './components/SEO';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
-import { MAX_QTY_PER_SIZE } from './CartContext';
 
 type ProductDetail = {
   id: string;
   name: string;
+  slug?: string;
   price: number;
   label?: string;
   category?: string;
@@ -107,7 +106,9 @@ export default function ProductPage() {
   const productDescription = rawDescription.length > 160
     ? `${rawDescription.slice(0, 157).trimEnd()}...`
     : rawDescription || (product?.name ? `${product.name} — shop at ZEVRAE.` : '');
-  const productCanonical = productId ? `https://zevrae.com/product/${productId}` : undefined;
+  const productCanonical = product?.slug
+    ? `https://zevrae.com/product/${product.slug}`
+    : (productId ? `https://zevrae.com/product/${productId}` : undefined);
 
   // ── Product JSON-LD structured data ──────────────────────────────────────
   // Builds a schema.org/Product object from actual product data only.
@@ -164,7 +165,7 @@ export default function ProductPage() {
 
     schema.offers = {
       '@type': 'Offer',
-      url: productCanonical || `https://zevrae.com/product/${product.id}`,
+      url: productCanonical || `https://zevrae.com/product/${product.slug || product.id}`,
       priceCurrency: 'INR',
       price: product.price,
       availability,
@@ -252,6 +253,14 @@ export default function ProductPage() {
         }
 
         if (p) {
+          const realId = String(p.id || p._id || p.$id || '');
+          const productSlug = p.slug;
+
+          // If someone landed on an ID URL, swap it to the slug URL in the address bar
+          if (productSlug && typeof window !== 'undefined' && String(params.id) !== String(productSlug)) {
+            window.history.replaceState(null, '', `/product/${productSlug}`);
+          }
+
           let parsedImages: string[] = [];
           if (Array.isArray(p.images)) {
             parsedImages = p.images;
@@ -265,7 +274,8 @@ export default function ProductPage() {
 
           setProduct(prev => ({
             ...prev,
-            id: p.id || p.$id || productId || '',
+            id: realId || prev?.id || '',
+            slug: productSlug || prev?.slug,
             name: p.name || prev?.name || '',
             price: p.price || prev?.price || 0,
             originalPrice: p.compare_price || prev?.originalPrice,
@@ -380,6 +390,7 @@ export default function ProductPage() {
 
             return {
               id: p.id || p.$id || '',
+              slug: p.slug,
               name: p.name || '',
               price: p.price || 0,
               originalPrice: p.compare_price,
@@ -800,7 +811,7 @@ export default function ProductPage() {
                     {/* Share button */}
                     <button
                       onClick={() => {
-                        const url = window.location.origin + '/product/' + product.id;
+                        const url = window.location.origin + '/product/' + (product.slug || product.id);
                         if (navigator.share) {
                           navigator.share({ title: product.name, url }).catch(console.error);
                         } else {
@@ -1191,7 +1202,7 @@ export default function ProductPage() {
                     key={p.id}
                     product={p}
                     index={i}
-                    onClick={() => router.push(`/product/${p.id}`)}
+                    onClick={() => router.push(`/product/${p.slug || p.id}`)}
                   />
                 ))}
               </div>

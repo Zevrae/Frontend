@@ -13,17 +13,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
     if (res.ok) {
       const data = await res.json();
-      const product = data?.product || data;
+      const product = data?.product || data?.data || data;
       const title = product?.name ? `${product.name} | ZEVRAE` : 'Product | ZEVRAE';
       const desc = product?.description
         ? product.description.slice(0, 160)
         : `${product?.name || 'Luxury piece'} — available at ZEVRAE.`;
       const img = Array.isArray(product?.images) ? product.images[0] : product?.frontImg;
+      const canonicalSlug = product?.slug || id;
 
       return {
         title,
         description: desc,
-        alternates: { canonical: `/product/${id}` },
+        alternates: { canonical: `/product/${canonicalSlug}` },
         openGraph: {
           title,
           description: desc,

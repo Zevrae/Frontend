@@ -1,3 +1,5 @@
+'use client';
+
 import { create } from 'zustand';
 import { authApi, LoginData, RegisterData } from '../api/auth';
 import { tokenUtils } from '../utils/token';
