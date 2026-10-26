@@ -6,26 +6,18 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
-<<<<<<< HEAD
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, RefreshCw,
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download, RefreshCw,
   ExternalLink, Eye, Maximize2, Heart,
-=======
-  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download, Eye, Heart,
->>>>>>> origin/main
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { useWishlist } from './context/WishlistContext';
 import { usersApi, Address } from './api/users';
 import { ordersApi, Order, OrderItem } from './api/orders';
 import { tryonApi, TryonResult } from './api/tryon';
-<<<<<<< HEAD
-import { getCachedProducts, getOrFetchAllProducts } from './ProductGrid';
-=======
 import { productsApi } from './api/products';
->>>>>>> origin/main
+import { getCachedProducts, getOrFetchAllProducts } from './ProductGrid';
 import { formatSoftToySize } from './utils/sizeFormatter';
 import { generateReceiptPdf } from './utils/generateReceiptPdf';
-import { useWishlist } from './context/WishlistContext';
 
 
 const formatVal = (val: number) =>
@@ -58,7 +50,6 @@ function canCancelOrder(order: Order): boolean {
   return elapsed <= CANCELLATION_WINDOW_MS;
 }
 
-<<<<<<< HEAD
 // Exchanges are open for 3 days after delivery. The backend re-checks this.
 const EXCHANGE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 function getExchangeDeadline(order: Order): number {
@@ -143,7 +134,9 @@ function ExchangeSection({ order, onUpdated }: { order: Order; onUpdated: (updat
         </div>
       )}
     </div>
-=======
+  );
+}
+
 // ── Custom Design Preview Modal ───────────────────────────────────────────────
 function CustomDesignPreviewModal({
   item,
@@ -288,7 +281,6 @@ function CustomDesignPreviewModal({
         </div>
       </motion.div>
     </motion.div>
->>>>>>> origin/main
   );
 }
 
@@ -296,12 +288,8 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
   const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
-<<<<<<< HEAD
-  const router = useRouter();
-=======
   const [previewItem, setPreviewItem] = useState<OrderItem | null>(null);
-  const navigate = useNavigate();
->>>>>>> origin/main
+  const router = useRouter();
   const isCancelled = order.order_status === 'cancelled';
   const isAwaitingPayment = order.order_status === 'payment_pending';
   const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
@@ -399,23 +387,6 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-2">Items</p>
                 <div className="space-y-2">
-<<<<<<< HEAD
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
-                      <span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); router.push(`/product/${item.product}`); }}
-                          className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
-                          title="View product page"
-                        >
-                          {item.name}
-                        </button>
-                        {item.size ? ` (${formatSoftToySize(item.size)})` : ''} × {item.quantity}
-                      </span>
-                      <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
-                    </div>
-                  ))}
-=======
                   {order.items.map((item, idx) => {
                     const isCustom = item.category?.toLowerCase().includes('custom');
                     return (
@@ -423,7 +394,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                         <span className="flex flex-col gap-1">
                           <span className="flex items-center gap-2 flex-wrap">
                             <button
-                              onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.product}`); }}
+                              onClick={(e) => { e.stopPropagation(); router.push(`/product/${item.product}`); }}
                               className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
                               title="View product page"
                             >
@@ -444,7 +415,6 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                       </div>
                     );
                   })}
->>>>>>> origin/main
                 </div>
                 <div className="mt-3 pt-3 border-t border-[rgba(var(--theme-text-rgb),0.1)] space-y-1 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.6)]">
                   <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{formatVal(order.subtotal)}</span></div>
@@ -497,11 +467,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
 
 export default function ProfilePage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
-<<<<<<< HEAD
   const router = useRouter();
-=======
-  const navigate = useNavigate();
->>>>>>> origin/main
   const [tab, setTab] = useState<'profile' | 'orders' | 'tryons' | 'wishlist'>('profile');
   const { items: wishlistItems, toggle: toggleWishlist, loading: wishlistLoading } = useWishlist();
 
@@ -856,7 +822,6 @@ export default function ProfilePage() {
               <div className="text-center py-16">
                 <Heart size={32} className="mx-auto mb-4 text-[rgba(var(--theme-text-rgb),0.2)]" />
                 <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-2">Your wishlist is empty.</p>
-<<<<<<< HEAD
                 <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-6">Browse products and tap the ♡ icon to save your favourites.</p>
                 <button
                   onMouseEnter={() => router.prefetch('/')}
@@ -883,22 +848,6 @@ export default function ProfilePage() {
                         onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
                         onClick={() => router.push(`/product/${productKey}`)}
                         className="relative aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full cursor-pointer text-left"
-=======
-                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-6">Browse products and tap the ♡ to save your favourites.</p>
-                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Browse Products</button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {wishlistItems.map(product => {
-                  const img = product.images?.[0] || '';
-                  const priceLabel = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price);
-                  return (
-                    <div key={product.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden group flex flex-col">
-                      {/* Product image */}
-                      <button
-                        onClick={() => navigate(`/product/${product.id}`)}
-                        className="aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full"
->>>>>>> origin/main
                       >
                         {img ? (
                           <img
@@ -914,7 +863,6 @@ export default function ProfilePage() {
                       </button>
 
                       {/* Info */}
-<<<<<<< HEAD
                       <div className="p-3 flex flex-col gap-2 flex-1 justify-between">
                         <div>
                           <button
@@ -934,38 +882,16 @@ export default function ProfilePage() {
                             onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
                             onClick={() => router.push(`/product/${productKey}`)}
                             className="flex-1 text-[9px] uppercase tracking-[0.15em] font-plex-mono text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
-=======
-                      <div className="p-3 flex flex-col gap-2 flex-1">
-                        <button
-                          onClick={() => navigate(`/product/${product.id}`)}
-                          className="text-[11px] font-sans text-[var(--theme-text)] text-left hover:text-[var(--theme-accent)] transition-colors leading-snug line-clamp-2"
-                        >
-                          {product.name}
-                        </button>
-                        <p className="text-[11px] font-mono text-[var(--theme-accent)]">{priceLabel}</p>
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 mt-auto pt-1">
-                          <button
-                            onClick={() => navigate(`/product/${product.id}`)}
-                            className="flex-1 text-[8px] uppercase tracking-[0.15em] font-sans text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
->>>>>>> origin/main
                           >
                             View
                           </button>
                           <button
-<<<<<<< HEAD
                             type="button"
-=======
->>>>>>> origin/main
                             onClick={() => toggleWishlist({ id: product.id, name: product.name, price: product.price, images: product.images, category: product.category })}
                             title="Remove from wishlist"
                             className="flex items-center justify-center w-7 h-7 rounded-sm border border-[rgba(229,57,53,0.3)] text-red-500 hover:bg-red-500/10 transition-colors flex-shrink-0"
                           >
-<<<<<<< HEAD
                             <Heart size={12} fill="#e53935" />
-=======
-                            <Heart size={11} fill="#e53935" />
->>>>>>> origin/main
                           </button>
                         </div>
                       </div>

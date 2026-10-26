@@ -11,12 +11,7 @@
 // not interactive. We guard against this with a `disposed` flag and re-attach the
 // canvas to the wrapper div if it has been detached.
 import { useEffect, useRef } from 'react';
-<<<<<<< HEAD:src/views/customize/hooks/usePrintCanvas.ts
-import * as fabricModule from 'fabric';
 
-const fabric: any = fabricModule;
-=======
->>>>>>> origin/main:src/pages/customize/hooks/usePrintCanvas.ts
 
 export const STAGE_WIDTH = 380;
 export const STAGE_HEIGHT = 460;
@@ -58,19 +53,13 @@ function loadFabric(): Promise<any> {
  * Owns one Fabric.js v5 canvas sized to a garment's print area only.
  * Fully transparent, absolutely positioned over the static garment photo.
  */
-<<<<<<< HEAD:src/views/customize/hooks/usePrintCanvas.ts
-export function usePrintCanvas(canvasEl: React.RefObject<HTMLCanvasElement | null>, width: number, height: number) {
-  const fabricRef = useRef<any>(null);
-  const designRef = useRef<any>(null);
-=======
 export function usePrintCanvas(
-  canvasEl: React.RefObject<HTMLCanvasElement>,
+  canvasEl: React.RefObject<HTMLCanvasElement | null>,
   width: number,
   height: number,
 ) {
   const fabricRef = useRef<any>(null);  // fabric.Canvas instance
   const designRef = useRef<any>(null);  // current design fabric.Image
->>>>>>> origin/main:src/pages/customize/hooks/usePrintCanvas.ts
   const api = useRef<any>({});
 
   useEffect(() => {

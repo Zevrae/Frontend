@@ -1,11 +1,6 @@
-<<<<<<< HEAD:src/views/customize/components/GarmentCanvas.tsx
-import { forwardRef, useImperativeHandle, useRef } from 'react';
-import Image from 'next/image';
-import { usePrintCanvas, compositeStagePNG, STAGE_WIDTH, STAGE_HEIGHT } from '../hooks/usePrintCanvas';
-=======
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef } from 'react';
+import Image from 'next/image';
 import { usePrintCanvas, compositeStagePNG, STAGE_WIDTH, STAGE_HEIGHT, EXPORT_MULTIPLIER } from '../hooks/usePrintCanvas';
->>>>>>> origin/main:src/pages/customize/components/GarmentCanvas.tsx
 import type { CustomizableGarment } from '../../../api/customization';
 import { getPrintAreaPx, getGarmentImages } from '../garmentHelpers';
 

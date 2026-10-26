@@ -1,13 +1,9 @@
-<<<<<<< HEAD:src/views/customize/components/OrderSummary.tsx
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-=======
-import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
->>>>>>> origin/main:src/pages/customize/components/OrderSummary.tsx
 import { useCustomize } from '../CustomizeContext';
 import { findGarment, findColor } from '../garmentHelpers';
 import { customProductsApi } from '../../../api/customization';
@@ -143,18 +139,6 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
             <div className="os-vignette" />
           </div>
 
-<<<<<<< HEAD:src/views/customize/components/OrderSummary.tsx
-        <div className="summary-thumbs">
-          <a href={product.frontImg} download="zevrae-custom-front.png">
-            <Image src={product.frontImg} alt="Generated front design" width={110} height={130} unoptimized />
-            <span>Front · PNG</span>
-          </a>
-          {product.backImg && (
-            <a href={product.backImg} download="zevrae-custom-back.png">
-              <Image src={product.backImg} alt="Generated back design" width={110} height={130} unoptimized />
-              <span>Back · PNG</span>
-            </a>
-=======
           {/* Thumbnail strip */}
           {images.length > 1 && (
             <div className="os-thumbs">
@@ -170,7 +154,6 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
                 </button>
               ))}
             </div>
->>>>>>> origin/main:src/pages/customize/components/OrderSummary.tsx
           )}
         </div>
 
@@ -178,28 +161,6 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
         <div className="os-details">
           <p className="os-eyebrow">Custom Design</p>
 
-<<<<<<< HEAD:src/views/customize/components/OrderSummary.tsx
-        {!state.createdProductId ? (
-          <>
-            <button className="place-order" disabled={state.submitting} onClick={handleAddToBag}>
-              {state.submitting ? 'Adding to bag…' : user ? 'Add to bag' : 'Log in to add to bag'}
-            </button>
-            {state.submitError && <p className="hint hint--error">{state.submitError}</p>}
-          </>
-        ) : (
-          <>
-            <div className="placed-note">Added to your bag — checkout whenever you're ready.</div>
-            <button
-              className="place-order"
-              style={{ marginTop: 12 }}
-              onMouseEnter={() => router.prefetch('/bag')}
-              onClick={() => router.push('/bag')}
-            >
-              Go to bag
-            </button>
-          </>
-        )}
-=======
           <h2 className="os-product-name">
             {garment?.label ?? state.clothType}
           </h2>
@@ -271,7 +232,11 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
               <div className="os-added-note">
                 ✓ Added to your bag — checkout whenever you're ready.
               </div>
-              <button className="os-add-btn os-add-btn--ghost" onClick={() => navigate('/bag')}>
+              <button
+                className="os-add-btn os-add-btn--ghost"
+                onMouseEnter={() => router.prefetch('/bag')}
+                onClick={() => router.push('/bag')}
+              >
                 Go to Bag
               </button>
             </>
@@ -292,7 +257,6 @@ export default function OrderSummary({ garments }: { garments: CustomizableGarme
             </div>
           </div>
         </div>
->>>>>>> origin/main:src/pages/customize/components/OrderSummary.tsx
       </div>
     </div>
   );

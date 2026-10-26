@@ -3,10 +3,7 @@ import api from './api';
 export interface WishlistProduct {
   id: string;
   name: string;
-<<<<<<< HEAD
   slug?: string;
-=======
->>>>>>> origin/main
   price: number;
   compare_price?: number | null;
   discount?: number | null;

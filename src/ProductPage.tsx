@@ -4,13 +4,8 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check, Heart } from 'lucide-react';
-<<<<<<< HEAD
 import { useRouter, useParams } from 'next/navigation';
 import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
-=======
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useCart } from './CartContext';
->>>>>>> origin/main
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { useWishlist } from './context/WishlistContext';
@@ -23,11 +18,7 @@ import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import SEO from './components/SEO';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
-<<<<<<< HEAD
-=======
-import { MAX_QTY_PER_SIZE } from './CartContext';
-import { useWishlist } from './context/WishlistContext';
->>>>>>> origin/main
+
 
 type ProductDetail = {
   id: string;
@@ -103,10 +94,6 @@ export default function ProductPage() {
   const { setIsLoginModalOpen } = useAuthModal();
   const { token, user } = useAuth();
   const { toggle: toggleWishlist, isWishlisted } = useWishlist();
-<<<<<<< HEAD
-  const [wishlistPulse, setWishlistPulse] = useState(false);
-=======
->>>>>>> origin/main
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
 
@@ -801,11 +788,7 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
 
-<<<<<<< HEAD
                 {/* Price and Share + Wishlist row */}
-=======
-                {/* Price and Share+Wishlist row */}
->>>>>>> origin/main
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-baseline gap-4">
                     <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
@@ -818,7 +801,6 @@ export default function ProductPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-<<<<<<< HEAD
                     {/* Wishlist toggle — at the left of share button */}
                     <motion.button
                       id="wishlist-toggle"
@@ -827,13 +809,6 @@ export default function ProductPage() {
                           setIsLoginModalOpen(true);
                           return;
                         }
-=======
-                    {/* Wishlist toggle */}
-                    <motion.button
-                      id="wishlist-toggle"
-                      onClick={async () => {
-                        if (!user) { setIsLoginModalOpen(true); return; }
->>>>>>> origin/main
                         setWishlistPulse(true);
                         setTimeout(() => setWishlistPulse(false), 400);
                         await toggleWishlist({
@@ -846,11 +821,7 @@ export default function ProductPage() {
                       }}
                       animate={wishlistPulse ? { scale: [1, 1.28, 1] } : { scale: 1 }}
                       transition={{ duration: 0.35, ease: 'easeOut' }}
-<<<<<<< HEAD
                       className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] transition-colors cursor-pointer"
-=======
-                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] transition-colors"
->>>>>>> origin/main
                       style={{
                         color: isWishlisted(product.id) ? '#e53935' : 'var(--theme-text)',
                         borderColor: isWishlisted(product.id) ? 'rgba(229,57,53,0.4)' : undefined,
@@ -860,27 +831,16 @@ export default function ProductPage() {
                       aria-label="Toggle wishlist"
                     >
                       <Heart
-<<<<<<< HEAD
                         size={17}
-=======
-                        size={16}
->>>>>>> origin/main
                         strokeWidth={1.5}
                         fill={isWishlisted(product.id) ? '#e53935' : 'none'}
                       />
                     </motion.button>
 
-<<<<<<< HEAD
                     {/* Share button */}
                     <button
                       onClick={() => {
                         const url = window.location.origin + '/product/' + (product.slug || product.id);
-=======
-                    {/* Share */}
-                    <button
-                      onClick={() => {
-                        const url = window.location.origin + '/product/' + product.id;
->>>>>>> origin/main
                         if (navigator.share) {
                           navigator.share({ title: product.name, url }).catch(console.error);
                         } else {
@@ -888,11 +848,7 @@ export default function ProductPage() {
                           alert('Link copied to clipboard!');
                         }
                       }}
-<<<<<<< HEAD
                       className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors cursor-pointer"
-=======
-                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors"
->>>>>>> origin/main
                       title="Share this product"
                       aria-label="Share product"
                     >
