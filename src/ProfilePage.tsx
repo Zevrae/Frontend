@@ -6,16 +6,26 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft, User as UserIcon, Package, MapPin, Plus, Edit2, Trash2,
+<<<<<<< HEAD
   CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, RefreshCw,
   ExternalLink, Eye, Maximize2, Heart,
+=======
+  CheckCircle2, Truck, Clock, XCircle, Save, X as XIcon, Sparkles, Ban, CalendarClock, Download, Eye, Heart,
+>>>>>>> origin/main
 } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { useWishlist } from './context/WishlistContext';
 import { usersApi, Address } from './api/users';
-import { ordersApi, Order } from './api/orders';
+import { ordersApi, Order, OrderItem } from './api/orders';
 import { tryonApi, TryonResult } from './api/tryon';
+<<<<<<< HEAD
 import { getCachedProducts, getOrFetchAllProducts } from './ProductGrid';
+=======
+import { productsApi } from './api/products';
+>>>>>>> origin/main
 import { formatSoftToySize } from './utils/sizeFormatter';
+import { generateReceiptPdf } from './utils/generateReceiptPdf';
+import { useWishlist } from './context/WishlistContext';
 
 
 const formatVal = (val: number) =>
@@ -48,6 +58,7 @@ function canCancelOrder(order: Order): boolean {
   return elapsed <= CANCELLATION_WINDOW_MS;
 }
 
+<<<<<<< HEAD
 // Exchanges are open for 3 days after delivery. The backend re-checks this.
 const EXCHANGE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 function getExchangeDeadline(order: Order): number {
@@ -132,6 +143,152 @@ function ExchangeSection({ order, onUpdated }: { order: Order; onUpdated: (updat
         </div>
       )}
     </div>
+=======
+// ── Custom Design Preview Modal ───────────────────────────────────────────────
+function CustomDesignPreviewModal({
+  item,
+  onClose,
+}: {
+  item: OrderItem;
+  onClose: () => void;
+}) {
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Prefer embedded design_images, fall back to fetching by product id
+    if (item.design_images && item.design_images.length > 0) {
+      setImages(item.design_images);
+      setLoading(false);
+      return;
+    }
+    if (item.image) {
+      setImages([item.image]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    productsApi
+      .getById(item.product)
+      .then(product => {
+        setImages(product.images || []);
+      })
+      .catch(() => setError('Could not load design images.'))
+      .finally(() => setLoading(false));
+  }, [item]);
+
+  const frontImg = images[0] || null;
+  const backImg = images[1] || null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 16 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        onClick={e => e.stopPropagation()}
+        className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.12)] rounded-sm shadow-2xl w-full max-w-lg"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(var(--theme-text-rgb),0.08)]">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.25em] font-plex-mono text-[var(--theme-accent)]">Design Preview</p>
+            <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mt-0.5 truncate max-w-[280px]">{item.name}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[rgba(var(--theme-text-rgb),0.4)] hover:text-[var(--theme-text)] transition-colors p-1"
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] animate-pulse">Loading design…</p>
+            </div>
+          ) : error ? (
+            <p className="text-[11px] font-sans text-red-400 text-center py-8">{error}</p>
+          ) : images.length === 0 ? (
+            <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] text-center py-8">Design images are not available for this order.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {/* Front */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] text-center">Front</p>
+                <div className="aspect-square bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden flex items-center justify-center relative group">
+                  {frontImg ? (
+                    <img
+                      src={frontImg}
+                      alt="Front design"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No front design</span>
+                  )}
+                  {frontImg && (
+                    <a
+                      href={frontImg}
+                      download={`design-front.png`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 text-[8px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-surface)]/80 backdrop-blur-sm border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                    >
+                      <Download size={9} /> Save
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Back */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] text-center">Back</p>
+                <div className="aspect-square bg-[var(--theme-bg)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden flex items-center justify-center relative group">
+                  {backImg ? (
+                    <img
+                      src={backImg}
+                      alt="Back design"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.3)]">No back design</span>
+                  )}
+                  {backImg && (
+                    <a
+                      href={backImg}
+                      download={`design-back.png`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 text-[8px] uppercase tracking-[0.1em] font-sans bg-[var(--theme-surface)]/80 backdrop-blur-sm border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+                    >
+                      <Download size={9} /> Save
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <p className="text-[9px] font-sans text-[rgba(var(--theme-text-rgb),0.35)] text-center mt-4">
+            Hover over an image to download it.
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+>>>>>>> origin/main
   );
 }
 
@@ -139,7 +296,12 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
   const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
+<<<<<<< HEAD
   const router = useRouter();
+=======
+  const [previewItem, setPreviewItem] = useState<OrderItem | null>(null);
+  const navigate = useNavigate();
+>>>>>>> origin/main
   const isCancelled = order.order_status === 'cancelled';
   const isAwaitingPayment = order.order_status === 'payment_pending';
   const currentIndex = TRACK_STEPS.findIndex(s => s.key === order.order_status);
@@ -237,6 +399,7 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] font-sans text-[var(--theme-accent)] mb-2">Items</p>
                 <div className="space-y-2">
+<<<<<<< HEAD
                   {order.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
                       <span>
@@ -252,6 +415,36 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                       <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
                     </div>
                   ))}
+=======
+                  {order.items.map((item, idx) => {
+                    const isCustom = item.category?.toLowerCase().includes('custom');
+                    return (
+                      <div key={idx} className="flex justify-between text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.8)]">
+                        <span className="flex flex-col gap-1">
+                          <span className="flex items-center gap-2 flex-wrap">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.product}`); }}
+                              className="hover:text-[var(--theme-accent)] hover:underline underline-offset-2 transition-colors text-left"
+                              title="View product page"
+                            >
+                              {item.name}
+                            </button>
+                            {item.size ? ` (${formatSoftToySize(item.size)})` : ''} × {item.quantity}
+                          </span>
+                          {isCustom && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setPreviewItem(item); }}
+                              className="self-start flex items-center gap-1 text-[8px] uppercase tracking-[0.15em] font-sans text-[var(--theme-accent)] border border-[rgba(var(--theme-accent-rgb),0.35)] hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200 px-2 py-1 rounded-sm"
+                            >
+                              <Eye size={9} /> Preview Design
+                            </button>
+                          )}
+                        </span>
+                        <span className="font-mono">{formatVal(item.price * item.quantity)}</span>
+                      </div>
+                    );
+                  })}
+>>>>>>> origin/main
                 </div>
                 <div className="mt-3 pt-3 border-t border-[rgba(var(--theme-text-rgb),0.1)] space-y-1 text-[10px] font-sans text-[rgba(var(--theme-text-rgb),0.6)]">
                   <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{formatVal(order.subtotal)}</span></div>
@@ -275,8 +468,27 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
                 <span>·</span>
                 <span className="capitalize">{order.payment_status}</span>
               </div>
+
+              {/* Download Receipt — available for all orders (regular & custom) */}
+              <button
+                onClick={(e) => { e.stopPropagation(); generateReceiptPdf(order); }}
+                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[9px] uppercase tracking-[0.15em] font-sans border border-[rgba(var(--theme-accent-rgb),0.35)] text-[var(--theme-accent)] rounded-sm hover:bg-[rgba(var(--theme-accent-rgb),0.08)] hover:border-[var(--theme-accent)] transition-all duration-200"
+              >
+                <Download size={12} />
+                Download Receipt
+              </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Design Preview Modal */}
+      <AnimatePresence>
+        {previewItem && (
+          <CustomDesignPreviewModal
+            item={previewItem}
+            onClose={() => setPreviewItem(null)}
+          />
         )}
       </AnimatePresence>
     </div>
@@ -285,7 +497,11 @@ function OrderTrackingCard({ order, onCancelled }: { order: Order; onCancelled: 
 
 export default function ProfilePage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
+<<<<<<< HEAD
   const router = useRouter();
+=======
+  const navigate = useNavigate();
+>>>>>>> origin/main
   const [tab, setTab] = useState<'profile' | 'orders' | 'tryons' | 'wishlist'>('profile');
   const { items: wishlistItems, toggle: toggleWishlist, loading: wishlistLoading } = useWishlist();
 
@@ -640,6 +856,7 @@ export default function ProfilePage() {
               <div className="text-center py-16">
                 <Heart size={32} className="mx-auto mb-4 text-[rgba(var(--theme-text-rgb),0.2)]" />
                 <p className="text-[12px] font-sans text-[rgba(var(--theme-text-rgb),0.6)] mb-2">Your wishlist is empty.</p>
+<<<<<<< HEAD
                 <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-6">Browse products and tap the ♡ icon to save your favourites.</p>
                 <button
                   onMouseEnter={() => router.prefetch('/')}
@@ -666,6 +883,22 @@ export default function ProfilePage() {
                         onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
                         onClick={() => router.push(`/product/${productKey}`)}
                         className="relative aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full cursor-pointer text-left"
+=======
+                <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-6">Browse products and tap the ♡ to save your favourites.</p>
+                <button onClick={() => navigate('/')} className="text-[10px] uppercase tracking-[0.2em] font-plex-mono text-[var(--theme-accent)] hover:opacity-80 transition-opacity">Browse Products</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {wishlistItems.map(product => {
+                  const img = product.images?.[0] || '';
+                  const priceLabel = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price);
+                  return (
+                    <div key={product.id} className="bg-[var(--theme-surface)] border border-[rgba(var(--theme-text-rgb),0.1)] rounded-sm overflow-hidden group flex flex-col">
+                      {/* Product image */}
+                      <button
+                        onClick={() => navigate(`/product/${product.id}`)}
+                        className="aspect-[3/4] bg-[var(--theme-bg)] overflow-hidden flex-shrink-0 block w-full"
+>>>>>>> origin/main
                       >
                         {img ? (
                           <img
@@ -681,6 +914,7 @@ export default function ProfilePage() {
                       </button>
 
                       {/* Info */}
+<<<<<<< HEAD
                       <div className="p-3 flex flex-col gap-2 flex-1 justify-between">
                         <div>
                           <button
@@ -700,16 +934,38 @@ export default function ProfilePage() {
                             onMouseEnter={() => router.prefetch(`/product/${productKey}`)}
                             onClick={() => router.push(`/product/${productKey}`)}
                             className="flex-1 text-[9px] uppercase tracking-[0.15em] font-plex-mono text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
+=======
+                      <div className="p-3 flex flex-col gap-2 flex-1">
+                        <button
+                          onClick={() => navigate(`/product/${product.id}`)}
+                          className="text-[11px] font-sans text-[var(--theme-text)] text-left hover:text-[var(--theme-accent)] transition-colors leading-snug line-clamp-2"
+                        >
+                          {product.name}
+                        </button>
+                        <p className="text-[11px] font-mono text-[var(--theme-accent)]">{priceLabel}</p>
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 mt-auto pt-1">
+                          <button
+                            onClick={() => navigate(`/product/${product.id}`)}
+                            className="flex-1 text-[8px] uppercase tracking-[0.15em] font-sans text-[var(--theme-text)] border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-all px-2 py-1.5 rounded-sm"
+>>>>>>> origin/main
                           >
                             View
                           </button>
                           <button
+<<<<<<< HEAD
                             type="button"
+=======
+>>>>>>> origin/main
                             onClick={() => toggleWishlist({ id: product.id, name: product.name, price: product.price, images: product.images, category: product.category })}
                             title="Remove from wishlist"
                             className="flex items-center justify-center w-7 h-7 rounded-sm border border-[rgba(229,57,53,0.3)] text-red-500 hover:bg-red-500/10 transition-colors flex-shrink-0"
                           >
+<<<<<<< HEAD
                             <Heart size={12} fill="#e53935" />
+=======
+                            <Heart size={11} fill="#e53935" />
+>>>>>>> origin/main
                           </button>
                         </div>
                       </div>

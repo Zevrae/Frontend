@@ -4,8 +4,13 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check, Heart } from 'lucide-react';
+<<<<<<< HEAD
 import { useRouter, useParams } from 'next/navigation';
 import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
+=======
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useCart } from './CartContext';
+>>>>>>> origin/main
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
 import { useWishlist } from './context/WishlistContext';
@@ -18,6 +23,11 @@ import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import SEO from './components/SEO';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
+<<<<<<< HEAD
+=======
+import { MAX_QTY_PER_SIZE } from './CartContext';
+import { useWishlist } from './context/WishlistContext';
+>>>>>>> origin/main
 
 type ProductDetail = {
   id: string;
@@ -93,7 +103,10 @@ export default function ProductPage() {
   const { setIsLoginModalOpen } = useAuthModal();
   const { token, user } = useAuth();
   const { toggle: toggleWishlist, isWishlisted } = useWishlist();
+<<<<<<< HEAD
   const [wishlistPulse, setWishlistPulse] = useState(false);
+=======
+>>>>>>> origin/main
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
 
@@ -183,6 +196,7 @@ export default function ProductPage() {
   const [qtyLimitNote, setQtyLimitNote] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>([]);
   const [tryOnOpen, setTryOnOpen] = useState(false);
+  const [wishlistPulse, setWishlistPulse] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
 
   // ─── UNIFIED NON-APPAREL CHECK ───
@@ -201,17 +215,23 @@ export default function ProductPage() {
   const availableSizes = useMemo(() => {
     if (!product) return [];
 
-    // 1. If it is categorized as non-apparel (jewellery, keychains, etc.), ALWAYS return an empty array (no sizes)
+    // 1. Non-apparel products (jewellery, keychains, etc.) never have sizes.
     if (isNonApparel) return [];
 
-    // 2. Check if the product has explicitly defined sizes/stock in DB
-    const dbSizes = product.sizes?.length ? product.sizes : Object.keys(product.size_stock || {});
-    if (dbSizes.length > 0) {
-      return dbSizes;
-    }
+    // Filter out blank keys — the backend can persist size_stock with an empty-string
+    // key ("": 0) when a product is saved without size data, which we treat as "not
+    // configured" rather than a real size entry.
+    const sizeStockKeys = Object.keys(product.size_stock || {}).filter(k => k.trim() !== '');
 
-    // 3. Fallback to default apparel sizes if not defined in DB but categorized as apparel
-    return DEFAULT_SIZES;
+    // 2. If size_stock has NO valid entries, the admin hasn't configured stock yet.
+    //    Hide the size selector entirely — there's nothing meaningful to show.
+    //    This is different from size_stock = { S: 0, M: 0 } where stock WAS configured
+    //    but sold out; in that case we still show sizes + Notify Me.
+    if (sizeStockKeys.length === 0) return [];
+
+    // 3. size_stock has valid entries — use product.sizes if defined, otherwise derive
+    //    from the stock keys themselves.
+    return product.sizes?.length ? product.sizes : sizeStockKeys;
   }, [product, isNonApparel]);
 
   const requireSizeSelection = availableSizes.length > 0;
@@ -476,7 +496,9 @@ export default function ProductPage() {
     try {
       await productsApi.notifyMe(product.id, {
         email: user ? undefined : email,
-        size: requireSizeSelection ? selectedSize : undefined,
+        // When all sizes are OOS and none is selected, omit size so the
+        // backend records a general restock request for this product.
+        size: requireSizeSelection && selectedSize ? selectedSize : undefined,
       });
       setNotifyStatus('done');
     } catch (err: any) {
@@ -592,13 +614,17 @@ export default function ProductPage() {
   const isNoSizeProduct = !requireSizeSelection;
   const isSizeOutOfStock = (size: string) => (sizeStock[size] ?? 0) <= 0;
 
+  // true when every available size has 0 stock — we should jump straight to
+  // "Notify Me" without forcing the user to click a size first.
+  const allSizesOutOfStock = requireSizeSelection && availableSizes.every(s => isSizeOutOfStock(s));
+
   const overallInStock = isNoSizeProduct
     ? (product.stock_quantity ?? 0) > 0
     : availableSizes.some(s => !isSizeOutOfStock(s));
 
   const showNotifyMe = isNoSizeProduct
     ? !overallInStock
-    : !!selectedSize && isSizeOutOfStock(selectedSize);
+    : allSizesOutOfStock || (!!selectedSize && isSizeOutOfStock(selectedSize));
 
   return (
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)]">
@@ -775,7 +801,11 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
 
+<<<<<<< HEAD
                 {/* Price and Share + Wishlist row */}
+=======
+                {/* Price and Share+Wishlist row */}
+>>>>>>> origin/main
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-baseline gap-4">
                     <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
@@ -788,6 +818,7 @@ export default function ProductPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+<<<<<<< HEAD
                     {/* Wishlist toggle — at the left of share button */}
                     <motion.button
                       id="wishlist-toggle"
@@ -796,6 +827,13 @@ export default function ProductPage() {
                           setIsLoginModalOpen(true);
                           return;
                         }
+=======
+                    {/* Wishlist toggle */}
+                    <motion.button
+                      id="wishlist-toggle"
+                      onClick={async () => {
+                        if (!user) { setIsLoginModalOpen(true); return; }
+>>>>>>> origin/main
                         setWishlistPulse(true);
                         setTimeout(() => setWishlistPulse(false), 400);
                         await toggleWishlist({
@@ -808,7 +846,11 @@ export default function ProductPage() {
                       }}
                       animate={wishlistPulse ? { scale: [1, 1.28, 1] } : { scale: 1 }}
                       transition={{ duration: 0.35, ease: 'easeOut' }}
+<<<<<<< HEAD
                       className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] transition-colors cursor-pointer"
+=======
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] transition-colors"
+>>>>>>> origin/main
                       style={{
                         color: isWishlisted(product.id) ? '#e53935' : 'var(--theme-text)',
                         borderColor: isWishlisted(product.id) ? 'rgba(229,57,53,0.4)' : undefined,
@@ -818,16 +860,27 @@ export default function ProductPage() {
                       aria-label="Toggle wishlist"
                     >
                       <Heart
+<<<<<<< HEAD
                         size={17}
+=======
+                        size={16}
+>>>>>>> origin/main
                         strokeWidth={1.5}
                         fill={isWishlisted(product.id) ? '#e53935' : 'none'}
                       />
                     </motion.button>
 
+<<<<<<< HEAD
                     {/* Share button */}
                     <button
                       onClick={() => {
                         const url = window.location.origin + '/product/' + (product.slug || product.id);
+=======
+                    {/* Share */}
+                    <button
+                      onClick={() => {
+                        const url = window.location.origin + '/product/' + product.id;
+>>>>>>> origin/main
                         if (navigator.share) {
                           navigator.share({ title: product.name, url }).catch(console.error);
                         } else {
@@ -835,7 +888,11 @@ export default function ProductPage() {
                           alert('Link copied to clipboard!');
                         }
                       }}
+<<<<<<< HEAD
                       className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors cursor-pointer"
+=======
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors"
+>>>>>>> origin/main
                       title="Share this product"
                       aria-label="Share product"
                     >
@@ -971,7 +1028,8 @@ export default function ProductPage() {
                         Size not available
                       </motion.p>
                     )}
-                    {!selectedSize && !sizeError && (
+                    {/* Only ask to select a size when at least one is in stock */}
+                    {!selectedSize && !sizeError && !allSizesOutOfStock && (
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1091,7 +1149,9 @@ export default function ProductPage() {
                 {showNotifyMe ? (
                   <div className="border border-[rgba(var(--theme-text-rgb),0.12)] p-5">
                     <p className="text-[11px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.6)] mb-1">
-                      {isNoSizeProduct ? 'Currently Out of Stock' : `Size ${selectedSize} is Out of Stock`}
+                      {isNoSizeProduct || allSizesOutOfStock
+                        ? 'Currently Out of Stock'
+                        : `Size ${selectedSize} is Out of Stock`}
                     </p>
                     <p className="text-[11px] font-sans text-[rgba(var(--theme-text-rgb),0.4)] mb-4">
                       Enter your email and we'll let you know the moment it's back.
