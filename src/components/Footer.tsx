@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Instagram,
   Twitter,
@@ -12,7 +14,7 @@ import {
   Truck,
   Lock,
 } from 'lucide-react';
-import { usePageTransition } from '../features/PageTransitionContext';
+
 
 const WhatsappIcon = ({ size = 17, strokeWidth = 1.5 }: { size?: number; strokeWidth?: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -144,30 +146,27 @@ const PaymentIcons = () => (
    Sub-components
 ───────────────────────────────────────────── */
 function FooterNavLink({ label, to }: NavLink) {
-  const { trigger } = usePageTransition();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleClick = () => {
     // Handle hash-only links like /#clothing, /#jewellery, /#accessories
     if (to.startsWith('/#')) {
       const hash = to.slice(1); // e.g. "#clothing"
-      if (location.pathname === '/') {
+      if (pathname === '/') {
         // Already on homepage — just update hash and fire the event manually
         window.location.hash = hash;
         window.dispatchEvent(new HashChangeEvent('hashchange'));
       } else {
         // Navigate to homepage first, then set hash
-        trigger(() => {
-          navigate('/');
-          setTimeout(() => {
-            window.location.hash = hash;
-            window.dispatchEvent(new HashChangeEvent('hashchange'));
-          }, 400);
-        });
+        router.push('/');
+        setTimeout(() => {
+          window.location.hash = hash;
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        }, 400);
       }
     } else {
-      trigger(() => navigate(to));
+      router.push(to);
     }
   };
 

@@ -23,6 +23,12 @@ export const SEO_CONFIG = {
       "Discover ZEVRAE's men's lowers collection, designed with a contemporary luxury aesthetic.",
   },
 
+  '/men/hoodies': {
+    title: "Men's Hoodies | ZEVRAE",
+    description:
+      "Explore ZEVRAE's men's hoodie collection featuring contemporary luxury designs and premium comfort.",
+  },
+
   '/women': {
     title: "Women's Collection | ZEVRAE",
     description:
@@ -39,6 +45,12 @@ export const SEO_CONFIG = {
     title: "Women's Lowers | ZEVRAE",
     description:
       "Discover ZEVRAE's women's lowers collection, designed with a contemporary luxury aesthetic.",
+  },
+
+  '/women/hoodies': {
+    title: "Women's Hoodies | ZEVRAE",
+    description:
+      "Explore ZEVRAE's women's hoodie collection featuring contemporary luxury designs and premium comfort.",
   },
 
   '/jewellery': {

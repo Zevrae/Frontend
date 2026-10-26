@@ -46,7 +46,31 @@
   width: 100%;
   height: auto;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: opacity 0.35s ease, transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.pinterest-card__front--loading {
+  opacity: 0;
+}
+
+.pinterest-card__front--loaded {
+  opacity: 1;
+}
+
+.pinterest-card__skeleton {
+  position: absolute;
+  inset: 0;
+  min-height: 280px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: zv-skeleton-shimmer 1.5s infinite;
+  pointer-events: none;
+  border-radius: 16px;
+}
+
+@keyframes zv-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .pinterest-card:hover .pinterest-card__front {

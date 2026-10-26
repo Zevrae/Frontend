@@ -1,14 +1,17 @@
+'use client';
+
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { usePreloader } from "./PreloaderContext";
 
 // Editorial images for the preloader pile
-import ed01 from "@/src/assets/ed-01.jpg";
-import ed02 from "@/src/assets/ed-02.jpg";
-import ed03 from "@/src/assets/ed-03.jpg";
-import ed04 from "@/src/assets/ed-04.jpg";
-import ed05 from "@/src/assets/ed-05.jpg";
-import ed06 from "@/src/assets/ed-06.jpg";
+import ed01 from "@/src/assets/ed-01.webp";
+import ed02 from "@/src/assets/ed-02.webp";
+import ed03 from "@/src/assets/ed-03.webp";
+import ed04 from "@/src/assets/ed-04.webp";
+import ed05 from "@/src/assets/ed-05.webp";
+import ed06 from "@/src/assets/ed-06.webp";
 
 /**
  * Zevrae — OUTFIT-style Preloader with slide-up reveal.
@@ -27,7 +30,7 @@ const useIsoLayoutEffect =
 
 interface EditorialImage {
   id: string;
-  url: string;
+  url: any;
 }
 
 const STACK: EditorialImage[] = [
@@ -96,8 +99,8 @@ export function Preloader() {
       counter,
       {
         value: 100,
-        duration: 2.2,
-        ease: "expo.inOut",
+        duration: 1.2,
+        ease: "power2.inOut",
         onUpdate: () => {
           if (counterRef.current) {
             counterRef.current.textContent = Math.floor(counter.value)
@@ -115,9 +118,9 @@ export function Preloader() {
       {
         opacity: 1,
         scale: 1,
-        duration: 0.45,
+        duration: 0.35,
         ease: "back.out(1.2)",
-        stagger: { each: 0.18, from: "start" },
+        stagger: { each: 0.1, from: "start" },
       },
       "<",
     );
@@ -128,15 +131,15 @@ export function Preloader() {
         letters[letterIdx],
         {
           yPercent: 0,
-          duration: 0.4,
+          duration: 0.3,
           ease: "expo.out",
         },
-        `${0.9 + seqIdx * 0.07}`,
+        `${0.5 + seqIdx * 0.05}`,
       );
     });
 
     // Hold
-    tl.to({}, { duration: 0.45 });
+    tl.to({}, { duration: 0.15 });
 
     // ═══════════════════════════════
     //  REVERSE + MORPH
@@ -149,10 +152,10 @@ export function Preloader() {
         letters[letterIdx],
         {
           yPercent: -110,
-          duration: 0.3,
+          duration: 0.22,
           ease: "expo.in",
         },
-        seqIdx === 0 ? "rev" : `rev+=${seqIdx * 0.04}`,
+        seqIdx === 0 ? "rev" : `rev+=${seqIdx * 0.025}`,
       );
     });
 
@@ -162,19 +165,19 @@ export function Preloader() {
       {
         opacity: 0,
         scale: 0.35,
-        y: "+=40",
-        duration: 0.4,
+        y: "+=30",
+        duration: 0.3,
         ease: "power3.in",
-        stagger: { each: 0.04, from: "end" },
+        stagger: { each: 0.025, from: "end" },
       },
-      "rev+=0.1",
+      "rev+=0.05",
     );
 
     // Counter out
     tl.to(
       counterRef.current,
-      { opacity: 0, duration: 0.3, ease: "power2.in" },
-      "-=0.25",
+      { opacity: 0, duration: 0.2, ease: "power2.in" },
+      "-=0.15",
     );
 
     // ── Slide the ENTIRE preloader root UP to reveal the hero beneath ──
@@ -182,8 +185,8 @@ export function Preloader() {
       root,
       {
         yPercent: -100,
-        duration: 1.0,
-        ease: "power3.inOut",
+        duration: 0.6,
+        ease: "power2.inOut",
         onStart: () => {
           // Dispatch event so hero can start animating while slide is in progress
           window.dispatchEvent(new CustomEvent("preloader-sliding"));
@@ -197,7 +200,7 @@ export function Preloader() {
           setDone(true);
         },
       },
-      "-=0.1",
+      "-=0.05",
     );
 
     return () => {
@@ -223,11 +226,14 @@ export function Preloader() {
           {/* Image pile */}
           <div className="relative w-[min(28vw,220px)] aspect-[3/4]">
             {STACK.map((image, i) => (
-              <img
+              <Image
                 key={image.id}
-                src={image.url}
+                src={image.url?.src || image.url}
                 alt=""
-                className="zv-plimg absolute inset-0 h-full w-full object-cover shadow-[0_16px_50px_-12px_rgba(0,0,0,0.6)]"
+                fill
+                priority
+                sizes="220px"
+                className="zv-plimg object-cover shadow-[0_16px_50px_-12px_rgba(0,0,0,0.6)]"
                 style={{ zIndex: 10 + i }}
                 draggable={false}
               />
@@ -279,7 +285,7 @@ export function Preloader() {
               ref={counterRef}
               className="tabular-nums text-[12px] tracking-[0.25em]"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 color: "rgba(var(--theme-text-rgb),0.5)",
               }}
             >

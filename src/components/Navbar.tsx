@@ -1,11 +1,15 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { ShoppingBag, Search, Menu, ChevronDown } from 'lucide-react';
 import { useCart } from '../CartContext';
 
 export const Navbar: React.FC = () => {
-  const location = useLocation();
-  const isHome = location.pathname === '/';
+  const pathname = usePathname();
+  const isHome = pathname === '/';
   const { items, setIsCartOpen } = useCart();
   const [isClothingOpen, setIsClothingOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -49,14 +53,14 @@ export const Navbar: React.FC = () => {
               >
                 <div className="flex flex-col py-2">
                   <Link 
-                    to="/men" 
+                    href="/men" 
                     className="px-6 py-3 hover:bg-white/5 hover:text-white transition-all text-gray-300"
                     onClick={() => setIsClothingOpen(false)}
                   >
                     Men
                   </Link>
                   <Link 
-                    to="/women" 
+                    href="/women" 
                     className="px-6 py-3 hover:bg-white/5 hover:text-white transition-all text-gray-300"
                     onClick={() => setIsClothingOpen(false)}
                   >
@@ -68,9 +72,24 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        <Link to="/" className="text-2xl font-archivo font-bold tracking-widest uppercase absolute left-1/2 -translate-x-1/2">
-          ZEVRAE
-        </Link>
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/';
+          }}
+          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center py-1"
+          aria-label="ZEVRAE"
+        >
+          <Image
+            src="/ZEVRAE LOGO NAVBAR.png"
+            alt="ZEVRAE"
+            width={160}
+            height={50}
+            className="h-10 md:h-16 w-auto object-contain transition-opacity duration-300 hover:opacity-85"
+            priority
+          />
+        </a>
 
         <div className="flex items-center gap-6">
           <button 

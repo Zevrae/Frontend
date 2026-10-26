@@ -1,7 +1,8 @@
+'use client';
+
 import { motion } from 'motion/react';
 import { ShieldCheck, RefreshCw, Sparkles, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { usePageTransition } from '../features/PageTransitionContext';
+import { useNavTransition } from '../hooks/useNavTransition';
 
 // Google OAuth verification requires the homepage to plainly state what the
 // app does and why Google Sign-In is offered. This section carries that
@@ -36,12 +37,11 @@ const PILLARS = [
 ] as const;
 
 export function TrustSection() {
-  const navigate = useNavigate();
-  const { trigger: navTransition } = usePageTransition();
+  const navTransition = useNavTransition();
 
   const goTo = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
-    navTransition(() => navigate(path));
+    navTransition(path);
   };
 
   return (

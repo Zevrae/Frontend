@@ -1,25 +1,29 @@
+'use client';
+
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, ArrowRight, Bell, Check, Heart } from 'lucide-react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useCart } from './CartContext';
+import { useRouter, useParams } from 'next/navigation';
+import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
 import { useAuth } from './hooks/UseAuth';
+import { useWishlist } from './context/WishlistContext';
 import { productsApi } from './api/products';
-import TryOn from './components/TryOn';
-import TryOnModal from './components/TryOnModal';
+import dynamic from 'next/dynamic';
+const TryOnModal = dynamic(() => import('./components/TryOnModal'), { ssr: false });
 import SpecularButton from './components/specularbutton';
 import ReviewSection from './components/ReviewSection';
 import PinterestCard from './components/PinterestCard';
 import './components/PinterestCard.css';
 import SEO from './components/SEO';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
-import { MAX_QTY_PER_SIZE } from './CartContext';
-import { useWishlist } from './context/WishlistContext';
+
 
 type ProductDetail = {
   id: string;
   name: string;
+  slug?: string;
   price: number;
   label?: string;
   category?: string;
@@ -83,17 +87,15 @@ function AccordionSection({
 }
 
 export default function ProductPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const params = useParams();
-  const location = useLocation();
+  const productId = (params?.id as string) || '';
   const { addToCart } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const { token, user } = useAuth();
   const { toggle: toggleWishlist, isWishlisted } = useWishlist();
 
-  const [product, setProduct] = useState<ProductDetail | null>(
-    (location.state as { product?: ProductDetail } | null)?.product || null
-  );
+  const [product, setProduct] = useState<ProductDetail | null>(null);
 
   // ── Product-page SEO ──────────────────────────────────────────────────────
   // Build title, description, and canonical from real product data once loaded.
@@ -104,7 +106,9 @@ export default function ProductPage() {
   const productDescription = rawDescription.length > 160
     ? `${rawDescription.slice(0, 157).trimEnd()}...`
     : rawDescription || (product?.name ? `${product.name} — shop at ZEVRAE.` : '');
-  const productCanonical = params.id ? `https://zevrae.com/product/${params.id}` : undefined;
+  const productCanonical = product?.slug
+    ? `https://zevrae.com/product/${product.slug}`
+    : (productId ? `https://zevrae.com/product/${productId}` : undefined);
 
   // ── Product JSON-LD structured data ──────────────────────────────────────
   // Builds a schema.org/Product object from actual product data only.
@@ -161,7 +165,7 @@ export default function ProductPage() {
 
     schema.offers = {
       '@type': 'Offer',
-      url: productCanonical || `https://zevrae.com/product/${product.id}`,
+      url: productCanonical || `https://zevrae.com/product/${product.slug || product.id}`,
       priceCurrency: 'INR',
       price: product.price,
       availability,
@@ -256,6 +260,14 @@ export default function ProductPage() {
         }
 
         if (p) {
+          const realId = String(p.id || p._id || p.$id || '');
+          const productSlug = p.slug;
+
+          // If someone landed on an ID URL, swap it to the slug URL in the address bar
+          if (productSlug && typeof window !== 'undefined' && String(params.id) !== String(productSlug)) {
+            window.history.replaceState(null, '', `/product/${productSlug}`);
+          }
+
           let parsedImages: string[] = [];
           if (Array.isArray(p.images)) {
             parsedImages = p.images;
@@ -269,7 +281,8 @@ export default function ProductPage() {
 
           setProduct(prev => ({
             ...prev,
-            id: p.id || p.$id || params.id || '',
+            id: realId || prev?.id || '',
+            slug: productSlug || prev?.slug,
             name: p.name || prev?.name || '',
             price: p.price || prev?.price || 0,
             originalPrice: p.compare_price || prev?.originalPrice,
@@ -291,13 +304,8 @@ export default function ProductPage() {
       }
     };
 
-    const routeProduct = (location.state as any)?.product;
-    if (routeProduct) {
-      setProduct(routeProduct);
-    }
-
     hydrateProduct();
-  }, [params.id, location.state]);
+  }, [productId]);
 
   // ─── AGGRESSIVE IMAGE DEDUPLICATION ───
   const images = useMemo(() => {
@@ -389,6 +397,7 @@ export default function ProductPage() {
 
             return {
               id: p.id || p.$id || '',
+              slug: p.slug,
               name: p.name || '',
               price: p.price || 0,
               originalPrice: p.compare_price,
@@ -411,9 +420,19 @@ export default function ProductPage() {
     fetchRelated();
   }, [product]);
 
+  // Proactively preload all gallery images so switching between views is instantaneous
+  useEffect(() => {
+    if (images && images.length > 0 && typeof window !== 'undefined') {
+      images.forEach((src) => {
+        if (!src) return;
+        const img = new window.Image();
+        img.src = src;
+      });
+    }
+  }, [images]);
+
   const switchImage = (index: number) => {
     if (index === activeImg) return;
-    setImgLoaded(false);
     setActiveImg(index);
   };
 
@@ -557,7 +576,7 @@ export default function ProductPage() {
       return;
     }
     handleAddToCart();
-    navigate('/checkout');
+    router.push('/checkout');
   };
 
   const formatPrice = (n: number) =>
@@ -619,7 +638,7 @@ export default function ProductPage() {
 
           {/* Back link */}
           <motion.button
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -651,23 +670,24 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                {/* Main image with fade */}
-                {images.length > 0 && images[activeImg] && (
-                  <img
-                    key={activeImg}
-                    src={images[activeImg]}
-                    alt={product.name}
+                {/* Main images stacked with smooth zero-latency crossfade */}
+                {images.map((imgSrc, idx) => (
+                  <Image
+                    key={imgSrc || idx}
+                    src={imgSrc}
+                    alt={`${product.name} view ${idx + 1}`}
                     referrerPolicy="no-referrer"
-                    loading="eager"
-                    decoding="async"
-                    onLoad={() => setImgLoaded(true)}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    priority={idx === 0 || idx === activeImg}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-opacity duration-300 ease-out"
                     style={{
-                      opacity: imgLoaded ? 1 : 0,
-                      transition: 'opacity 400ms ease',
+                      opacity: activeImg === idx ? 1 : 0,
+                      pointerEvents: activeImg === idx ? 'auto' : 'none',
+                      zIndex: activeImg === idx ? 2 : 1,
                     }}
                   />
-                )}
+                ))}
 
                 {/* Navigation Arrows */}
                 {images.length > 1 && (
@@ -691,7 +711,7 @@ export default function ProductPage() {
 
                 {/* Subtle vignette */}
                 <div
-                  className="absolute inset-0 pointer-events-none"
+                  className="absolute inset-0 pointer-events-none z-10"
                   style={{
                     background:
                       'radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.35) 0%, transparent 65%)',
@@ -700,7 +720,7 @@ export default function ProductPage() {
 
                 {/* Image counter */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-5 right-5 text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-[0.2em]">
+                  <div className="absolute bottom-5 right-5 z-20 text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-[0.2em]">
                     {String(activeImg + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
                   </div>
                 )}
@@ -719,16 +739,24 @@ export default function ProductPage() {
                       key={i}
                       id={`thumbnail-${i}`}
                       onClick={() => switchImage(i)}
+                      onMouseEnter={() => {
+                        if (images[i] && typeof window !== 'undefined') {
+                          const preload = new window.Image();
+                          preload.src = images[i];
+                        }
+                      }}
                       className={`relative flex-shrink-0 w-[72px] h-[90px] bg-[#0d0d0d] overflow-hidden transition-all duration-300 ${activeImg === i
                           ? 'ring-1 ring-[var(--theme-accent)] opacity-100'
                           : 'opacity-50 hover:opacity-80 ring-1 ring-transparent hover:ring-[rgba(var(--theme-text-rgb),0.2)]'
                         }`}
                     >
-                      <img
+                      <Image
                         src={img}
                         alt={`View ${i + 1}`}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="72px"
+                        className="object-cover"
                       />
                     </button>
                   ))}
@@ -760,7 +788,7 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
 
-                {/* Price and Share+Wishlist row */}
+                {/* Price and Share + Wishlist row */}
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-baseline gap-4">
                     <span className="text-2xl font-plex-mono text-[var(--theme-text)]">
@@ -773,11 +801,14 @@ export default function ProductPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Wishlist toggle */}
+                    {/* Wishlist toggle — at the left of share button */}
                     <motion.button
                       id="wishlist-toggle"
                       onClick={async () => {
-                        if (!user) { setIsLoginModalOpen(true); return; }
+                        if (!user) {
+                          setIsLoginModalOpen(true);
+                          return;
+                        }
                         setWishlistPulse(true);
                         setTimeout(() => setWishlistPulse(false), 400);
                         await toggleWishlist({
@@ -790,7 +821,7 @@ export default function ProductPage() {
                       }}
                       animate={wishlistPulse ? { scale: [1, 1.28, 1] } : { scale: 1 }}
                       transition={{ duration: 0.35, ease: 'easeOut' }}
-                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] transition-colors"
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] hover:border-[var(--theme-accent)] transition-colors cursor-pointer"
                       style={{
                         color: isWishlisted(product.id) ? '#e53935' : 'var(--theme-text)',
                         borderColor: isWishlisted(product.id) ? 'rgba(229,57,53,0.4)' : undefined,
@@ -800,16 +831,16 @@ export default function ProductPage() {
                       aria-label="Toggle wishlist"
                     >
                       <Heart
-                        size={16}
+                        size={17}
                         strokeWidth={1.5}
                         fill={isWishlisted(product.id) ? '#e53935' : 'none'}
                       />
                     </motion.button>
 
-                    {/* Share */}
+                    {/* Share button */}
                     <button
                       onClick={() => {
-                        const url = window.location.origin + '/product/' + product.id;
+                        const url = window.location.origin + '/product/' + (product.slug || product.id);
                         if (navigator.share) {
                           navigator.share({ title: product.name, url }).catch(console.error);
                         } else {
@@ -817,7 +848,7 @@ export default function ProductPage() {
                           alert('Link copied to clipboard!');
                         }
                       }}
-                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors"
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-[rgba(var(--theme-text-rgb),0.2)] text-[var(--theme-text)] hover:bg-[var(--theme-text)] hover:text-[var(--theme-bg)] transition-colors cursor-pointer"
                       title="Share this product"
                       aria-label="Share product"
                     >
@@ -844,7 +875,7 @@ export default function ProductPage() {
                     </span>
                     <button
                       className="text-[10px] uppercase tracking-[0.15em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] hover:text-[var(--theme-accent)] transition-colors duration-300 underline underline-offset-4"
-                      onClick={() => navigate('/size-guide')}
+                      onClick={() => router.push('/size-guide')}
                     >
                       Size Guide
                     </button>
@@ -1203,7 +1234,7 @@ export default function ProductPage() {
                     key={p.id}
                     product={p}
                     index={i}
-                    onClick={() => navigate(`/product/${p.id}`, { state: { product: p } })}
+                    onClick={() => router.push(`/product/${p.slug || p.id}`)}
                   />
                 ))}
               </div>

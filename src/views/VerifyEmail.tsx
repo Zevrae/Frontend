@@ -1,0 +1,150 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
+import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { authApi } from '../api/auth';
+
+export default function VerifyEmail() {
+  const params = useParams();
+  const token = params?.token as string;
+  const router = useRouter();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const verify = async () => {
+      if (!token) {
+        setStatus('error');
+        setMessage('Invalid verification link.');
+        return;
+      }
+
+      try {
+        const response = await authApi.verifyEmail(token);
+        const msg =
+          (response as any)?.data?.message ||
+          'Your email has been verified successfully!';
+        setMessage(msg);
+        setStatus('success');
+      } catch (err: any) {
+        const msg =
+          err?.response?.data?.message ||
+          err?.message ||
+          'Verification failed. The link may be expired or invalid.';
+        setMessage(msg);
+        setStatus('error');
+      }
+    };
+
+    verify();
+  }, [token]);
+
+  return (
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex items-center justify-center p-6 font-sans">
+      {/* Film grain */}
+      <div
+        className="fixed inset-0 opacity-[0.015] pointer-events-none z-50 mix-blend-difference"
+        style={{
+          backgroundImage:
+            'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        className="w-full max-w-[480px] bg-[var(--theme-bg)] border border-[rgba(var(--theme-accent-rgb),0.4)] rounded-[16px] shadow-[0_0_60px_rgba(212,175,55,0.08)] p-10 text-center"
+      >
+        <p className="text-[11px] font-plex-mono font-light tracking-[0.5em] text-[var(--theme-accent)] mb-10 uppercase">
+          ZEVRAE
+        </p>
+
+        {/* Loading */}
+        {status === 'loading' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center gap-6"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+            >
+              <Loader size={36} className="text-[var(--theme-accent)]/60" strokeWidth={1} />
+            </motion.div>
+            <p className="text-[13px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-wider">
+              Verifying your email...
+            </p>
+          </motion.div>
+        )}
+
+        {/* Success */}
+        {status === 'success' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center gap-6"
+          >
+            <div className="w-16 h-16 rounded-full border border-[rgba(var(--theme-accent-rgb),0.3)] flex items-center justify-center">
+              <CheckCircle size={32} className="text-[var(--theme-accent)]" strokeWidth={1} />
+            </div>
+            <div>
+              <h2 className="text-xl font-archivo font-bold tracking-[0.15em] text-[var(--theme-text)] uppercase mb-3">
+                Email Verified
+              </h2>
+              <p className="text-[12px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] leading-relaxed tracking-wide">
+                {message}
+              </p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/')}
+              className="mt-2 w-full py-4 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:brightness-110 transition-all duration-300 rounded-sm"
+            >
+              SIGN IN TO YOUR ACCOUNT
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* Error */}
+        {status === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center gap-6"
+          >
+            <div className="w-16 h-16 rounded-full border border-red-500/30 flex items-center justify-center">
+              <AlertCircle size={32} className="text-red-400" strokeWidth={1} />
+            </div>
+            <div>
+              <h2 className="text-xl font-archivo font-bold tracking-[0.15em] text-[var(--theme-text)] uppercase mb-3">
+                Verification Failed
+              </h2>
+              <p className="text-[12px] font-plex-mono text-red-400/80 leading-relaxed tracking-wide">
+                {message}
+              </p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/')}
+              className="mt-2 w-full py-4 bg-transparent border border-[rgba(var(--theme-accent-rgb),0.4)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] text-[12px] font-bold tracking-[0.25em] font-plex-mono hover:bg-[rgba(var(--theme-accent-rgb),0.05)] transition-all duration-300 rounded-sm"
+            >
+              RETURN TO HOME
+            </motion.button>
+          </motion.div>
+        )}
+
+        <p className="mt-10 text-[12px] font-sans italic tracking-[0.01em] text-[rgba(var(--theme-text-rgb),0.5)] text-center">
+          ZEVRAE — Luxury is a Matter of Choice
+        </p>
+      </motion.div>
+    </div>
+  );
+}

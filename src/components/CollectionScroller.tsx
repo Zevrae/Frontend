@@ -1,20 +1,24 @@
+'use client';
+
 import { useRef, useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
-import { useNavigate } from 'react-router-dom';
-import { usePageTransition } from '../features/PageTransitionContext';
+import { useRouter } from 'next/navigation';
+import { useNavTransition } from '../hooks/useNavTransition';
 import { useSetTheme } from '../theme/ThemeProvider';
 import { useCollectionTransition } from '../features/CollectionTransitionContext';
 import { useActiveCollection } from '../features/ActiveCollectionContext';
 import type { ThemeName } from '../theme/themeConfig';
-import clothingDefault from '../assets/static/clothing cover page.png';
-import menClothing from '../assets/static/men cloth cover.png';
-import womenClothing from '../assets/static/women cloth cover.png';
-import jewelleryCover from '../assets/jewellery cover page .jpeg';
-import jewelleryMen from '../assets/men jewellery.jpeg';
-import jewelleryWomen from '../assets/women jewellery.jpeg';
-import accessoriesCover from '../assets/static/accessories cover page.jpg';
-import jewelleryHero from '../assets/jewellery hero section.png';
-import accessoriesHero from '../assets/accessories hero section.png';
+import clothingDefault from '../assets/static/clothing cover page.webp';
+import menClothing from '../assets/static/men cloth cover.webp';
+import womenClothing from '../assets/static/women cloth cover.webp';
+import jewelleryCover from '../assets/jewellery cover page .webp';
+import jewelleryMen from '../assets/men jewellery.webp';
+import jewelleryWomen from '../assets/women jewellery.webp';
+import accessoriesCover from '../assets/static/accessories cover page.webp';
+import jewelleryHero from '../assets/jewellery hero section.webp';
+import accessoriesHero from '../assets/accessories hero section.webp';
+import './CollectionScroller.css';
 
 
 
@@ -29,12 +33,12 @@ interface Collection {
   sub: string;
   menRoute: string;
   womenRoute: string;
-  image: string;
-  menImage: string;
-  womenImage: string;
+  image: any;
+  menImage: any;
+  womenImage: any;
   isContain?: boolean;
   /** Optional hero section background image for the homepage hero when this collection is active. */
-  heroImage?: string;
+  heroImage?: any;
   /** Hero image filter brightness (0–1+). Falls back to --hero-brightness :root default (clothing value). */
   heroBrightness?: number;
   /** Hero vignette outer stop opacity (0–1). Falls back to --hero-vignette-opacity :root default (clothing value). */
@@ -107,9 +111,23 @@ interface CardProps {
 }
 
 function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
-  const navigate = useNavigate();
-  const { trigger: navTransition } = usePageTransition();
+  const router = useRouter();
+  const navTransition = useNavTransition();
   const [hovered, setHovered] = useState<'men' | 'women' | null>(null);
+
+  // Preload alternate preview images (men and women collection covers)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urls = [
+      col.menImage?.src || (typeof col.menImage === 'string' ? col.menImage : null),
+      col.womenImage?.src || (typeof col.womenImage === 'string' ? col.womenImage : null),
+    ].filter(Boolean) as string[];
+
+    urls.forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, [col.menImage, col.womenImage]);
 
   return (
     <div
@@ -119,25 +137,31 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
       <span className="cs-card__number">{col.number}</span>
 
       <div className={`cs-card__img-wrap ${col.isContain ? 'cs-card__img-wrap--contain' : ''}`}>
-        <img
-          src={col.image}
+        <Image
+          src={col.image?.src || col.image}
           alt={col.label}
+          fill
+          priority={isActive}
+          sizes="560px"
           className="cs-card__img cs-card__img--default cs-card__img--visible"
-          loading="lazy"
           draggable={false}
         />
-        <img
-          src={col.menImage}
+        <Image
+          src={col.menImage?.src || col.menImage}
           alt={`${col.label} Men`}
+          fill
+          priority={isActive}
+          sizes="560px"
           className={`cs-card__img cs-card__img--men ${hovered === 'men' ? 'cs-card__img--visible' : ''}`}
-          loading="lazy"
           draggable={false}
         />
-        <img
-          src={col.womenImage}
+        <Image
+          src={col.womenImage?.src || col.womenImage}
           alt={`${col.label} Women`}
+          fill
+          priority={isActive}
+          sizes="560px"
           className={`cs-card__img cs-card__img--women ${hovered === 'women' ? 'cs-card__img--visible' : ''}`}
-          loading="lazy"
           draggable={false}
         />
       </div>
@@ -151,22 +175,22 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
             <>
               <button
                 className="cs-card__cta cs-card__cta--men"
-                onMouseEnter={() => setHovered('men')}
+                onMouseEnter={() => { setHovered('men'); router.prefetch(col.menRoute); }}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => { e.stopPropagation(); navTransition(() => navigate(col.menRoute)); }}
+                onClick={(e) => { e.stopPropagation(); navTransition(col.menRoute); }}
               >
-                <span>Men</span>
+                <span>MEN</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </button>
               <button
                 className="cs-card__cta cs-card__cta--women"
-                onMouseEnter={() => setHovered('women')}
+                onMouseEnter={() => { setHovered('women'); router.prefetch(col.womenRoute); }}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => { e.stopPropagation(); navTransition(() => navigate(col.womenRoute)); }}
+                onClick={(e) => { e.stopPropagation(); navTransition(col.womenRoute); }}
               >
-                <span>Women</span>
+                <span>WOMEN</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -175,9 +199,10 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           ) : (
             <button
               className="cs-card__cta"
-              onClick={(e) => { e.stopPropagation(); navTransition(() => navigate('/accessories')); }}
+              onMouseEnter={() => router.prefetch('/accessories')}
+              onClick={(e) => { e.stopPropagation(); navTransition('/accessories'); }}
             >
-              <span>Explore</span>
+              <span>EXPLORE</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
@@ -194,27 +219,52 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
    --------------------------------------------------------- */
 export function CollectionScroller() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(() => {
-    if (typeof window !== 'undefined') {
-      if (window.location.hash === '#jewellery') return 1;
-      if (window.location.hash === '#accessories') return 2;
-    }
-    return 0;
-  });
+  const [activeIdx, setActiveIdx] = useState(0);
   const setTheme = useSetTheme();
   const { triggerTransition } = useCollectionTransition();
-  const { setActiveCollectionId } = useActiveCollection();
+  const { activeCollectionId, setActiveCollectionId } = useActiveCollection();
   const isAnimating = useRef(false);
+  // Track whether the current goTo call originated internally (from scroller arrows/clicks)
+  // so we can skip the re-sync when the scroller itself is the one changing the collection.
+  const internalChangeRef = useRef(false);
 
   // Swipe gesture refs
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
+  // ── Sync from external source (e.g. hero arrows) ──────────────────────────
+  // When the hero arrows change the active collection, activeCollectionId in
+  // context will update. We need to slide the card track to match.
+  useEffect(() => {
+    if (internalChangeRef.current) {
+      internalChangeRef.current = false;
+      return;
+    }
+    const newIdx = collections.findIndex((c) => c.id === activeCollectionId);
+    if (newIdx === -1 || newIdx === activeIdx) return;
+
+    // Slide cards to match without re-triggering a veil transition
+    setActiveIdx(newIdx);
+
+    // Animate the track to center the new card
+    const track = trackRef.current;
+    if (track) {
+      const cards = track.querySelectorAll<HTMLElement>('.cs-card');
+      const card = cards[newIdx];
+      if (card) {
+        const cardRect = card.getBoundingClientRect();
+        const currentX = gsap.getProperty(track, 'x') as number;
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const viewCenter = window.innerWidth / 2;
+        const targetX = currentX + (viewCenter - cardCenter);
+        gsap.to(track, { x: targetX, duration: 0.75, ease: 'power3.inOut' });
+      }
+    }
+  }, [activeCollectionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     const active = collections[activeIdx];
     setTheme(active.id as ThemeName);
-    // Propagate the active collection ID so BestSellers (a sibling below) can
-    // filter its products without any prop-drilling through App.
     setActiveCollectionId(active.id as ThemeName);
 
     // ── Hero image ──────────────────────────────────────────────────────────
@@ -257,6 +307,7 @@ export function CollectionScroller() {
     if (clamped === activeIdx) return;
 
     isAnimating.current = true;
+    internalChangeRef.current = true; // mark as internal so the sync effect skips it
     const incoming = collections[clamped];
 
     // ── Veil transition ────────────────────────────────────────────────────
@@ -310,17 +361,18 @@ export function CollectionScroller() {
     const viewCenter = window.innerWidth / 2;
     const targetX    = currentX + (viewCenter - cardCenter);
     gsap.set(track, { x: targetX });
-
-    // Scroll directly to the collection scroller if returning to a subcategory
-    if (typeof window !== 'undefined' && window.location.hash) {
-      setTimeout(() => {
-        const element = document.getElementById('collection');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
   }, [activeIdx]);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const h = window.location.hash;
+      if (h === '#clothing') goTo(0);
+      else if (h === '#jewellery') goTo(1);
+      else if (h === '#accessories') goTo(2);
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [goTo]);
 
   const goPrev = () => goTo(activeIdx - 1);
   const goNext = () => goTo(activeIdx + 1);
@@ -368,7 +420,6 @@ export function CollectionScroller() {
                 aria-label={`Go to ${col.label}`}
               >
                 <span className="cs-dot__bar" />
-                <span className="cs-dot__label">{col.label}</span>
               </button>
             ))}
           </div>

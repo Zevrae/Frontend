@@ -17,11 +17,26 @@
  *   /men/tshirts            -> "clothing"
  *   /customize              -> "clothing"
  *   /product/64f2c1         -> null (persist current theme)
- *   /bag, /checkout, /profile, /admin/*, policy pages, etc. -> null
+ *   /bag, /checkout, /profile, policy pages, etc. -> null
  */
 export type ThemeName = 'clothing' | 'jewellery' | 'accessories';
 
 export const DEFAULT_THEME: ThemeName = 'clothing';
+
+export const THEME_COLORS: Record<ThemeName, { accent: string; bg: string }> = {
+  clothing: {
+    accent: '#C5A059',
+    bg: '#12100C',
+  },
+  jewellery: {
+    accent: '#34656D',
+    bg: '#FAEAB1',
+  },
+  accessories: {
+    accent: '#C81E3A',
+    bg: '#F5F5F5',
+  },
+};
 
 export function getThemeForPath(pathname: string): ThemeName | null {
   const segment = pathname.split('/').filter(Boolean)[0]?.toLowerCase();
@@ -37,7 +52,7 @@ export function getThemeForPath(pathname: string): ThemeName | null {
     case 'customize':
       return 'clothing';
     default:
-      // product/:id, bag, checkout, profile, admin*, ai-wardrobe, policy
+      // product/:id, bag, checkout, profile, ai-wardrobe, policy
       // pages, verify-email, etc. — none of these belong to a category,
       // so don't touch the currently active theme.
       return null;

@@ -1,5 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+'use client';
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { getThemeForPath, DEFAULT_THEME, type ThemeName } from './themeConfig';
 
 interface ThemeContextValue {
@@ -60,28 +62,19 @@ export function useSetTheme(): (theme: ThemeName) => void {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const location = useLocation();
-  // Initialization order: a category route (e.g. /jewellery/...) always
-  // wins, since that's an explicit, unambiguous signal. Otherwise fall back
-  // to whatever theme was last persisted (so refreshing on /product/:id or
-  // /checkout doesn't flash back to DEFAULT_THEME), and only use
-  // DEFAULT_THEME when neither is available (first-ever visit, or a
-  // corrupted/missing localStorage value).
+  const currentPathname = usePathname();
+  const pathname = currentPathname || '/';
+
   const [theme, setThemeState] = useState<ThemeName>(
-    () => getThemeForPath(location.pathname) ?? readStoredTheme() ?? DEFAULT_THEME,
+    () => getThemeForPath(pathname) ?? readStoredTheme() ?? DEFAULT_THEME,
   );
 
-  // Route change only overrides the palette when the new route actually
-  // belongs to a category. Non-category routes (product detail, cart,
-  // checkout, profile, admin, policy pages...) return `null` and the
-  // currently active theme is left untouched — that's what makes it
-  // "persist" when you open a product instead of a category listing.
   useEffect(() => {
-    const next = getThemeForPath(location.pathname);
+    const next = getThemeForPath(pathname);
     if (next !== null) {
       setThemeState(next);
     }
-  }, [location.pathname]);
+  }, [pathname]);
 
   useEffect(() => {
     // The route only actually swaps to the new URL once the curtain in
@@ -93,14 +86,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // behind, so the CSS `transition` declared on `html`/`body` for these
     // custom properties takes over instead, and the palette crossfades.
     document.documentElement.setAttribute('data-theme', theme);
-    // Every theme change — whether from route navigation, the scroll-linked
-    // override, or a future explicit theme switcher — is persisted
-    // immediately so the next load/refresh picks up right where this one
-    // left off.
-    persistTheme(theme);
-  }, [theme]);
+    // Persist the theme so non-category routes (/bag, /product/:id, etc.)
+    // restore the last palette on refresh. Skip persisting when on the
+    // homepage ('/') — the CollectionScroller always reinitializes to
+    // 'clothing' on mount, so storing the mid-session homepage theme would
+    // cause a stale accessories/jewellery flash on back-navigation.
+    if (pathname !== '/') {
+      persistTheme(theme);
+    }
+  }, [theme, pathname]);
 
   const setTheme = useCallback((next: ThemeName) => setThemeState(next), []);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  const contextValue = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }

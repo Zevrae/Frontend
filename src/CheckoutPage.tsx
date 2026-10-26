@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart, CartItem } from './CartContext';
 import { useAuthModal } from './AuthModalContext';
@@ -13,7 +16,6 @@ import {
   ReceiptPrinter,
   type ReceiptPrinterStage,
 } from './features/ReceiptPrinter';
-import { generateReceiptPdf } from './utils/generateReceiptPdf';
 import { isSoftToy, formatSoftToySize } from './utils/sizeFormatter';
 
 
@@ -34,8 +36,8 @@ export default function CheckoutPage() {
     item.category?.toLowerCase().includes('custom')
   );
   const { setIsLoginModalOpen } = useAuthModal();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { token, user } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedMethod, setSelectedMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -71,17 +73,18 @@ export default function CheckoutPage() {
   }, []);
 
   /** Generate and download a receipt as a PDF file */
-  const downloadReceipt = useCallback(() => {
+  const downloadReceipt = useCallback(async () => {
     if (!completedOrder) return;
+    const { generateReceiptPdf } = await import('./utils/generateReceiptPdf');
     generateReceiptPdf(completedOrder, completedPaymentMethod || undefined);
   }, [completedOrder, completedPaymentMethod]);
 
   useEffect(() => {
     if (!user) {
       setIsLoginModalOpen(true);
-      navigate('/');
+      router.push('/');
     }
-  }, [user, navigate, setIsLoginModalOpen]);
+  }, [user, router, setIsLoginModalOpen]);
 
   const [shippingData, setShippingData] = useState({
     firstName: '',
@@ -360,11 +363,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-[140px] pb-24 relative z-10">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-sans selection:bg-[rgba(var(--theme-accent-rgb),0.3)] pt-28 md:pt-[140px] pb-24 relative z-10">
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-12 flex items-center justify-between">
         <button 
-          onClick={() => step > 2 ? setStep((prev) => (prev - 1) as 2 | 3 | 4) : navigate('/')}
+          onClick={() => step > 2 ? setStep((prev) => (prev - 1) as 2 | 3 | 4) : router.push('/')}
           className="flex items-center text-[10px] uppercase font-plex-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors"
         >
           <ChevronLeft size={16} className="mr-2" />
@@ -738,7 +741,7 @@ export default function CheckoutPage() {
                         <button
                           onClick={() => {
                             receiptTimers.current.forEach(clearTimeout);
-                            navigate('/');
+                            router.push('/');
                           }}
                           className="flex items-center gap-1.5 text-[10px] font-plex-mono tracking-[0.15em] uppercase rounded-md border border-grayscale-12 dark:border-grayscale-1 px-2.5 py-1.5 text-grayscale-8 dark:text-grayscale-11 hover:text-grayscale-12 dark:hover:text-grayscale-1 transition-colors"
                         >
@@ -917,7 +920,7 @@ export default function CheckoutPage() {
                 <button
                   onClick={() => {
                     receiptTimers.current.forEach(clearTimeout);
-                    navigate('/');
+                    router.push('/');
                   }}
                   className="mt-8 bg-[rgba(var(--theme-text-rgb),0.02)] border border-[rgba(var(--theme-accent-rgb),0.3)] hover:border-[var(--theme-accent)] text-[var(--theme-text)] px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-plex-mono transition-all duration-300"
                 >
@@ -938,7 +941,7 @@ export default function CheckoutPage() {
                 {items.map(item => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-4 group">
                     <div className="w-16 h-20 bg-[var(--theme-bg)] rounded-sm overflow-hidden border border-[rgba(var(--theme-text-rgb),0.05)] relative flex-shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
+                      <Image fill sizes="64px" src={item.image} alt={item.name} className="object-cover opacity-80" />
                       <div className="absolute top-0 right-0 bg-[var(--theme-accent)] text-[var(--theme-bg)] text-[9px] w-4 h-4 flex items-center justify-center font-bold">
                         {item.quantity}
                       </div>

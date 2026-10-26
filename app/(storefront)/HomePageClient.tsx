@@ -1,0 +1,44 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { StorefrontHero } from '@/components/StorefrontHero';
+import { WinterCollectionBanner } from '@/components/WinterCollectionBanner';
+import { CollectionScroller } from '@/components/CollectionScroller';
+import { BestSellers } from '@/components/BestSellers';
+import { TrustSection } from '@/components/TrustSection';
+import ProductGrid from '@/ProductGrid';
+import { useAuth } from '@/hooks/UseAuth';
+import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from '@/config/launch';
+import { useActiveCollection } from '@/features/ActiveCollectionContext';
+
+export function HomePageClient() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const { activeCollectionId } = useActiveCollection();
+
+  const [isLiveMode, setIsLiveMode] = useState(() => {
+    const now = Date.now();
+    const start = COUNTDOWN_START_TIMESTAMP.getTime();
+    const end = LAUNCH_CONFIG.brandLaunch.getTime();
+    return isAdmin || now < start || now >= end;
+  });
+
+  useEffect(() => {
+    if (isAdmin) setIsLiveMode(true);
+  }, [isAdmin]);
+
+  return (
+    <>
+      <StorefrontHero isLiveMode={isLiveMode} setIsLiveMode={setIsLiveMode} />
+      {isLiveMode && (
+        <>
+          {activeCollectionId === 'clothing' && <WinterCollectionBanner />}
+          <CollectionScroller />
+          <BestSellers />
+          <TrustSection />
+        </>
+      )}
+      <ProductGrid categoryFilter="all" />
+    </>
+  );
+}

@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import './ProductCardSober.css';
 
@@ -122,6 +123,14 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
+  // Preload alternate preview image for instant wipe reveal on hover
+  useEffect(() => {
+    if (backSrc && typeof window !== 'undefined') {
+      const preload = new window.Image();
+      preload.src = backSrc;
+    }
+  }, [backSrc]);
+
   /* ── Set initial state on mount ── */
   useEffect(() => {
     applyProgress(0);
@@ -129,6 +138,8 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
 
   const formatPrice = (value: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
+
+  const isEager = index < 3;
 
   return (
     <motion.div
@@ -144,9 +155,13 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
       {/* Image Container */}
       <div ref={wrapRef} className="product-card-sober__image-wrap" data-cursor-image>
         {product.frontImg ? (
-          <img
+          <Image
             src={product.frontImg}
             alt={product.name}
+            fill
+            priority={isEager}
+            loading={isEager ? "eager" : "lazy"}
+            sizes="(max-width: 768px) 50vw, 33vw"
             className="product-card-sober__front"
             referrerPolicy="no-referrer"
           />
@@ -157,10 +172,14 @@ export default function ProductCardSober({ product, index = 0, onClick }: Produc
         {/* Back image layer — always rendered (falls back to frontImg) */}
         {backSrc && (
           <>
-            <img
+            <Image
               ref={backImgRef}
               src={backSrc}
               alt={`${product.name} alternate`}
+              fill
+              priority={isEager}
+              loading="eager"
+              sizes="(max-width: 768px) 50vw, 33vw"
               className="product-card-sober__back"
               referrerPolicy="no-referrer"
             />

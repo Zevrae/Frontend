@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+'use client';
 
-interface AuthModalContextType {
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useAuthStore } from './store/authStore';
+
+export interface AuthModalContextType {
   isLoginModalOpen: boolean;
   setIsLoginModalOpen: (isOpen: boolean) => void;
 }
@@ -8,7 +11,8 @@ interface AuthModalContextType {
 const AuthModalContext = createContext<AuthModalContextType | undefined>(undefined);
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const isLoginModalOpen = useAuthStore((s) => s.isLoginModalOpen);
+  const setIsLoginModalOpen = useAuthStore((s) => s.setIsLoginModalOpen);
 
   return (
     <AuthModalContext.Provider value={{ isLoginModalOpen, setIsLoginModalOpen }}>
@@ -19,8 +23,11 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
 
 export function useAuthModal() {
   const context = useContext(AuthModalContext);
-  if (context === undefined) {
-    throw new Error('useAuthModal must be used within an AuthModalProvider');
+  if (context !== undefined) {
+    return context;
   }
-  return context;
+  // Fallback to Zustand store
+  const isLoginModalOpen = useAuthStore((s) => s.isLoginModalOpen);
+  const setIsLoginModalOpen = useAuthStore((s) => s.setIsLoginModalOpen);
+  return { isLoginModalOpen, setIsLoginModalOpen };
 }

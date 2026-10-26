@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { ChevronLeft } from 'lucide-react';
 import { useCart, MAX_QTY_PER_SIZE } from './CartContext';
@@ -21,7 +24,7 @@ export default function BagPage() {
   const { setIsLoginModalOpen } = useAuthModal();
   const { phase } = usePageTransition();
   const { token } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const headerRef = useRef<HTMLElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<HTMLUListElement>(null);
@@ -30,14 +33,14 @@ export default function BagPage() {
   const emptyHeadlineRef = useRef<HTMLParagraphElement>(null);
   const emptySubRef = useRef<HTMLParagraphElement>(null);
   const [mounted, setMounted] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
   const isEmpty = items.length === 0;
 
   // Reset animations if we navigate to the bag page again while already on it
   useEffect(() => {
     setMounted(false);
     revealStarted.current = false;
-  }, [location.key]);
+  }, [pathname]);
 
   // Page fade-up entrance.
   // If phase is "idle" there's no curtain covering us — this is a cold load
@@ -251,7 +254,7 @@ export default function BagPage() {
     if (!token) {
       setIsLoginModalOpen(true);
     } else {
-      navigate('/checkout');
+      router.push('/checkout');
     }
   };
 
@@ -273,7 +276,7 @@ export default function BagPage() {
     >
       {/* ── Back Navigation ── */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="flex items-center text-[10px] uppercase font-mono tracking-[0.2em] text-[rgba(var(--theme-text-rgb),0.5)] hover:text-[var(--theme-accent)] transition-colors duration-300 mb-8"
       >
         <ChevronLeft size={16} className="mr-2" /> Back
@@ -306,7 +309,12 @@ export default function BagPage() {
             <p className="bag-empty-sub" ref={emptySubRef} style={{ willChange: 'transform' }}>The right one stays.</p>
           </div>
           <div style={{ overflow: 'hidden', marginTop: 'clamp(2rem, 5vh, 4rem)' }}>
-            <button className="bag-empty-cta" onClick={() => navigate('/')} style={{ willChange: 'transform' }}>
+            <button
+              className="bag-empty-cta"
+              onMouseEnter={() => router.prefetch('/')}
+              onClick={() => router.push('/')}
+              style={{ willChange: 'transform' }}
+            >
               Continue Shopping ↗
             </button>
           </div>
@@ -337,11 +345,12 @@ export default function BagPage() {
                 {/* Center — Product image */}
                 <div className="bag-item-image-wrap">
                   {item.image ? (
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
-                      className="bag-item-image"
-                      loading="lazy"
+                      fill
+                      sizes="(max-width: 768px) 100px, 200px"
+                      className="bag-item-image object-cover"
                     />
                   ) : (
                     <div className="bag-item-image-placeholder" />
@@ -401,6 +410,7 @@ export default function BagPage() {
             {/* Right — Oversized checkout CTA */}
             <button
               className="bag-checkout-cta"
+              onMouseEnter={() => router.prefetch('/checkout')}
               onClick={handleCheckout}
               aria-label="Proceed to checkout"
             >

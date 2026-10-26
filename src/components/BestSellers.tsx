@@ -23,8 +23,11 @@
  * - No new product images — uses only images[0] from the existing product
  */
 
+'use client';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+import Image from 'next/image';
 import { useActiveCollection } from '../features/ActiveCollectionContext';
 import { getOrFetchAllProducts, getCachedProducts } from '../ProductGrid';
 import { BEST_SELLER_NAMES, type CollectionKey } from '../data/bestSellers';
@@ -291,22 +294,24 @@ export function BestSellers() {
             ) : (
               /* Products */
               <div className="bs-grid">
-                {displayedVisible.map((product) => (
+                {displayedVisible.map((product, idx) => (
                   <Link
                     key={product.id}
-                    to={`/product/${product.id}`}
-                    state={{ product }}
+                    href={`/product/${product.slug || product.id}`}
                     className="bs-product"
                     aria-label={`View ${product.name}`}
                   >
                     {/* Image — primary image only, no gallery */}
                     <div className="bs-product__img-wrap" data-cursor-image>
-                      <img
+                      <Image
                         src={product.frontImg}
                         alt={product.name}
-                        className="bs-product__img"
-                        loading="lazy"
-                        draggable={false}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="bs-product__img object-cover"
+                        priority={idx < 3}
+                        loading={idx < 3 ? 'eager' : 'lazy'}
+                        unoptimized={!product.frontImg.startsWith('http')}
                       />
                       {/* Discount badge — only if product has one */}
                       {product.discount && (

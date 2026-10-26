@@ -42,6 +42,18 @@ export interface Order {
   // Estimated delivery date — defaults to 7 days after the order date on
   // the backend, but an admin can override it.
   expected_delivery_date?: string | null;
+  // When the order was marked delivered — the 3-day exchange window starts here.
+  delivered_at?: string | null;
+  updated_at?: string;
+  // Present once the customer has requested an exchange.
+  exchange_request?: ExchangeRequest | null;
+}
+
+export interface ExchangeRequest {
+  reason: string; // customer's suggestion / complaint
+  item_indexes?: number[];
+  status: 'requested' | 'approved' | 'rejected' | 'completed';
+  requested_at: string;
 }
 
 export interface RazorpayPaymentInfo {
@@ -83,6 +95,12 @@ export const ordersApi = {
   // (online-paid orders only, within 24 hours of placement).
   cancel: async (id: string): Promise<Order> => {
     const response = await api.post(`/orders/${id}/cancel`);
+    return response.data.data;
+  },
+
+  // Exchange request — backend enforces the 3-day-after-delivery window.
+  requestExchange: async (id: string, payload: { reason: string; item_indexes?: number[] }): Promise<Order> => {
+    const response = await api.post(`/orders/${id}/exchange`, payload);
     return response.data.data;
   },
 

@@ -4,12 +4,18 @@
   --sb-tint-opacity: 0;
   --sb-blur: 0px;
   --sb-text-color: #f5f5f5;
+  --sb-line-color: #ffffff;
+  --sb-base-color: rgba(255, 255, 255, 0.15);
+  --sb-intensity: 1;
+  --sb-mx: 50%;
+  --sb-my: 50%;
+  --sb-active: 0;
 
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
+  border: 1px solid var(--sb-base-color);
   margin: 0;
   font-family: inherit;
   font-weight: 500;
@@ -25,7 +31,8 @@
     0 8px 24px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   outline: none;
-  transition: transform 0.15s ease;
+  overflow: hidden;
+  transition: transform 0.15s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .specular-button:active {
@@ -61,18 +68,35 @@
   padding: 18px 40px;
 }
 
-/* Canvas extends past the button so the rim glow can bleed outside the edge */
+/* Specular sheen effect: smooth radial highlight tracking pointer */
 .specular-button__fx {
   position: absolute;
-  inset: -20px;
+  inset: -1px;
+  border-radius: inherit;
   pointer-events: none;
   z-index: 1;
+  opacity: calc(var(--sb-active) * var(--sb-intensity));
+  background: radial-gradient(
+    circle 100px at var(--sb-mx) var(--sb-my),
+    color-mix(in srgb, var(--sb-line-color) 45%, transparent) 0%,
+    transparent 70%
+  );
+  transition: opacity 0.3s ease;
 }
 
-.specular-button__fx canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+/* Auto-animating shimmer */
+.specular-button--auto .specular-button__fx {
+  opacity: calc(0.6 * var(--sb-intensity));
+  animation: specular-shimmer 3s ease-in-out infinite alternate;
+}
+
+@keyframes specular-shimmer {
+  0% {
+    background: radial-gradient(circle 120px at 15% 50%, color-mix(in srgb, var(--sb-line-color) 35%, transparent), transparent 70%);
+  }
+  100% {
+    background: radial-gradient(circle 120px at 85% 50%, color-mix(in srgb, var(--sb-line-color) 35%, transparent), transparent 70%);
+  }
 }
 
 .specular-button__label {
