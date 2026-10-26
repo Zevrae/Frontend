@@ -76,6 +76,14 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api.zevrae.com" />
+        <link rel="dns-prefetch" href="https://api.zevrae.com" />
+        <link rel="preconnect" href="https://cloud.appwrite.io" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cloud.appwrite.io" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://i.ibb.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://i.ibb.co" />
         <link
           href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800&family=Cormorant+Garamond:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;800&family=JetBrains+Mono:wght@400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
           rel="stylesheet"

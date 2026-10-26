@@ -13,15 +13,49 @@ import { useNavTransition } from '../hooks/useNavTransition';
 import { LAUNCH_CONFIG, COUNTDOWN_START_TIMESTAMP } from '../config/launch';
 import { getOrFetchAllProducts } from '../ProductGrid';
 import ShinyText from './index';
+import { useTheme } from '../theme/ThemeProvider';
+import { useActiveCollection } from '../features/ActiveCollectionContext';
+
+function getSectionLogo(section: string): { src: string; alt: string } {
+  if (section === 'jewellery') {
+    return {
+      src: '/ZEVRAE-JEWELLERY-LOGO.png',
+      alt: 'ZEVRAE JEWELLERY',
+    };
+  }
+  if (section === 'accessories') {
+    return {
+      src: '/ZEVRAE-ACCESSORIES-LOGO.png',
+      alt: 'ZEVRAE ACCESSORIES',
+    };
+  }
+  return {
+    src: '/ZEVRAE LOGO NAVBAR.png',
+    alt: 'ZEVRAE',
+  };
+}
 
 export function StorefrontNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const theme = useTheme();
+  const { activeCollectionId } = useActiveCollection();
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { items, setIsCartOpen } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const navTransition = useNavTransition();
+
+  // Active section from pathname routes or homepage collection/theme switcher
+  const activeSection = pathname.startsWith('/jewellery')
+    ? 'jewellery'
+    : pathname.startsWith('/accessories')
+    ? 'accessories'
+    : pathname.startsWith('/men') || pathname.startsWith('/women') || pathname.startsWith('/customize')
+    ? 'clothing'
+    : (activeCollectionId || theme || 'clothing');
+
+  const currentLogo = getSectionLogo(activeSection);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -196,7 +230,7 @@ export function StorefrontNav() {
               : 'bg-transparent pt-10 pb-4'
           }`}
         >
-          <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
+          <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
             {/* Desktop Left: Category links */}
             <div className="hidden md:flex space-x-16 text-[12px] uppercase tracking-[0.3em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.7)]">
               {isLiveMode && (
@@ -371,27 +405,37 @@ export function StorefrontNav() {
               )}
             </div>
 
-            {/* Logo in Center */}
+            {/* Logo in Center — swaps per section */}
             <motion.a
               href="/"
               onClick={(e) => {
                 e.preventDefault();
                 window.location.href = '/';
               }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 2, delay: 0.2 }}
-              className="absolute left-1/2 transform -translate-x-1/2 cursor-pointer flex items-center justify-center py-1"
-              aria-label="ZEVRAE"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer flex items-center justify-center"
+              aria-label={currentLogo.alt}
             >
-              <Image
-                src="/ZEVRAE LOGO NAVBAR.png"
-                alt="ZEVRAE"
-                width={160}
-                height={50}
-                className="h-10 md:h-16 w-auto object-contain transition-all duration-300 hover:opacity-85"
-                priority
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentLogo.src}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center justify-center"
+                >
+                  <Image
+                    src={currentLogo.src}
+                    alt={currentLogo.alt}
+                    width={160}
+                    height={50}
+                    className={`w-auto object-contain transition-all duration-500 hover:opacity-85 ${
+                      isScrolled ? 'h-8 md:h-10' : 'h-10 md:h-16'
+                    }`}
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
             </motion.a>
 
             {/* Desktop Right: Actions */}

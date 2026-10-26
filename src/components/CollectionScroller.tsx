@@ -115,6 +115,20 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
   const navTransition = useNavTransition();
   const [hovered, setHovered] = useState<'men' | 'women' | null>(null);
 
+  // Preload alternate preview images (men and women collection covers)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urls = [
+      col.menImage?.src || (typeof col.menImage === 'string' ? col.menImage : null),
+      col.womenImage?.src || (typeof col.womenImage === 'string' ? col.womenImage : null),
+    ].filter(Boolean) as string[];
+
+    urls.forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, [col.menImage, col.womenImage]);
+
   return (
     <div
       className={`cs-card ${isActive ? 'cs-card--active' : ''} cs-card--dist-${Math.min(dist, 3)}`}
@@ -127,6 +141,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           src={col.image?.src || col.image}
           alt={col.label}
           fill
+          priority={isActive}
           sizes="560px"
           className="cs-card__img cs-card__img--default cs-card__img--visible"
           draggable={false}
@@ -135,6 +150,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           src={col.menImage?.src || col.menImage}
           alt={`${col.label} Men`}
           fill
+          priority={isActive}
           sizes="560px"
           className={`cs-card__img cs-card__img--men ${hovered === 'men' ? 'cs-card__img--visible' : ''}`}
           draggable={false}
@@ -143,6 +159,7 @@ function CollectionCard({ col, isActive, dist, onClickInactive }: CardProps) {
           src={col.womenImage?.src || col.womenImage}
           alt={`${col.label} Women`}
           fill
+          priority={isActive}
           sizes="560px"
           className={`cs-card__img cs-card__img--women ${hovered === 'women' ? 'cs-card__img--visible' : ''}`}
           draggable={false}

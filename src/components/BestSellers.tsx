@@ -294,7 +294,7 @@ export function BestSellers() {
             ) : (
               /* Products */
               <div className="bs-grid">
-                {displayedVisible.map((product) => (
+                {displayedVisible.map((product, idx) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.slug || product.id}`}
@@ -309,7 +309,8 @@ export function BestSellers() {
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="bs-product__img object-cover"
-                        loading="lazy"
+                        priority={idx < 3}
+                        loading={idx < 3 ? 'eager' : 'lazy'}
                         unoptimized={!product.frontImg.startsWith('http')}
                       />
                       {/* Discount badge — only if product has one */}

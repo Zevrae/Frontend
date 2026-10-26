@@ -413,9 +413,19 @@ export default function ProductPage() {
     fetchRelated();
   }, [product]);
 
+  // Proactively preload all gallery images so switching between views is instantaneous
+  useEffect(() => {
+    if (images && images.length > 0 && typeof window !== 'undefined') {
+      images.forEach((src) => {
+        if (!src) return;
+        const img = new window.Image();
+        img.src = src;
+      });
+    }
+  }, [images]);
+
   const switchImage = (index: number) => {
     if (index === activeImg) return;
-    setImgLoaded(false);
     setActiveImg(index);
   };
 
@@ -647,24 +657,24 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                {/* Main image with fade */}
-                {images.length > 0 && images[activeImg] && (
+                {/* Main images stacked with smooth zero-latency crossfade */}
+                {images.map((imgSrc, idx) => (
                   <Image
-                    key={activeImg}
-                    src={images[activeImg]}
-                    alt={product.name}
+                    key={imgSrc || idx}
+                    src={imgSrc}
+                    alt={`${product.name} view ${idx + 1}`}
                     referrerPolicy="no-referrer"
-                    priority
+                    priority={idx === 0 || idx === activeImg}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
-                    onLoad={() => setImgLoaded(true)}
-                    className="object-cover"
+                    className="object-cover transition-opacity duration-300 ease-out"
                     style={{
-                      opacity: imgLoaded ? 1 : 0,
-                      transition: 'opacity 400ms ease',
+                      opacity: activeImg === idx ? 1 : 0,
+                      pointerEvents: activeImg === idx ? 'auto' : 'none',
+                      zIndex: activeImg === idx ? 2 : 1,
                     }}
                   />
-                )}
+                ))}
 
                 {/* Navigation Arrows */}
                 {images.length > 1 && (
@@ -688,7 +698,7 @@ export default function ProductPage() {
 
                 {/* Subtle vignette */}
                 <div
-                  className="absolute inset-0 pointer-events-none"
+                  className="absolute inset-0 pointer-events-none z-10"
                   style={{
                     background:
                       'radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.35) 0%, transparent 65%)',
@@ -697,7 +707,7 @@ export default function ProductPage() {
 
                 {/* Image counter */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-5 right-5 text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-[0.2em]">
+                  <div className="absolute bottom-5 right-5 z-20 text-[9px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-[0.2em]">
                     {String(activeImg + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
                   </div>
                 )}
@@ -716,6 +726,12 @@ export default function ProductPage() {
                       key={i}
                       id={`thumbnail-${i}`}
                       onClick={() => switchImage(i)}
+                      onMouseEnter={() => {
+                        if (images[i] && typeof window !== 'undefined') {
+                          const preload = new window.Image();
+                          preload.src = images[i];
+                        }
+                      }}
                       className={`relative flex-shrink-0 w-[72px] h-[90px] bg-[#0d0d0d] overflow-hidden transition-all duration-300 ${activeImg === i
                           ? 'ring-1 ring-[var(--theme-accent)] opacity-100'
                           : 'opacity-50 hover:opacity-80 ring-1 ring-transparent hover:ring-[rgba(var(--theme-text-rgb),0.2)]'

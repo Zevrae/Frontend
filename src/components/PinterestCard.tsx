@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import './PinterestCard.css';
@@ -83,6 +83,16 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
     }
   }, [applyProgress]);
 
+  const [frontLoaded, setFrontLoaded] = useState(false);
+
+  // Preload back hover preview image proactively so the hover wipe is instant
+  useEffect(() => {
+    if (backSrc && typeof window !== 'undefined') {
+      const preload = new window.Image();
+      preload.src = backSrc;
+    }
+  }, [backSrc]);
+
   /* ── Mouse enter → prefetch + wipe in ── */
   const productKey = product.slug || product.id;
   const handleMouseEnter = useCallback(() => {
@@ -90,6 +100,10 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
       router.prefetch(`/product/${productKey}`);
     }
     if (!backSrc) return;
+    // Ensure back image is warmed in memory
+    const preload = new window.Image();
+    preload.src = backSrc;
+
     cancelAnimationFrame(rafRef.current);
     fromRef.current = progressRef.current;
     toRef.current = 1;
@@ -128,7 +142,7 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
   const formatPrice = (value: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
 
-  const isEager = index < 4;
+  const isEager = index < 6;
 
   return (
     <motion.div
@@ -144,14 +158,21 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
     >
       <div className="pinterest-card__image-wrap">
         {product.frontImg ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.frontImg}
-            alt={product.name}
-            className="pinterest-card__front"
-            referrerPolicy="no-referrer"
-            loading="lazy"
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.frontImg}
+              alt={product.name}
+              className={`pinterest-card__front ${frontLoaded ? 'pinterest-card__front--loaded' : 'pinterest-card__front--loading'}`}
+              referrerPolicy="no-referrer"
+              loading={isEager ? "eager" : "lazy"}
+              // @ts-expect-error fetchPriority supported in modern browsers
+              fetchpriority={isEager ? "high" : "auto"}
+              decoding="async"
+              onLoad={() => setFrontLoaded(true)}
+            />
+            {!frontLoaded && <div className="pinterest-card__skeleton" />}
+          </>
         ) : (
           <div className="pinterest-card__placeholder">Image Pending</div>
         )}
@@ -166,7 +187,8 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
               alt={`${product.name} alternate`}
               className="pinterest-card__back"
               referrerPolicy="no-referrer"
-              loading="lazy"
+              loading="eager"
+              decoding="async"
             />
             <div ref={wipeLineRef} className="pinterest-card__wipe-line" />
           </>
