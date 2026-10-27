@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { CustomCursor } from '@/features/CustomCursor';
 import { Preloader } from '@/features/preloader';
 import { PageTransitionLoader } from '@/features/PageTransitionLoader';
+import { SmoothScroll } from '@/features/SmoothScroll';
 import { usePreloader } from '@/features/PreloaderContext';
 import { useAuthModal } from '@/AuthModalContext';
 import { StorefrontNav } from '@/components/StorefrontNav';
@@ -35,6 +36,7 @@ export function StorefrontShell({ children }: { children: React.ReactNode }) {
       data-page-content
       className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[rgba(var(--theme-accent-rgb),0.3)] selection:text-[var(--theme-text)] relative overflow-x-hidden font-sans"
     >
+      <SmoothScroll />
       <CustomCursor />
       {!hasCompletedOnce && <Preloader />}
       <PageTransitionLoader />
