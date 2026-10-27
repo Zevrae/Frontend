@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Lock, User, Phone, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from './hooks/UseAuth';
 import { authApi } from './api/auth';
@@ -11,20 +11,12 @@ import {
 } from './components/ui/dialog';
 import { Button } from './components/ui/button';
 
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: Record<string, unknown>) => void;
-          renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
-        };
-      };
-    };
-  }
-}
+const GOOGLE_CLIENT_ID = (
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  '115553631331-pnrdu6rammokjm3m27h46ob39h158fem.apps.googleusercontent.com'
+).replace(/^['"]|['"]$/g, '').trim();
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -37,8 +29,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [googleReady, setGoogleReady] = useState(false);
-  const googleBtnRef = useRef<HTMLDivElement>(null);
   const [forgotEmail, setForgotEmail] = useState('');
   const [formData, setFormData] = useState({
     name: '',
@@ -47,12 +37,12 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     password: '',
   });
 
-  const handleGoogleCredential = async (response: { credential: string }) => {
+  const handleGoogleCredential = async (credential: string) => {
     setErrorMessage('');
     setSuccessMessage('');
     setSubmitting(true);
     try {
-      await loginWithGoogle(response.credential);
+      await loginWithGoogle(credential);
       onClose();
     } catch (err: any) {
       setErrorMessage(err?.response?.data?.message || 'Google sign-in failed. Please try again.');
@@ -60,38 +50,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const clientId = GOOGLE_CLIENT_ID;
-    if (!clientId) return;
-
-    let cancelled = false;
-    const tryInit = () => {
-      if (cancelled) return;
-      if (!window.google?.accounts?.id) {
-        setTimeout(tryInit, 150);
-        return;
-      }
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleCredential,
-      });
-      if (googleBtnRef.current) {
-        googleBtnRef.current.innerHTML = '';
-        window.google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: 'filled_black',
-          size: 'large',
-          shape: 'rectangular',
-          width: 336,
-          text: 'continue_with',
-        });
-        setGoogleReady(true);
-      }
-    };
-    tryInit();
-    return () => { cancelled = true; };
-  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -377,11 +335,29 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             </div>
 
             {GOOGLE_CLIENT_ID ? (
-              <div className="flex flex-col items-center justify-center w-full gap-2">
-                <div ref={googleBtnRef} className="w-full flex justify-center" />
-                {!googleReady && (
-                  <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.3)] tracking-wider">Loading Google Sign-In…</p>
+              <div className="flex flex-col items-center justify-center w-full gap-2 min-h-[44px]">
+                {submitting && (
+                  <p className="text-[10px] font-plex-mono text-[rgba(var(--theme-text-rgb),0.5)] tracking-wider">
+                    Signing in with Google…
+                  </p>
                 )}
+                <GoogleLogin
+                  onSuccess={(credentialResponse: CredentialResponse) => {
+                    if (credentialResponse.credential) {
+                      handleGoogleCredential(credentialResponse.credential);
+                    } else {
+                      setErrorMessage('No credential received from Google.');
+                    }
+                  }}
+                  onError={() => {
+                    setErrorMessage('Google authentication popup was closed or cancelled.');
+                  }}
+                  theme="filled_black"
+                  size="large"
+                  shape="rectangular"
+                  text="continue_with"
+                  width="336"
+                />
               </div>
             ) : (
               <button

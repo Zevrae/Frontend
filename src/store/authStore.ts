@@ -71,12 +71,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true });
     try {
       const response = await authApi.login(formData);
-      const { token, data } = response;
+      const token = response.token;
+      const user = response.data || response.user;
 
       tokenUtils.setToken(token);
+      if (typeof window !== 'undefined' && user) {
+        localStorage.setItem('zevrae_user', JSON.stringify(user));
+      }
       set({
         token,
-        user: data,
+        user,
         loading: false,
         isLoginModalOpen: false,
       });
@@ -90,12 +94,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true });
     try {
       const response = await authApi.googleLogin(credential);
-      const { token, data } = response;
+      const token = response.token;
+      const user = response.data || response.user;
 
       tokenUtils.setToken(token);
+      if (typeof window !== 'undefined' && user) {
+        localStorage.setItem('zevrae_user', JSON.stringify(user));
+      }
       set({
         token,
-        user: data,
+        user,
         loading: false,
         isLoginModalOpen: false,
       });

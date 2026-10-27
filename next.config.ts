@@ -45,6 +45,18 @@ const cspHeader = `
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID: (
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.VITE_GOOGLE_CLIENT_ID ||
+      '115553631331-pnrdu6rammokjm3m27h46ob39h158fem.apps.googleusercontent.com'
+    ).replace(/^['"]|['"]$/g, '').trim(),
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.VITE_API_URL ||
+      'http://localhost:5000/api/',
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
@@ -84,7 +96,9 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'https://api.zevrae.com';
+    const backendUrl =
+      process.env.BACKEND_URL ||
+      (isDev ? 'http://localhost:5000' : 'https://api.zevrae.com');
     return [
       {
         source: '/api/:path*',

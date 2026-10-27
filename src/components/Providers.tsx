@@ -12,8 +12,15 @@ import { CartProvider } from '@/CartContext';
 import { AuthModalProvider } from '@/AuthModalContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const GOOGLE_CLIENT_ID = (
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  '115553631331-pnrdu6rammokjm3m27h46ob39h158fem.apps.googleusercontent.com'
+).replace(/^['"]|['"]$/g, '').trim();
+
 export function Providers({ children }: { children: ReactNode }) {
-  return (
+  const content = (
     <QueryProvider>
       <ThemeProvider>
         <CollectionTransitionProvider>
@@ -36,4 +43,14 @@ export function Providers({ children }: { children: ReactNode }) {
       </ThemeProvider>
     </QueryProvider>
   );
+
+  if (GOOGLE_CLIENT_ID) {
+    return (
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        {content}
+      </GoogleOAuthProvider>
+    );
+  }
+
+  return content;
 }

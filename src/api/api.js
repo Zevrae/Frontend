@@ -1,8 +1,13 @@
 import axios from "axios";
 import { tokenUtils } from "../utils/token";
 
+const rawBaseURL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.VITE_API_URL ||
+  "/api";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  baseURL: rawBaseURL.replace(/\/+$/, ""),
   headers: {
     "Content-Type": "application/json",
   },
