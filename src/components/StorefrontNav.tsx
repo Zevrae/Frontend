@@ -39,12 +39,32 @@ export function StorefrontNav() {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
-  const { activeCollectionId } = useActiveCollection();
+  const { activeCollectionId, setActiveCollectionId } = useActiveCollection();
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { items, setIsCartOpen } = useCart();
   const { setIsLoginModalOpen } = useAuthModal();
   const navTransition = useNavTransition();
+
+  // Sync activeCollectionId (and logo) whenever pathname moves to a category route.
+  // This covers direct URL loads, back/forward navigation, and nav-link clicks —
+  // not just the homepage arrow/scroller which calls setActiveCollectionId directly.
+  useEffect(() => {
+    if (pathname.startsWith('/jewellery')) {
+      setActiveCollectionId('jewellery');
+    } else if (pathname.startsWith('/accessories')) {
+      setActiveCollectionId('accessories');
+    } else if (
+      pathname.startsWith('/men') ||
+      pathname.startsWith('/women') ||
+      pathname.startsWith('/customize')
+    ) {
+      setActiveCollectionId('clothing');
+    }
+    // For non-category routes (/product/:id, /bag, etc.) we leave the current
+    // activeCollectionId untouched so the logo stays on whatever section the
+    // user was browsing — same intent as ThemeProvider's null-return paths.
+  }, [pathname, setActiveCollectionId]);
 
   // Active section from pathname routes or homepage collection/theme switcher
   const activeSection = pathname.startsWith('/jewellery')
