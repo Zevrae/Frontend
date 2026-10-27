@@ -28,6 +28,118 @@ const formatDate = (d: string) =>
 
 const emptyAddress: Address = { label: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India', is_default: false };
 
+function cleanClothUrl(input: any): string[] {
+  if (!input || typeof input !== 'string') return [];
+  let s = input.trim();
+
+  // Recursively handle JSON stringified arrays or objects (e.g. '["https://..."]')
+  if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return parsed.flatMap(cleanClothUrl);
+      if (typeof parsed === 'string') return cleanClothUrl(parsed);
+    } catch {
+      s = s.slice(1, -1).trim();
+    }
+  }
+
+  // Remove wrapping quotes and backslashes
+  s = s.replace(/^["'\\]+|["'\\]+$/g, '');
+  // Unescape quotes and slashes
+  s = s.replace(/\\"/g, '"').replace(/\\\//g, '/');
+
+  if (!s) return [];
+
+  // If after unescaping it now has JSON brackets:
+  if (s.startsWith('[') && s.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return parsed.flatMap(cleanClothUrl);
+    } catch {}
+  }
+
+  // Clean any remaining quote wrapping
+  s = s.replace(/^["']|["']$/g, '').trim();
+
+  return s ? [s] : [];
+}
+
+function normalizeClothUrls(raw: any): string[] {
+  if (!raw) return [];
+  const list = Array.isArray(raw) ? raw : [raw];
+  const urls: string[] = [];
+  for (const item of list) {
+    if (typeof item === 'string') {
+      urls.push(...cleanClothUrl(item));
+    } else if (item && typeof item === 'object') {
+      if (item.url) urls.push(...cleanClothUrl(item.url));
+      else if (item.src) urls.push(...cleanClothUrl(item.src));
+    }
+  }
+  return urls.filter(u => typeof u === 'string' && u.trim().length > 0 && !u.startsWith('['));
+}
+
+function GarmentPreviewThumbnail({
+  url,
+  fallbackUrl,
+  alt = 'Garment',
+}: {
+  url: string;
+  fallbackUrl?: string | null;
+  alt?: string;
+}) {
+  const [src, setSrc] = useState(url);
+  const [hasError, setHasError] = useState(false);
+  const [usedFallback, setUsedFallback] = useState(false);
+
+  useEffect(() => {
+    setSrc(url);
+    setHasError(false);
+    setUsedFallback(false);
+  }, [url]);
+
+  const handleError = () => {
+    if (fallbackUrl && !usedFallback && fallbackUrl !== src) {
+      setUsedFallback(true);
+      setSrc(fallbackUrl);
+    } else {
+      setHasError(true);
+    }
+  };
+
+  if (hasError) {
+    return (
+      <div
+        className="relative w-12 h-14 bg-black/60 rounded-xs overflow-hidden border border-[rgba(var(--theme-text-rgb),0.15)] flex flex-col items-center justify-center text-center p-1"
+        title="Garment preview unavailable"
+      >
+        <Sparkles size={14} className="text-[var(--theme-accent)] opacity-60 mb-0.5" />
+        <span className="text-[8px] font-plex-mono uppercase text-[rgba(var(--theme-text-rgb),0.4)] tracking-tighter">Garment</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onClick={() => {
+        if (src) window.open(src, '_blank');
+      }}
+      title="Click to view garment in high-resolution"
+      className="relative w-12 h-14 bg-black/40 rounded-xs overflow-hidden border border-[rgba(var(--theme-text-rgb),0.1)] group/garment cursor-pointer hover:border-[var(--theme-accent)] transition-colors"
+    >
+      <img
+        src={src}
+        alt={alt}
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
+        className="w-full h-full object-cover transition-transform duration-300 group-hover/garment:scale-110"
+        onError={handleError}
+      />
+    </div>
+  );
+}
+
+
 // The order lifecycle a tracking card visualizes. "payment_pending" and
 // "cancelled" are handled separately since they aren't steps along this line.
 const TRACK_STEPS: { key: Order['order_status']; label: string; icon: React.ReactNode }[] = [
@@ -556,6 +668,30 @@ export default function ProfilePage() {
     }
   }, [tab, catalogProducts.length]);
 
+  // Ensure previewed try-on product details (name, images, price) are loaded
+  useEffect(() => {
+    if (!previewTryon) return;
+    const pObj = typeof previewTryon.product === 'object' && previewTryon.product !== null ? (previewTryon.product as any) : null;
+    const pId = pObj?.id || pObj?._id || (typeof previewTryon.product === 'string' ? previewTryon.product : '');
+    if (pId && !catalogProducts.some(p => p.id === pId || p._id === pId || String(p.id) === String(pId) || String(p._id) === String(pId))) {
+      productsApi.getById(pId)
+        .then((prod: any) => {
+          if (prod) {
+            setCatalogProducts(prev => {
+              if (prev.some(p => p.id === prod.id || p._id === prod.id || p.id === prod._id)) return prev;
+              return [...prev, {
+                ...prod,
+                id: prod.id || prod._id,
+                _id: prod._id || prod.id,
+                frontImg: prod.images?.[0] || '',
+              }];
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [previewTryon, catalogProducts]);
+
   // Close big preview modal on Escape key and lock body scroll
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -741,7 +877,9 @@ export default function ProfilePage() {
                 {tryons.filter(t => t.status === 'completed' && t.imageUrl).map(t => {
                   const productObj = typeof t.product === 'object' && t.product !== null ? (t.product as any) : null;
                   const productId = productObj?.id || productObj?._id || (typeof t.product === 'string' ? t.product : '');
-                  const matchedCatalog = catalogProducts.find(p => p.id === productId);
+                  const matchedCatalog = catalogProducts.find(p =>
+                    productId && (p.id === productId || p._id === productId || String(p.id) === String(productId) || String(p._id) === String(productId))
+                  );
                   const productName = productObj?.name || matchedCatalog?.name || (productId ? 'View Product' : 'Product');
 
                   return (
@@ -960,9 +1098,23 @@ export default function ProfilePage() {
         {previewTryon && (() => {
           const productObj = typeof previewTryon.product === 'object' && previewTryon.product !== null ? (previewTryon.product as any) : null;
           const productId = productObj?.id || productObj?._id || (typeof previewTryon.product === 'string' ? previewTryon.product : '');
-          const matchedCatalog = catalogProducts.find(p => p.id === productId);
+          const matchedCatalog = catalogProducts.find(p =>
+            productId && (p.id === productId || p._id === productId || String(p.id) === String(productId) || String(p._id) === String(productId))
+          );
           const productName = productObj?.name || matchedCatalog?.name || (productId ? 'View Product' : 'Product');
           const productPrice = matchedCatalog?.price || productObj?.price;
+          const productFallbackImage =
+            productObj?.frontImg ||
+            (Array.isArray(productObj?.images) ? productObj.images[0] : null) ||
+            (typeof productObj?.images === 'string' ? productObj.images : null) ||
+            matchedCatalog?.frontImg ||
+            (Array.isArray(matchedCatalog?.images) ? matchedCatalog.images[0] : null) ||
+            null;
+
+          const parsedGarmentUrls = normalizeClothUrls(previewTryon.clothImageUrls);
+          const garmentUrls = parsedGarmentUrls.length > 0
+            ? parsedGarmentUrls
+            : (productFallbackImage ? [productFallbackImage] : []);
 
           return (
             <motion.div
@@ -1039,16 +1191,19 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {previewTryon.clothImageUrls && previewTryon.clothImageUrls.length > 0 && (
+                    {garmentUrls.length > 0 && (
                       <div className="mt-4">
                         <p className="text-[9px] uppercase tracking-[0.2em] font-plex-mono text-[rgba(var(--theme-text-rgb),0.4)] mb-2">
                           Tried On Garment
                         </p>
                         <div className="flex gap-2 flex-wrap">
-                          {previewTryon.clothImageUrls.map((url, idx) => (
-                            <div key={idx} className="relative w-12 h-14 bg-black/40 rounded-xs overflow-hidden border border-[rgba(var(--theme-text-rgb),0.1)]">
-                              <img src={url} alt="Garment" className="w-full h-full object-cover" />
-                            </div>
+                          {garmentUrls.map((url, idx) => (
+                            <GarmentPreviewThumbnail
+                              key={idx}
+                              url={url}
+                              fallbackUrl={productFallbackImage}
+                              alt={`${productName} Garment`}
+                            />
                           ))}
                         </div>
                       </div>
