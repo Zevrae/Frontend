@@ -166,8 +166,7 @@ export default function PinterestCard({ product, index = 0, onClick }: Pinterest
               className={`pinterest-card__front ${frontLoaded ? 'pinterest-card__front--loaded' : 'pinterest-card__front--loading'}`}
               referrerPolicy="no-referrer"
               loading={isEager ? "eager" : "lazy"}
-              // @ts-expect-error fetchPriority supported in modern browsers
-              fetchpriority={isEager ? "high" : "auto"}
+              fetchPriority={isEager ? "high" : "auto"}
               decoding="async"
               onLoad={() => setFrontLoaded(true)}
             />

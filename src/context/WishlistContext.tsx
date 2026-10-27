@@ -6,11 +6,15 @@ import { useAuthStore } from '../store/authStore';
 import type { WishlistProduct } from '../api/wishlist';
 
 export interface WishlistContextValue {
+  /** Set of product IDs currently in the wishlist */
   wishlistIds: Set<string>;
+  /** Full product objects for all wishlisted items */
   items: WishlistProduct[];
   loading: boolean;
+  /** Toggle a product in/out of the wishlist. Returns true if added, false if removed. */
   toggle: (product: { id: string; name: string; price: number; images?: string[]; category?: string }) => Promise<boolean>;
   isWishlisted: (productId: string) => boolean;
+  /** Re-fetch from server (called after login) */
   refresh: () => Promise<void>;
 }
 
@@ -52,3 +56,4 @@ export function useWishlist(): WishlistContextValue {
     refresh: store.refresh,
   };
 }
+
