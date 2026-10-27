@@ -229,7 +229,7 @@ export function BestSellers() {
     .join(' ');
 
   return (
-    <section className="bs-section">
+    <section className="bs-section" id="best-sellers">
       <div className="bs-inner">
 
         {/* ── Top row: heading left, arrows right ── */}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { StorefrontHero } from '@/components/StorefrontHero';
 import { WinterCollectionBanner } from '@/components/WinterCollectionBanner';
 import { CollectionScroller } from '@/components/CollectionScroller';
+import { CouponBanner } from '@/components/CouponBanner';
 import { BestSellers } from '@/components/BestSellers';
 import { TrustSection } from '@/components/TrustSection';
 import ProductGrid from '@/ProductGrid';
@@ -34,6 +35,7 @@ export function HomePageClient() {
         <>
           {activeCollectionId === 'clothing' && <WinterCollectionBanner />}
           <CollectionScroller />
+          <CouponBanner />
           <BestSellers />
           <TrustSection />
         </>

@@ -70,10 +70,10 @@ export function StorefrontNav() {
   const activeSection = pathname.startsWith('/jewellery')
     ? 'jewellery'
     : pathname.startsWith('/accessories')
-    ? 'accessories'
-    : pathname.startsWith('/men') || pathname.startsWith('/women') || pathname.startsWith('/customize')
-    ? 'clothing'
-    : (activeCollectionId || theme || 'clothing');
+      ? 'accessories'
+      : pathname.startsWith('/men') || pathname.startsWith('/women') || pathname.startsWith('/customize')
+        ? 'clothing'
+        : (activeCollectionId || theme || 'clothing');
 
   const currentLogo = getSectionLogo(activeSection);
 
@@ -237,18 +237,13 @@ export function StorefrontNav() {
   return (
     <>
       <nav className="fixed top-0 w-full z-40 flex flex-col">
-        {/* Coupon Strip */}
-        <div className="w-full bg-black text-white text-center py-[9px] text-[13px] tracking-[0.25em] uppercase font-semibold font-plex-mono select-none">
-          USE <span className="text-[#daa520]">ZEV15</span> TO GET <span className="text-[#daa520]">15%</span> OFF
-        </div>
 
         {/* Main Navbar */}
         <div
-          className={`w-full transition-all duration-1000 ${
-            isScrolled
+          className={`w-full transition-all duration-1000 ${isScrolled
               ? 'bg-[rgba(var(--theme-bg-rgb),0.95)] backdrop-blur-md pt-6 pb-3'
               : 'bg-transparent pt-10 pb-4'
-          }`}
+            }`}
         >
           <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
             {/* Desktop Left: Category links */}
@@ -449,9 +444,8 @@ export function StorefrontNav() {
                     alt={currentLogo.alt}
                     width={160}
                     height={50}
-                    className={`w-auto object-contain transition-all duration-500 hover:opacity-85 ${
-                      isScrolled ? 'h-8 md:h-10' : 'h-10 md:h-16'
-                    }`}
+                    className={`w-auto object-contain transition-all duration-500 hover:opacity-85 ${isScrolled ? 'h-8 md:h-10' : 'h-10 md:h-16'
+                      }`}
                     priority
                   />
                 </motion.div>
@@ -793,40 +787,40 @@ export function StorefrontNav() {
               },
               ...(isMobileClothingOpen
                 ? [
-                    {
-                      name: '- Men',
-                      href: '/men',
-                      onClick: () => {
-                        navTransition('/men', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileClothingOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                  {
+                    name: '- Men',
+                    href: '/men',
+                    onClick: () => {
+                      navTransition('/men', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileClothingOpen(false);
+                      });
                     },
-                    {
-                      name: '- Women',
-                      href: '/women',
-                      onClick: () => {
-                        navTransition('/women', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileClothingOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                    isSubItem: true,
+                  },
+                  {
+                    name: '- Women',
+                    href: '/women',
+                    onClick: () => {
+                      navTransition('/women', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileClothingOpen(false);
+                      });
                     },
-                    {
-                      name: '- Customize',
-                      href: '/customize',
-                      onClick: () => {
-                        navTransition('/customize', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileClothingOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                    isSubItem: true,
+                  },
+                  {
+                    name: '- Customize',
+                    href: '/customize',
+                    onClick: () => {
+                      navTransition('/customize', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileClothingOpen(false);
+                      });
                     },
-                  ]
+                    isSubItem: true,
+                  },
+                ]
                 : []),
               {
                 name: 'Jewellery',
@@ -835,29 +829,29 @@ export function StorefrontNav() {
               },
               ...(isMobileJewelleryOpen
                 ? [
-                    {
-                      name: '- Men',
-                      href: '/jewellery/men',
-                      onClick: () => {
-                        navTransition('/jewellery/men', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileJewelleryOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                  {
+                    name: '- Men',
+                    href: '/jewellery/men',
+                    onClick: () => {
+                      navTransition('/jewellery/men', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileJewelleryOpen(false);
+                      });
                     },
-                    {
-                      name: '- Women',
-                      href: '/jewellery/women',
-                      onClick: () => {
-                        navTransition('/jewellery/women', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileJewelleryOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                    isSubItem: true,
+                  },
+                  {
+                    name: '- Women',
+                    href: '/jewellery/women',
+                    onClick: () => {
+                      navTransition('/jewellery/women', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileJewelleryOpen(false);
+                      });
                     },
-                  ]
+                    isSubItem: true,
+                  },
+                ]
                 : []),
               {
                 name: 'Accessories',
@@ -866,29 +860,29 @@ export function StorefrontNav() {
               },
               ...(isMobileAccessoriesOpen
                 ? [
-                    {
-                      name: '- Keychains',
-                      href: '/accessories/keychains',
-                      onClick: () => {
-                        navTransition('/accessories/keychains', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileAccessoriesOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                  {
+                    name: '- Keychains',
+                    href: '/accessories/keychains',
+                    onClick: () => {
+                      navTransition('/accessories/keychains', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileAccessoriesOpen(false);
+                      });
                     },
-                    {
-                      name: '- Soft Toys',
-                      href: '/accessories/soft-toys',
-                      onClick: () => {
-                        navTransition('/accessories/soft-toys', () => {
-                          setIsMenuOpen(false);
-                          setIsMobileAccessoriesOpen(false);
-                        });
-                      },
-                      isSubItem: true,
+                    isSubItem: true,
+                  },
+                  {
+                    name: '- Soft Toys',
+                    href: '/accessories/soft-toys',
+                    onClick: () => {
+                      navTransition('/accessories/soft-toys', () => {
+                        setIsMenuOpen(false);
+                        setIsMobileAccessoriesOpen(false);
+                      });
                     },
-                  ]
+                    isSubItem: true,
+                  },
+                ]
                 : []),
               {
                 name: 'AI Wardrobe',
@@ -899,47 +893,47 @@ export function StorefrontNav() {
               },
               ...(user
                 ? [
-                    {
-                      name: displayName || 'USER',
-                      href: '#',
-                      onClick: () => setIsMobileProfileOpen(!isMobileProfileOpen),
-                    },
-                    ...(isMobileProfileOpen
-                      ? [
-                          {
-                            name: '- Profile',
-                            href: '/profile',
-                            onClick: () => {
-                              navTransition('/profile', () => {
-                                setIsMenuOpen(false);
-                                setIsMobileProfileOpen(false);
-                              });
-                            },
-                            isSubItem: true,
-                          },
-                          {
-                            name: '- Logout',
-                            href: '#',
-                            onClick: () => {
-                              logout();
-                              setIsMenuOpen(false);
-                              setIsMobileProfileOpen(false);
-                            },
-                            isSubItem: true,
-                          },
-                        ]
-                      : []),
-                  ]
-                : [
-                    {
-                      name: 'Login',
-                      href: '#',
-                      onClick: () => {
-                        setIsLoginModalOpen(true);
-                        setIsMenuOpen(false);
+                  {
+                    name: displayName || 'USER',
+                    href: '#',
+                    onClick: () => setIsMobileProfileOpen(!isMobileProfileOpen),
+                  },
+                  ...(isMobileProfileOpen
+                    ? [
+                      {
+                        name: '- Profile',
+                        href: '/profile',
+                        onClick: () => {
+                          navTransition('/profile', () => {
+                            setIsMenuOpen(false);
+                            setIsMobileProfileOpen(false);
+                          });
+                        },
+                        isSubItem: true,
                       },
+                      {
+                        name: '- Logout',
+                        href: '#',
+                        onClick: () => {
+                          logout();
+                          setIsMenuOpen(false);
+                          setIsMobileProfileOpen(false);
+                        },
+                        isSubItem: true,
+                      },
+                    ]
+                    : []),
+                ]
+                : [
+                  {
+                    name: 'Login',
+                    href: '#',
+                    onClick: () => {
+                      setIsLoginModalOpen(true);
+                      setIsMenuOpen(false);
                     },
-                  ]),
+                  },
+                ]),
               {
                 name: `Bag(${items.reduce((total, item) => total + item.quantity, 0)})`,
                 href: '/bag',
@@ -956,9 +950,8 @@ export function StorefrontNav() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: i * 0.05, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                className={`text-3xl md:text-5xl font-plex-mono tracking-[0.2em] text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300 uppercase ${
-                  item.isSubItem ? 'text-xl md:text-3xl my-2' : ''
-                }`}
+                className={`text-3xl md:text-5xl font-plex-mono tracking-[0.2em] text-[var(--theme-text)] hover:text-[var(--theme-accent)] transition-colors duration-300 uppercase ${item.isSubItem ? 'text-xl md:text-3xl my-2' : ''
+                  }`}
                 onClick={(e) => {
                   if (item.onClick) {
                     e.preventDefault();
